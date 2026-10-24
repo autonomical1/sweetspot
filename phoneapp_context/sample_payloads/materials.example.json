@@ -1,0 +1,14 @@
+{
+  "surfaces": [
+    {
+      "surface_id": "0F8C5B3E-0000-4000-8000-0000000000A1",
+      "material": "drywall",
+      "confidence": 0.92
+    },
+    {
+      "surface_id": "floor",
+      "material": "hardwood",
+      "confidence": 0.81
+    }
+  ]
+}

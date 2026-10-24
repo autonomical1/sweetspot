@@ -1,0 +1,32 @@
+[
+  {
+    "surface_id": "0F8C5B3E-0000-4000-8000-0000000000A1",
+    "kind": "wall",
+    "label": "Front wall (behind the TV)"
+  },
+  {
+    "surface_id": "0F8C5B3E-0000-4000-8000-0000000000A3",
+    "kind": "wall",
+    "label": "Back wall (behind the sofa)"
+  },
+  {
+    "surface_id": "0F8C5B3E-0000-4000-8000-0000000000A4",
+    "kind": "wall",
+    "label": "Left wall"
+  },
+  {
+    "surface_id": "0F8C5B3E-0000-4000-8000-0000000000A2",
+    "kind": "wall",
+    "label": "Right wall"
+  },
+  {
+    "surface_id": "floor",
+    "kind": "floor",
+    "label": "Floor"
+  },
+  {
+    "surface_id": "ceiling",
+    "kind": "ceiling",
+    "label": "Ceiling"
+  }
+]
