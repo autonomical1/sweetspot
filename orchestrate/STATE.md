@@ -3,17 +3,17 @@
 - project: Sweetspot
 - started: 2026-10-24 13:21
 - deadline: 2026-10-25 11:30
-- phase: discover   # discover | spec | plan | build | integrate | polish | done
+- phase: spec   # discover | spec | plan | build | integrate | polish | done
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 0
-- last_checkpoint: 2026-10-24 13:25
+- last_checkpoint: 2026-10-24 13:30
 
 ## Next action
-Write docs/SPEC.md from PROJECT_CONTEXT.md scoped to Neel's area (backend/integration + shared data contract), put the design forks to the user, then GATE 1.
+GATE 1 passed? Then draft docs/API.md (contract + engine/products adapter signatures), AGENTS.md, config.json test cmd, TASKS.md, and hit GATE 2.
 
 ## Waiting on user
-Design forks for backend/contract (see chat).
+GATE 1: approve docs/SPEC.md or request changes; answer the open questions at the bottom of it.
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.
