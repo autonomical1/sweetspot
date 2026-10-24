@@ -7,14 +7,14 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 1
-- last_checkpoint: 2026-10-24 18:50
+- last_checkpoint: 2026-10-24 19:05
 
 ## Next action
-Wave 1b: materials check PASS, review ISSUES (2 findings both caused by brief vs API.md: extra applied field, no cited source) awaiting user OK to change API.md then merge -Id materials. contracts check PASS, review ISSUES (8 real findings): retry 1 dispatched (gpt-6-sol medium) with fix list in BRIEF. When retry exits: review result, then GATE 4/5, merge, push. Then wave 2 briefs: roomplan (gpt-6-astra high), deploy (luna; needs user Vultr IP + domain).
+materials MERGED (c73fb8a, tag demo-ok) with API.md tweaks. contracts retry 1 running in background (gpt-6-sol medium, then review): when it exits read summary, GATE 4, merge -Id or -All, push. Then wave 2 briefs: roomplan (gpt-6-astra high), deploy (luna; needs user Vultr IP + domain; run ONE uvicorn worker because sessions are in-memory). Stale worktrees to remove later: sweetspot-wtre-api and materials.
 EELMDESKTOPSWEETSPOT-WTRE-API.
 
 ## Waiting on user
-API change (always interrupts): (a) document the additive `applied` boolean in the /materials response in docs/API.md section 6; (b) reword section 5 from "source cited in file" to "approximate typical textbook values, no single cited source". OK to apply and merge materials with override?
+none
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.
