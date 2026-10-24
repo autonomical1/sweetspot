@@ -29,7 +29,7 @@ Source of truth in code: `backend/app/schemas.py` (pydantic v2). Fixture: `fixtu
 }
 ```
 - Rectangle builder creates 4 walls (`wall_n|s|e|w`), `floor`, `ceiling`, default drywall absorption, and no objects. `listener.facing` is a unit vector in x-z (north = [0,-1]).
-- RoomPlan converter fills the same shape from a `CapturedRoom` JSON (stored verbatim in `captured_room`). Listener comes from the sofa transform (seat center, 1.1 m ear height) with fallback to room center facing the longest wall.
+- RoomPlan converter fills the same shape from the iOS export DTO `sweetspot.roomplan.v1` (spec: `phoneapp_context/01_roomplan_capture.md`, example: `phoneapp_context/sample_payloads/post_rooms_request.example.json`), stored verbatim in `captured_room`. Surface/object `transform` is 16 floats column-major (translation = elements 12-14), `dimensions` = [w,h,d]. For scanned rooms the converter keeps the RoomPlan world frame (no recentering) and uses the RoomPlan UUID strings as surface ids, plus synthetic `floor` and `ceiling`. Listener comes from the sofa transform (seat center, 1.1 m ear height) with fallback to room center facing the longest wall.
 - `absorption` is always present on every surface (default table keyed by material in `backend/app/materials.py`).
 
 ## 2. Layout and metrics (engine output)
@@ -90,10 +90,11 @@ Backend implementations behind one interface: Gemini API (default, `GEMINI_API_K
 | `GET /sessions/{id}` | | `{"session_id","status":"waiting\|ready\|expired","room_id":null\|str}` |
 | `POST /sessions/by-code` | `{"code"}` | `{"session_id"}` |
 | `POST /rooms/rect` | `{"width","length","height?","listener?","facing?","budget?","session_id?"}` | Room JSON (section 1) |
-| `POST /rooms` | Room JSON or `{"captured_room": {...}, "session_id?","budget?"}` (RoomPlan export) | Room JSON |
+| `POST /rooms` | Room JSON or `{"captured_room": {DTO}, "session_id?","budget?","listener?"}` (iOS export; optional `listener` = `{position,facing}` overrides sofa detection) | Room JSON |
 | `POST /rooms/demo` | `{"session_id?"}` | Room JSON from `fixtures/room_demo.json` through the same store path |
 | `GET /rooms/{id}` | | Room JSON |
 | `PATCH /rooms/{id}/listener` | `{"position","facing"}` | Room JSON |
+| `GET /rooms/{id}/photo-targets` | | `[{"surface_id","kind","label"}]` (about 6 surfaces to photograph) |
 | `POST /rooms/{id}/photos` | multipart: `surface_id`, `file` | `{"stored": true}` |
 | `POST /rooms/{id}/materials` | `{}` (classifies stored photos) | `{"surfaces":[{"surface_id","material","confidence"}]}`; also updates room absorption |
 | `POST /rooms/{id}/optimize` | `{"options?": {}}` | `{"layout","metrics"}` (saved as the room's current layout) |
