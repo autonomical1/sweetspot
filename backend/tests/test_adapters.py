@@ -29,3 +29,12 @@ def test_invalid_engine_results_fall_back(room_rect, monkeypatch):
     assert "engine fallback: invalid result" in optimized["metrics"]["warnings"]
     scored = engine.run_score(room, optimized["layout"])
     assert "engine fallback: invalid result" in scored["metrics"]["warnings"]
+
+
+def test_products_stub_total_never_exceeds_budget():
+    from backend.app.stubs import products_stub
+    layout = {"speakers": [{"role": r} for r in ("L", "R", "C", "LFE", "Ls", "Rs")], "screen": None}
+    for budget in (0.034, 0.5, 1.0, 17.77, 1500.0):
+        result = products_stub.get_products(layout, budget)
+        assert result["total"] <= budget
+        assert all(item["price"] >= 0 for item in result["items"])

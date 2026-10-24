@@ -110,3 +110,10 @@ def test_scan_import_error_is_not_hidden(data_dir, monkeypatch):
     monkeypatch.setattr(rooms.importlib, "import_module", lambda name: (_ for _ in ()).throw(ImportError("missing dependency")))
     with pytest.raises(ImportError, match="missing dependency"):
         client.post("/rooms", json={"captured_room": {"format": "sweetspot.roomplan.v1"}})
+
+
+def test_short_room_default_listener_is_accepted(data_dir):
+    client = TestClient(create_app())
+    response = client.post("/rooms/rect", json={"width": 10, "length": 10, "height": 3.2})
+    assert response.status_code == 200
+    assert response.json()["listener"]["position"][1] == 3.2

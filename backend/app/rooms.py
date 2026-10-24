@@ -95,7 +95,7 @@ def build_rect(request: RectRequest) -> Room:
     }
     surfaces = [Surface(id=key, kind="wall" if key.startswith("wall") else key,
                         polygon=polygon, absorption=ABSORPTION.copy()) for key, polygon in polygons.items()]
-    position = request.listener if request.listener is not None else [w / 2, 3.6, 0.7 * length]
+    position = request.listener if request.listener is not None else [w / 2, min(3.6, h), 0.7 * length]
     facing = request.facing if request.facing is not None else [0, -1]
     dimensions = Dimensions(width=w, length=length, height=h)
     position, facing = validate_listener(position, facing, dimensions)
