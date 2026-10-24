@@ -1,4 +1,4 @@
-import { formatFtIn, parseFtIn, clamp, polygonToWallSegment } from './format.js';
+import { formatFtIn, parseFtIn, clamp, polygonToWallSegment, objectSvgRotation } from './format.js';
 
 const $ = id => document.getElementById(id);
 const svg = $('canvas');
@@ -109,7 +109,7 @@ function drawSurfaces() {
 function drawObjects() {
   for (const object of room.objects || []) {
     const [x, , z] = object.center, [width, , depth] = object.size;
-    const group = node('g', { transform: `translate(${x} ${z}) rotate(${(object.rotation_y || 0) * 180 / Math.PI})` });
+    const group = node('g', { transform: `translate(${x} ${z}) rotate(${objectSvgRotation(object.rotation_y || 0)})` });
     node('rect', { x: -width / 2, y: -depth / 2, width, height: depth, rx: .08, class: 'object' }, group);
     node('text', { x: 0, y: .06, class: 'object-label' }, group, object.category);
     group.addEventListener('pointermove', event => tooltip(event, object.category, object.center));
@@ -126,7 +126,14 @@ function drawPatches() {
     const dx = (x2 - x1) / length, dz = (z2 - z1) / length;
     const [x, , z] = patch.center;
     const half = (patch.size?.[0] || 1) / 2;
-    const mark = node('line', { x1: x - dx * half, y1: z - dz * half, x2: x + dx * half, y2: z + dz * half, class: 'patch', 'stroke-width': .25 });
+    const depth = .3, nx = -dz * depth / 2, nz = dx * depth / 2;
+    const corners = [
+      [x - dx * half + nx, z - dz * half + nz],
+      [x + dx * half + nx, z + dz * half + nz],
+      [x + dx * half - nx, z + dz * half - nz],
+      [x - dx * half - nx, z - dz * half - nz],
+    ];
+    const mark = node('polygon', { points: corners.map(([px, pz]) => `${px},${pz}`).join(' '), class: 'patch' });
     mark.addEventListener('pointermove', event => tooltip(event, 'Treatment', patch.center));
     mark.addEventListener('pointerleave', hideTooltip);
   }
@@ -179,7 +186,7 @@ function render() {
   if (!room) { renderInfo(); return; }
   bounds = computeBounds();
   const width = Math.max(.1, bounds.maxX - bounds.minX), length = Math.max(.1, bounds.maxZ - bounds.minZ);
-  svg.setAttribute('viewBox', `${bounds.minX - .7} ${bounds.minZ - .7} ${width + 1.4} ${length + 1.4}`);
+  svg.setAttribute('viewBox', `${bounds.minX - .5} ${bounds.minZ - .5} ${width + 1} ${length + 1}`);
   $('room-size').textContent = `${formatFtIn(width)} × ${formatFtIn(length)} × ${formatFtIn(room.dimensions.height)}`;
   const defs = node('defs');
   const marker = node('marker', { id: 'arrow', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' }, defs);
@@ -189,7 +196,7 @@ function render() {
 function renderInfo() {
   $('score').textContent = Number.isFinite(metrics?.score) ? String(Math.round(metrics.score * 100)) : '—';
   const warnings = $('warnings'); warnings.replaceChildren();
-  for (const warning of metrics?.warnings || []) {
+  for (const warning of [...(room?.warnings || []), ...(metrics?.warnings || [])]) {
     const item = document.createElement('div'); item.className = 'warning'; item.textContent = warning;
     warnings.appendChild(item);
   }
@@ -322,15 +329,30 @@ $('open-form').addEventListener('submit', event => {
   }, $('open-form').querySelector('button'));
 });
 async function optimize(button) {
-  await action(async () => setLayout(await api(`/rooms/${encodeURIComponent(room.room_id)}/optimize`, json({}))), button);
+  await action(async () => {
+    if (!room) return;
+    const roomId = room.room_id, version = generation;
+    try {
+      const result = await api(`/rooms/${encodeURIComponent(roomId)}/optimize`, json({}));
+      if (version === generation && room?.room_id === roomId) setLayout(result);
+    } catch (error) {
+      if (version === generation && room?.room_id === roomId) throw error;
+    }
+  }, button);
 }
 $('btn-optimize').addEventListener('click', () => optimize($('btn-optimize')));
 $('btn-reset').addEventListener('click', () => optimize($('btn-reset')));
 $('btn-products').addEventListener('click', () => action(async () => {
   const budget = Number($('budget').value);
   if (!Number.isFinite(budget) || budget <= 0) throw new Error('Enter a positive budget.');
-  products = await api(`/rooms/${encodeURIComponent(room.room_id)}/products?budget=${encodeURIComponent(budget)}`);
-  renderInfo();
+  if (!room || !layout) return;
+  const roomId = room.room_id, version = generation;
+  try {
+    const result = await api(`/rooms/${encodeURIComponent(roomId)}/products?budget=${encodeURIComponent(budget)}`);
+    if (version === generation && room?.room_id === roomId) { products = result; renderInfo(); }
+  } catch (error) {
+    if (version === generation && room?.room_id === roomId) throw error;
+  }
 }, $('btn-products')));
 
 // Opening the dev page immediately shows the same demo room used by the button.

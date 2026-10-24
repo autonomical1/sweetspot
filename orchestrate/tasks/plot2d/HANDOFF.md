@@ -1,5 +1,18 @@
 # Plot2d handoff
 
+## Retry 1 changes
+
+- Bound optimize and products responses and errors to the room and layout generation at request start. Changing rooms discards stale results; changing layouts also discards stale products. The products panel clears when the room changes.
+- Rendered treatment patches as translucent filled polygons along their walls, set the SVG room padding to exactly 0.5 ft per side, and displayed room warnings alongside metrics warnings.
+- Applied object `rotation_y` as degrees with the SVG sign reversed for the x-right, z-down view. Added a pure helper and Node assertions for positive and negative angles.
+
+## Retry 1 verification
+
+- `python -m pytest backend -q --basetemp .plot2d-run/pytest` passed: 145 passed, 7 skipped, 8 deselected, 1 xfailed. The first attempt used `.test-tmp/run`, which another test removed during the suite, causing setup errors; the separate path resolved that.
+- `plot.js` passed the Node module syntax check, and `git diff --check` found no whitespace errors.
+- I could not verify the visual render, mouse or touch drag, keyboard interaction, or request races in a browser. The prior attempt found no browser surface available; this retry used code inspection and automated tests only.
+- The untracked `.plot2d-run/` test output remains. A cleanup command was rejected by the environment policy; the orchestrator should remove it before committing.
+
 ## Done
 
 - Added the static top-down SVG page at `/app/plot2d/` with demo, rectangle, open-by-id, optimize/reset, score, and product controls.
@@ -21,6 +34,7 @@
 
 ## Design questions
 
+- Treatment patch plan-view depth: used a 0.3 ft rectangle centered on the wall; alternatives include a thinner strip or a surface-specific depth.
 - Colors: used dark teal with mint speakers, amber listener/warnings, and magenta screen; alternatives include a lighter theme or role-specific speaker colors.
 - Drag feel: used direct pointer tracking with immediate clamping to the room bounds; alternatives include an offset-preserving grab or snapping to the 1 ft grid.
 - Tooltip wording: used element name plus x, z, and height in feet and inches; alternatives include shorter x/z-only text or named coordinate axes.

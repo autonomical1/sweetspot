@@ -24,6 +24,11 @@ export function rotatePoint(x, z, angle) {
   return [x * cos - z * sin, x * sin + z * cos];
 }
 
+// SVG's positive rotation is clockwise in the x-right, z-down plot.
+export function objectSvgRotation(rotationYDegrees) {
+  return -rotationYDegrees;
+}
+
 export function polygonToWallSegment(polygon) {
   if (!Array.isArray(polygon) || polygon.length < 2) return null;
   const points = polygon.filter(point => Array.isArray(point) && point.length >= 3);
