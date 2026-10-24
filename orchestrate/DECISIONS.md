@@ -18,3 +18,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 14:31] Gate 2 approved. Models: gpt-6-sol or gpt-5.6-luna by default, gpt-6-astra only for hardest (roomplan converter); no gpt-6.1-sol - user
 - [2026-10-24 14:31] Scaffold (store.py, conftest, pytest.ini, init files) committed after 4 passing tests; photo-targets generic in core-api, scan conversion hook via guarded import of roomplan.convert_dto - orchestrator
 - [2026-10-24 14:35] Gate 3 approved; core-api dispatched with gpt-6-sol medium - user
+- [2026-10-24 14:43] core-api check PASS, review ISSUES (5 findings); proposing one retry with findings appended to brief, awaiting user OK at Gate 4 - orchestrator
