@@ -1,11 +1,13 @@
 """Readable, implementation-independent checks for the shared contracts."""
 import math
+import re
 from typing import Any
 
 from backend.app.schemas import LayoutResult, Room
 
 MATERIALS = {"drywall", "glass", "brick", "carpet", "hardwood", "tile", "curtain", "unknown"}
 ROLES = {"L", "R", "C", "LFE", "Ls", "Rs"}
+PRODUCT_ROLES = ROLES | {"screen", "projector"}
 BANDS = {"125", "250", "500", "1000", "2000", "4000"}
 
 
@@ -86,8 +88,11 @@ def assert_valid_products(obj: Any, budget: float, layout: Any = None) -> None:
     prices = 0.0
     item_roles = set()
     for item in obj["items"]:
+        assert isinstance(item, dict), "product item must be an object"
         for key in ("role", "title", "currency", "link", "source"):
             assert key in item and isinstance(item[key], str), f"product item missing string {key}"
+        assert item["role"] in PRODUCT_ROLES, f"product role {item['role']!r} is not one of {sorted(PRODUCT_ROLES)}"
+        assert re.fullmatch(r"[A-Z]{3}", item["currency"]), "product currency must be a 3-letter uppercase code"
         assert "thumbnail" in item and (item["thumbnail"] is None or isinstance(item["thumbnail"], str)), "thumbnail must be string or null"
         assert isinstance(item.get("price"), (int, float)) and math.isfinite(item["price"]) and item["price"] >= 0, "product price must be non-negative"
         prices += item["price"]

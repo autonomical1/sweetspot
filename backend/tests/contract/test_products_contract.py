@@ -13,7 +13,6 @@ def test_stub_products(products_impl, budget, with_screen):
               "screen": {"wall_id": "wall_n", "center": [6, 4, 0], "width": 6, "height": 3.4} if with_screen else None}
     result = products_impl.get_products(layout, budget)
     assert_valid_products(result, budget, layout)
-    assert ("screen" if with_screen else "projector") in {item["role"] for item in result["items"]}
 
 
 def test_recorded_serpapi_fixture_shape():
