@@ -20,11 +20,11 @@ Hackathon judges watching a live pitch (big screen, a few minutes), and track ju
 4. When `status == "ready"`: fetch `GET /rooms/{room_id}` and go to the viewer, then run optimize automatically.
 5. When `status == "expired"` or `GET` returns 404: stop polling, show "Code expired" and a **New code** button (new `POST /sessions`).
 6. Escape hatch on this screen: "No phone? Use the demo room".
-QR generation must be client-side with a small vendored library (e.g. `qrcode-generator`, pinned version in `web/vendor/`), no external service, no CDN at runtime.
+QR generation is client-side with `qrcode.react` (bundled by Next), no external service, no CDN at runtime.
 
 ### C. Viewer (the main screen)
 Layout (desktop first, works down to 1280 x 720 for projectors):
-- **Top bar:** room name/id, source badge (`demo`, `rectangle`, `scan`), **2D | 3D toggle**, **Optimize** (re-run), **Share** (copies `/app/#room=<id>`), **Start over**.
+- **Top bar:** room name/id, source badge (`demo`, `rectangle`, `scan`), **2D | 3D toggle**, **Optimize** (re-run), **Share** (copies the full `https://.../app/room/?id=<id>` URL), **Start over**.
 - **Center:** the active view (2D plan or 3D).
 - **Right panel (tabs):** *Layout* (score, speakers with ft-in positions, warnings), *Acoustics* (reflections, treatment patches, room modes), *Shop* (budget + products), *Room* (dimensions, surfaces with materials, photo-classified materials).
 - **Status line:** last action, loading spinners, errors (dismissible red banner with the server's `detail`).
@@ -34,7 +34,7 @@ States:
 - **No layout yet** (room loaded, optimize not run or failed): show the room and listener, a primary "Place my speakers" button.
 - **Error**: banner + keep the last good state.
 
-### D. (Optional) Shared room `/app/#room=<id>`
+### D. Shared room `/app/room/?id=<id>`
 Same as the viewer, loaded from the hash: `GET /rooms/{id}` then `GET /rooms/{id}/layout` (404 = no layout yet -> state "No layout yet").
 
 ## Core interactions

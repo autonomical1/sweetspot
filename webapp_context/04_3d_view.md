@@ -1,8 +1,10 @@
 # 04: 3D view (three.js)
 
 ## Library
-- three.js, **pinned and vendored** into `web/vendor/three/` (no CDN at runtime: venue Wi-Fi and the demo must not depend on a third party). Use a release you know, e.g. `three@0.170.0`: copy `build/three.module.min.js` and `examples/jsm/controls/OrbitControls.js` (fix its import to the local module path, or use an import map in `index.html`).
-- Plain ES modules; no bundler needed.
+- `three` + `@react-three/fiber` (React renderer for three.js) + `@react-three/drei` (`OrbitControls`, `Html` labels, `Line`, `Grid`), installed from npm with pinned versions and bundled by Next (no CDN at runtime).
+- `Scene3D.tsx` is a client component; import it with `next/dynamic` and `{ ssr: false }` so the static export never touches WebGL at build time.
+- Use `<Canvas frameloop="demand">` and call `invalidate()` on store changes, so the scene renders only when something changes (auto-orbit switches to `"always"`).
+- Everything below is written in three.js terms; with R3F each item is a component (`<mesh>`, `<lineSegments>`, drei `<Line>`), and pointer events (`onPointerDown/Move/Up`) replace the manual `Raycaster`.
 
 ## Scene mapping
 - Units: **1 three.js unit = 1 foot**. Axes are identical to the room frame (x east, y up, z south). No axis flips.
@@ -31,5 +33,5 @@
 ## Performance and robustness
 - One `WebGLRenderer` (antialias), pixel ratio capped at 2, render on demand (only when state or camera changes; while auto-orbiting, every frame).
 - Dispose geometries/materials when the room changes.
-- If WebGL is unavailable, hide the 3D toggle and show a note; the 2D view must remain fully functional.
+- If WebGL is unavailable (check once with a throwaway canvas), hide the 3D toggle and show a note; the 2D view must remain fully functional.
 - Resize with a `ResizeObserver` on the canvas container.

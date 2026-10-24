@@ -233,3 +233,8 @@ data/
 output/
 .conda-env/
 .mplconfig/
+
+# Next.js web app
+webapp/node_modules/
+webapp/.next/
+webapp/out/
