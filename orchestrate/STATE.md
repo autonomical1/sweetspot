@@ -7,13 +7,13 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 1
-- last_checkpoint: 2026-10-24 15:55
+- last_checkpoint: 2026-10-24 16:05
 
 ## Next action
-GATE 3: user approves the core-api brief (orchestrate/tasks/core-api/BRIEF.md), then run: DISPATCH start -Id core-api -Model gpt-6-sol -Effort medium, then DISPATCH review -Id core-api. Briefs for materials and contracts are still to write.
+core-api worker dispatched (gpt-6-sol medium, background). When it exits: read summary line, then DISPATCH review -Id core-api, set task to review in TASKS.md, show GATE 4, write briefs for materials + contracts meanwhile.
 
 ## Waiting on user
-GATE 3: approve the core-api brief and dispatch.
+none
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.
