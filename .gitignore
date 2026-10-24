@@ -226,3 +226,4 @@ coverage/
 .next/
 .cache/
 Thumbs.db
+data/

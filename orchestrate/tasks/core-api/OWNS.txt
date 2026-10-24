@@ -1,0 +1,14 @@
+backend/app/main.py
+backend/app/sessions.py
+backend/app/rooms.py
+backend/app/engine.py
+backend/app/products.py
+backend/app/units.py
+backend/app/stubs/**
+fixtures/room_demo.json
+backend/tests/test_units.py
+backend/tests/test_sessions.py
+backend/tests/test_rooms.py
+backend/tests/test_layout_endpoints.py
+backend/tests/test_adapters.py
+orchestrate/tasks/core-api/HANDOFF.md
