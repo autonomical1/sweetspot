@@ -34,3 +34,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 16:11] No domain yet: deploy on 144-202-27-51.sslip.io with Caddy auto-HTTPS (SITE_ADDRESS env), add .tech later by env change; one uvicorn worker; GET / redirects to /app/plot2d/ for now - orchestrator, user supplied IP 144.202.27.51
 - [2026-10-24 16:13] plot2d retry 1: check PASS, review ISSUES (1 finding: unguarded initial auto-load optimize); interrupting user per protocol - orchestrator
 - [2026-10-24 16:17] plot2d: orchestrator patched the last review finding (guarded initial demo auto-load), check PASS, merging with override - user approved
+- [2026-10-24 16:20] Gate 3 approved: dispatching roomplan (gpt-6-astra high) and deploy (gpt-5.6-luna medium) in wave 2 - user
