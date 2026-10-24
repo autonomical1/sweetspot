@@ -75,7 +75,7 @@ Calls Google Shopping via SerpApi, front-weighted budget split (center + L/R lar
 ```python
 # backend/app/materials.py
 MATERIALS = ["drywall","glass","brick","carpet","hardwood","tile","curtain","unknown"]
-ABSORPTION: dict[str, dict[str, float]]   # material -> octave band -> alpha (source cited in file)
+ABSORPTION: dict[str, dict[str, float]]   # material -> octave band -> alpha (approximate typical textbook values; no single cited source)
 def classify_materials(photos: list[dict]) -> list[dict]
 # photos: [{"surface_id": str, "image_bytes": bytes, "mime": "image/jpeg"}]
 # returns [{"surface_id": str, "material": str, "confidence": float}]
@@ -97,7 +97,7 @@ Backend implementations behind one interface: Gemini API (default, `GEMINI_API_K
 | `PATCH /rooms/{id}/listener` | `{"position","facing"}` | Room JSON |
 | `GET /rooms/{id}/photo-targets` | | `[{"surface_id","kind","label"}]` (about 6 surfaces to photograph) |
 | `POST /rooms/{id}/photos` | multipart: `surface_id`, `file` | `{"stored": true}` |
-| `POST /rooms/{id}/materials` | `{}` (classifies stored photos) | `{"surfaces":[{"surface_id","material","confidence"}]}`; also updates room absorption |
+| `POST /rooms/{id}/materials` | `{}` (classifies stored photos) | `{"surfaces":[{"surface_id","material","confidence","applied"}]}` (`applied` is false when confidence < 0.5 and the surface kept its previous material); also updates room absorption |
 | `POST /rooms/{id}/optimize` | `{"options?": {}}` | `{"layout","metrics"}` (saved as the room's current layout) |
 | `POST /rooms/{id}/score` | `{"layout"}` | `{"metrics"}` |
 | `GET /rooms/{id}/layout` | | latest `{"layout","metrics"}` or 404 |
