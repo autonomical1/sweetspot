@@ -1,6 +1,24 @@
 # Sweet Spot deployment
 
-These commands target a fresh Ubuntu 24.04 VPS at `144.202.27.51`. Run them as a user with `sudo` access.
+These commands target the Vultr VPS at `144.202.27.51` (Ubuntu 24.04 or newer; **the live server runs Ubuntu 26.04 `resolute`**, which Docker's official repository supports). Run them as a user with `sudo` access; on the live server they were run as `root`, which also works (drop `sudo`).
+
+## Current deployment (2026-10-25)
+
+- URL: **https://144-202-27-51.sslip.io** (root `/` redirects to `/app/plot2d/` until the web app exists at `/app/`). Let's Encrypt certificate issued by Caddy, valid to 2027-01-22, renewed automatically.
+- Checkout: `/srv/sweetspot` (owned by root), stack: `deploy/docker-compose.yml` (`deploy-api-1`, `deploy-caddy-1`), Docker 29.9, Compose v5.6.
+- `.env`: `/srv/sweetspot/.env` (mode 600) with `DOMAIN`, `SITE_ADDRESS` and `DATA_DIR=/data` set; **API keys still empty** (Gemini falls back to `unknown`, products use the stub). See "Adding API keys".
+- `deploy/smoke.sh https://144-202-27-51.sslip.io`: all checks PASS; `optimize` runs the real `speakerplacer` engine (about 8 s).
+
+## Adding API keys
+
+On the server (keys never go into the repo or chat):
+
+```bash
+cd /srv/sweetspot
+nano .env        # set GEMINI_API_KEY=... and SERPAPI_KEY=...
+docker compose -f deploy/docker-compose.yml up -d   # recreates the containers with the new env
+bash deploy/smoke.sh https://144-202-27-51.sslip.io
+```
 
 ## One-time setup
 
@@ -20,7 +38,7 @@ sudo usermod -aG docker "$USER"
 
 Log out and back in now so your new `docker` group membership takes effect. Run the remaining commands as the same user.
 
-Allow SSH and web traffic, and add a 2 GB swap file:
+Allow SSH and web traffic, and add a 2 GB swap file **only if `swapon --show` prints nothing** (the live server already has an 8 GB `/swapfile`, so this step was skipped there):
 
 ```bash
 sudo ufw allow 22/tcp

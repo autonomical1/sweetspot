@@ -33,7 +33,7 @@ create_demo() { curl -fsS --max-time 15 -X POST "$BASE_URL/rooms/demo" -H 'conte
 run_check 'POST /rooms/demo' create_demo
 ROOM_ID="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["room_id"])' "$TMP_DIR/room")"
 optimize() {
-    curl -fsS --max-time 15 -X POST "$BASE_URL/rooms/$ROOM_ID/optimize" -H 'content-type: application/json' -d '{}' -o "$TMP_DIR/layout"
+    curl -fsS --max-time 60 -X POST "$BASE_URL/rooms/$ROOM_ID/optimize" -H 'content-type: application/json' -d '{}' -o "$TMP_DIR/layout"
     python3 - "$TMP_DIR/layout" <<'PY'
 import json, sys
 speakers = json.load(open(sys.argv[1], encoding="utf-8"))["layout"]["speakers"]
