@@ -48,3 +48,6 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 18:08] Web app stack changed to React + Vite (base /app/, dist built into web/ at deploy, query-string routing /app/?room=...&view=3d, R3F lazy-loaded, zustand, qrcode.react); Next.js dropped as its server features go unused - user
 - [2026-10-24 18:25] Handoff: STATE.md rewritten in full with real clock (earlier checkpoint labels were mislabeled ahead by hours); integrate worktree removed - orchestrator
 - [2026-10-24 18:26] Planned lint task: ruff (py312, line 120, E F W I B UP, teammate engine excluded), merges to be lint-gated; STATE.md fully rewritten with real clock - user
+- [2026-10-24 18:55] Wave 3 order (a): orchestrator commits ruff.toml + ruff==0.17.2 pin first, lint and integrate run in parallel, merge lint then integrate, then lint-gate the test command - user
+- [2026-10-24 18:55] Wave 3 runs on the second Codex account (CODEX_HOME=~/.codex-second, the codex2 profile) because account 1 is at 21% - user
+- [2026-10-24 18:55] ruff.toml allows FastAPI File/Form/Query/Body/Depends defaults (B008) and excludes .*-run sandbox dirs - orchestrator
