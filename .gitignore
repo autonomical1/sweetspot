@@ -218,3 +218,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+orchestrate/logs/
+node_modules/
+.venv/
+*.pyc
+coverage/
+.next/
+.cache/
+Thumbs.db

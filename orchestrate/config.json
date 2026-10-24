@@ -1,0 +1,8 @@
+{
+    "setup":  "",
+    "base":  "master",
+    "setupTimeoutSec":  900,
+    "cmdTimeoutSec":  600,
+    "test":  "",
+    "timeoutSec":  900
+}
