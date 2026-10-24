@@ -3,7 +3,10 @@
     request_body {
         max_size 25MB
     }
-    @root path /
+    @root {
+        method GET
+        path /
+    }
     redir @root /app/plot2d/ 302
     reverse_proxy api:8000
 }

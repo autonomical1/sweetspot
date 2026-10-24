@@ -8,7 +8,7 @@ Install Docker Engine and the Compose plugin from Docker's official repository:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y ca-certificates curl gnupg ufw
+sudo apt-get install -y ca-certificates curl gnupg ufw git openssl python3
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
@@ -51,8 +51,7 @@ docker compose -f deploy/docker-compose.yml up -d --build
 
 ```bash
 cd /srv/sweetspot
-git pull
-docker compose -f deploy/docker-compose.yml up -d --build
+git pull && docker compose -f deploy/docker-compose.yml up -d --build
 ```
 
 To roll back to the known-good tag:
@@ -87,7 +86,7 @@ Room and photo data is stored in the named Docker volume `sweetspot_data` mounte
 
 ## Smoke test
 
-From a machine with Bash, curl, and Python 3:
+From a machine with Bash, curl, Python 3 and OpenSSL (all present on the server after step 1):
 
 ```bash
 cd /srv/sweetspot
