@@ -7,13 +7,14 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 1
-- last_checkpoint: 2026-10-24 17:05
+- last_checkpoint: 2026-10-24 17:20
 
 ## Next action
-core-api failed review twice (retry 1: check PASS, review ISSUES with 2 minor new findings: default listener height vs rooms shorter than 3.6 ft in rooms.py:98; products_stub cent rounding can exceed tiny budgets). Per protocol: ask user how to proceed (patch directly + merge -Id override, or retry 2). Meanwhile write materials + contracts briefs.
+core-api MERGED to master (e55744c, tag demo-ok). Next: write BRIEF.md + OWNS.txt for materials and contracts (wave 1), GATE 3 for them, then DISPATCH start each (or run-wave). Then wave 2: roomplan (gpt-6-astra high) and deploy (luna). Remove stale worktree later: git worktree remove --force C:SERS
+EELMDESKTOPSWEETSPOT-WTRE-API.
 
 ## Waiting on user
-GATE 4 (second ISSUES): fix the 2 minor findings myself and merge with explicit override, or run retry 2?
+none
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.
