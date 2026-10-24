@@ -10,7 +10,7 @@ The desktop half of Sweetspot. A user opens the site on a laptop, pairs their ph
 - **Engine**: `POST /rooms/{id}/optimize` runs the teammate's `speakerplacer` acoustic optimizer through an adapter. It takes **about 8 seconds**. `POST /rooms/{id}/score` takes **about 16 ms** and is what drag-to-rescore uses.
 - **2D plot page** at `/app/plot2d/` (`web/plot2d/`): a working SVG plan view with drag, live score, products, ft-in formatting and stale-response guards. It is the starting point for the 2D view; reuse `format.js` and the drawing code.
 - **Hosting**: the backend serves the `web/` folder at `/app/` from the same origin as the API, so `fetch("/rooms/...")` needs no CORS and no host name. Deployed behind Caddy with HTTPS at https://144-202-27-51.sslip.io (`DEPLOY.md`).
-- **Stack decision (team): React + Next.js as a static export** (`output: 'export'`, `basePath: '/app'`), source in `webapp/`, built into `web/` at deploy time. No Next server features. Details in `05_2d_view_and_toggle.md`.
+- **Stack decision (team): React + Vite** single-page app (`base: '/app/'`), source in `webapp/`, built into `web/` at deploy time. Details in `05_2d_view_and_toggle.md`.
 
 ## You own / you do not
 | You (web) | Not you |
@@ -22,11 +22,11 @@ The desktop half of Sweetspot. A user opens the site on a laptop, pairs their ph
 | Loading/error states, demo mode | Deployment (backend person) |
 
 ## Build order (deadline 2026-10-25 11:30; feature freeze 09:30)
-1. **P0** Next.js app in `webapp/` (static export, basePath `/app`), zustand store, typed API client, demo-room path, 2D view ported from `web/plot2d/` (`05_2d_view_and_toggle.md`).
+1. **P0** React + Vite app in `webapp/` (`base: '/app/'`), zustand store, typed API client, demo-room path, 2D view ported from `web/plot2d/` (`05_2d_view_and_toggle.md`).
 2. **P0** Pairing page with QR + code + polling (`01_product_and_flows.md`).
 3. **P1** 3D view with three.js and the 2D/3D toggle (`04_3d_view.md`).
 4. **P1** Inspect panel: score, reflections, treatment patches, room modes, warnings; shopping list (`06_panels_products_materials.md`).
-5. **P2** Listener nudge, shareable `/app/room/?id=<id>` links, polish.
+5. **P2** Listener nudge, shareable `/app/?room=<id>` links, polish.
 Cut from the bottom if time runs out; the 2D view plus demo room is already a demo.
 
 ## Files
@@ -34,7 +34,7 @@ Cut from the bottom if time runs out; the 2D view plus demo room is already a de
 - `02_api_reference.md`: every endpoint the web app calls, with real responses, timings, error handling, polling and throttling rules.
 - `03_data_and_coordinates.md`: room/layout/metrics shapes, units (feet, ft-in display), the room frame, rotation conventions, how to draw each surface/object.
 - `04_3d_view.md`: 3D with @react-three/fiber (three.js), mapping, picking and dragging, camera, performance.
-- `05_2d_view_and_toggle.md`: Next.js static-export architecture, config, store, reusing plot2d, the toggle, local dev and deployment.
+- `05_2d_view_and_toggle.md`: React + Vite architecture, config, routing, store, reusing plot2d, the toggle, local dev and deployment.
 - `06_panels_products_materials.md`: inspect panel, shopping list, materials, warnings, copy.
 - `07_testing_and_acceptance.md`: tests, acceptance criteria, demo checklist.
 - `sample_payloads/`: **real** responses captured from the current backend (demo room through the real engine, a scanned room, products from the stub, errors).
@@ -45,4 +45,4 @@ Cut from the bottom if time runs out; the 2D view plus demo room is already a de
 - **`rotation_y` is in degrees**, right-handed about +y (+90 maps +x to -z). In three.js use `rotation.y = rotation_y * PI/180`; in an SVG plan with z pointing down use `rotate(-rotation_y)`.
 - **REST only**: `fetch` with GET/POST/PATCH. No WebSocket. Poll only where stated.
 - **Same origin**, relative URLs, no API host constant.
-- **React + Next.js static export**: client components only, data fetched in the browser, room id in the query string (`/app/room/?id=...`), no dynamic route segments, nothing from a CDN at runtime.
+- **React + Vite**: one page at `/app/`, state in the query string (`/app/?room=...&view=3d`), data fetched in the browser, nothing from a CDN at runtime.

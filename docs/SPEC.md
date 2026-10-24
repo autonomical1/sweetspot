@@ -27,7 +27,7 @@ Hackathon judges (Best Overall, Best Pitch) and track judges (SerpApi, Gemini, V
 - Rate limiting, auth beyond unguessable ids.
 
 ## Web app
-Specified in `webapp_context/` (screens, API usage with real sample payloads, 2D/3D views with a lossless toggle, panels, tests). Built by the web teammate as React + Next.js (static export, basePath `/app`) in `webapp/`, compiled into `web/` at deploy time and served by the backend at `/app/`.
+Specified in `webapp_context/` (screens, API usage with real sample payloads, 2D/3D views with a lossless toggle, panels, tests). Built by the web teammate as React + Vite (`base: '/app/'`) in `webapp/`, compiled into `web/` at deploy time and served by the backend at `/app/`.
 
 ## Non-goals
 ESP32/mic validation, Best Hardware Hack, USDZ-based web scene, universal links, accounts/login, database.

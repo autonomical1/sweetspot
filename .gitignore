@@ -234,7 +234,6 @@ output/
 .conda-env/
 .mplconfig/
 
-# Next.js web app
+# web app (React + Vite)
 webapp/node_modules/
-webapp/.next/
-webapp/out/
+webapp/dist/

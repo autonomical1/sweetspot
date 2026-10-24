@@ -1,8 +1,8 @@
 # 04: 3D view (three.js)
 
 ## Library
-- `three` + `@react-three/fiber` (React renderer for three.js) + `@react-three/drei` (`OrbitControls`, `Html` labels, `Line`, `Grid`), installed from npm with pinned versions and bundled by Next (no CDN at runtime).
-- `Scene3D.tsx` is a client component; import it with `next/dynamic` and `{ ssr: false }` so the static export never touches WebGL at build time.
+- `three` + `@react-three/fiber` (React renderer for three.js) + `@react-three/drei` (`OrbitControls`, `Html` labels, `Line`, `Grid`), installed from npm with pinned versions and bundled by Vite (no CDN at runtime).
+- Lazy-load `Scene3D.tsx` with `React.lazy` so the 2D view starts fast and three.js loads only when 3D is shown.
 - Use `<Canvas frameloop="demand">` and call `invalidate()` on store changes, so the scene renders only when something changes (auto-orbit switches to `"always"`).
 - Everything below is written in three.js terms; with R3F each item is a component (`<mesh>`, `<lineSegments>`, drei `<Line>`), and pointer events (`onPointerDown/Move/Up`) replace the manual `Raycaster`.
 
