@@ -3,6 +3,6 @@
     "base": "master",
     "setupTimeoutSec": 900,
     "cmdTimeoutSec": 600,
-    "test": "python -m pytest backend -q",
+    "test": "python -m pytest -q",
     "timeoutSec": 900
 }

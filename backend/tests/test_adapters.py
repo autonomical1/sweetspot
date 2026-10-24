@@ -10,7 +10,7 @@ def test_runtime_fallback(room_rect, monkeypatch):
         raise RuntimeError("offline")
     monkeypatch.setenv("ENGINE_BACKEND", "auto")
     monkeypatch.setenv("PRODUCTS_BACKEND", "auto")
-    monkeypatch.setitem(sys.modules, "speakerplacer", SimpleNamespace(optimize=fail, score=fail))
+    monkeypatch.setitem(sys.modules, "backend.app.engine_speakerplacer", SimpleNamespace(optimize=fail, score=fail))
     monkeypatch.setitem(sys.modules, "products", SimpleNamespace(get_products=fail))
     room = Room.model_validate(room_rect)
     result = engine.run_optimize(room)
@@ -22,7 +22,7 @@ def test_runtime_fallback(room_rect, monkeypatch):
 
 def test_invalid_engine_results_fall_back(room_rect, monkeypatch):
     monkeypatch.setenv("ENGINE_BACKEND", "auto")
-    monkeypatch.setitem(sys.modules, "speakerplacer", SimpleNamespace(optimize=lambda *args: {"layout": "bad"},
+    monkeypatch.setitem(sys.modules, "backend.app.engine_speakerplacer", SimpleNamespace(optimize=lambda *args: {"layout": "bad"},
                                                                   score=lambda *args: {"metrics": "bad"}))
     room = Room.model_validate(room_rect)
     optimized = engine.run_optimize(room)

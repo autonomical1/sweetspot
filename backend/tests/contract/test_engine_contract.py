@@ -75,9 +75,9 @@ def test_degenerate_rooms_do_not_raise(engine_impl, rect_request):
     assert_geometry(room, result["layout"])
 
 
-@pytest.mark.skipif("speakerplacer" not in __import__("importlib").util.find_spec("speakerplacer").name if __import__("importlib").util.find_spec("speakerplacer") else True, reason="real engine is not installed")
+@pytest.mark.skipif(__import__("importlib").util.find_spec("backend.app.engine_speakerplacer") is None, reason="speakerplacer adapter (backend/app/engine_speakerplacer.py) is not present")
 def test_real_engine_reflection_case():
-    import speakerplacer
+    from backend.app import engine_speakerplacer as speakerplacer
     room = build_rect(RectRequest(width=18, length=13, height=9, listener=[9, 3.6, 6.5], facing=[0, -1])).model_dump()
     # Image source at x=-3: reflected path is 12 ft, direct path is 6 ft.
     layout = {"speakers": [{"role": "L", "position": [3, 3.6, 6.5], "aim": [9, 3.6, 6.5]}]}

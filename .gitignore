@@ -227,3 +227,9 @@ coverage/
 .cache/
 Thumbs.db
 data/
+
+# speakerplacer (teammate engine)
+.DS_Store
+output/
+.conda-env/
+.mplconfig/

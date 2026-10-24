@@ -1,0 +1,11 @@
+name: speakerplacer
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - matplotlib
+  - pyroomacoustics
+  - pytest
+  - pyyaml

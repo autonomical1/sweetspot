@@ -12,7 +12,7 @@ def _backend():
     if os.getenv("ENGINE_BACKEND", "auto") == "stub":
         return engine_stub
     try:
-        return importlib.import_module("speakerplacer")
+        return importlib.import_module("backend.app.engine_speakerplacer")  # adapter around the teammate package
     except ImportError:
         return engine_stub
 
