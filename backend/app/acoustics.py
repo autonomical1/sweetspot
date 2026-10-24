@@ -96,11 +96,19 @@ def _reflections(room: dict, layout: dict) -> list[dict]:
     return sorted(found, key=lambda item: item["level_db"], reverse=True)
 
 
-def _patches(reflections: list[dict]) -> list[dict]:
+def _patches(room: dict, reflections: list[dict]) -> list[dict]:
+    """Return merged treatment suggestions for reflective vertical surfaces.
+
+    Floor and ceiling reflections remain useful metrics, but are deliberately
+    not treatment-patch candidates for the MVP UI.  Doors and openings are
+    likewise omitted: only walls and windows can receive a patch.
+    """
+    kinds_by_id = {str(surface.get("id")): surface.get("kind") for surface in room.get("surfaces", [])}
     merged: list[dict] = []
     counts: list[int] = []
     for reflection in reflections:
-        if reflection["level_db"] <= -10 or not reflection["surface_id"]:
+        if (reflection["level_db"] <= -10 or not reflection["surface_id"]
+                or kinds_by_id.get(reflection["surface_id"]) not in {"wall", "window"}):
             continue
         center = _vector(reflection["point"])
         for index, patch in enumerate(merged):
@@ -116,14 +124,47 @@ def _patches(reflections: list[dict]) -> list[dict]:
     return merged
 
 
+def _coplanar(surface: dict, candidate: dict) -> bool:
+    """Whether an opening lies in the same plane as a boundary surface."""
+    polygon = surface.get("polygon", [])
+    opening = candidate.get("polygon", [])
+    if len(polygon) < 3 or len(opening) < 3:
+        return False
+    base = _vector(polygon[0])
+    normal = np.cross(_vector(polygon[1]) - base, _vector(polygon[2]) - base)
+    length = float(np.linalg.norm(normal))
+    return length > _EPSILON and all(abs(float(np.dot(_vector(point) - base, normal))) / length < 1e-4
+                                   for point in opening)
+
+
+def _absorption_area(room: dict) -> float:
+    """Sabine absorption area, counting wall openings exactly once."""
+    surfaces = room.get("surfaces", [])
+    openings = [surface for surface in surfaces if surface.get("kind") in {"window", "door", "opening"}]
+    total = 0.0
+    for surface in surfaces:
+        kind = surface.get("kind")
+        if kind not in {"wall", "floor", "ceiling"}:
+            continue
+        area = _polygon_area(surface.get("polygon", []))
+        alpha = float(surface.get("absorption", {}).get("500", 0.08))
+        if kind == "wall":
+            for opening in openings:
+                if _coplanar(surface, opening):
+                    opening_area = _polygon_area(opening.get("polygon", []))
+                    area -= opening_area
+                    total += opening_area * float(opening.get("absorption", {}).get("500", 0.08))
+        total += max(0.0, area) * alpha
+    return total
+
+
 def _sub_modes(room: dict, layout: dict) -> dict:
     dimensions = room["dimensions"]
     dim_values = [float(dimensions[key]) for key in ("width", "length", "height")]
     modes = [float(number * SPEED_OF_SOUND_FT_S / (2.0 * dimension))
              for dimension in dim_values if dimension > 0 for number in (1, 2, 3)]
     volume = math.prod(dim_values)
-    absorption_area = sum(_polygon_area(surface.get("polygon", [])) * float(surface.get("absorption", {}).get("500", 0.08))
-                          for surface in room.get("surfaces", []))
+    absorption_area = _absorption_area(room)
     t60 = 0.161 * volume / max(absorption_area, _EPSILON)
     lfe = next((speaker for speaker in layout.get("speakers", []) if speaker.get("role") == "LFE"), None)
     return {"schroeder_hz": float(2000.0 * math.sqrt(t60 / max(volume, _EPSILON))),
@@ -164,5 +205,5 @@ def evaluate(room: dict, layout: dict) -> dict:
     strong = sum(item["level_db"] > -10.0 and item["delay_ms"] < 15.0 for item in reflections)
     reflection_score = 1.0 - min(1.0, strong / 12.0)
     score = round(0.7 * _angle_score(room, layout) + 0.3 * reflection_score, 4)
-    return {"score": score, "reflections": reflections, "treatment_patches": _patches(reflections),
+    return {"score": score, "reflections": reflections, "treatment_patches": _patches(room, reflections),
             "sub_modes": _sub_modes(room, layout), "warnings": []}

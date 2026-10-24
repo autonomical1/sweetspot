@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from backend.app import engine_speakerplacer
+from backend.app.stubs import engine_stub
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -38,3 +39,15 @@ def test_engine_error_is_a_warning(monkeypatch):
     monkeypatch.setattr(engine_speakerplacer.speakerplacer, "optimize_layout", fail)
     result = engine_speakerplacer.optimize(room)
     assert any("speakerplacer failed: RuntimeError: test failure" == item for item in result["metrics"]["warnings"])
+    assert result["layout"] == engine_stub.optimize(room)["layout"]
+
+
+def test_object_avoidance_slides_along_the_same_wall():
+    room = fixture("room_demo.json")
+    # The sofa occupies x=5.5..12.5 at the back wall.  An LFE placed there
+    # must move along x while retaining its south-wall inset and height.
+    position, warnings = engine_speakerplacer._avoid_objects([9.0, 1.0, 12.9], room, "LFE")
+    assert position[1] == 1.0
+    assert position[2] == 12.9
+    assert not engine_speakerplacer._inside_object(position, room["objects"][0])
+    assert any("LFE slid to avoid object obj_sofa" == warning for warning in warnings)

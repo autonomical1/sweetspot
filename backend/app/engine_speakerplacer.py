@@ -77,29 +77,66 @@ def _inside_room(position: list[float], room: dict) -> list[float]:
 
 
 def _avoid_objects(position: list[float], room: dict, role: str) -> tuple[list[float], list[str]]:
-    """Slide a wall placement in plan view out of furniture footprints."""
+    """Slide a wall placement along its current wall out of furniture."""
     result = _inside_room(position, room)
     warnings: list[str] = []
     dimensions = room["dimensions"]
-    for obj in room.get("objects", []):
-        if not _inside_object(result, obj):
-            continue
-        # Try the closest legal edge in x/z.  This is enough for rectangular
-        # furniture and deliberately remains conservative for rotated boxes.
+    width, length = float(dimensions["width"]), float(dimensions["length"])
+
+    # speakerplacer and the geometric center placement both provide a wall
+    # coordinate (possibly with a small inward inset).  Preserve that exact
+    # coordinate while varying only the along-wall axis.
+    distances = ((result[0], "west"), (width - result[0], "east"),
+                 (result[2], "north"), (length - result[2], "south"))
+    wall = min(distances, key=lambda item: item[0])[1]
+    along_is_z = wall in {"west", "east"}
+    original_along = result[2] if along_is_z else result[0]
+    lower, upper = 0.5, (length if along_is_z else width) - 0.5
+
+    def point_at(along: float) -> list[float]:
+        return [result[0], result[1], along] if along_is_z else [along, result[1], result[2]]
+
+    def footprint_interval(obj: dict) -> tuple[float, float] | None:
+        """The segment of this wall line occupied by the rotated object box."""
         cx, _, cz = (float(item) for item in obj["center"])
         sx, _, sz = (float(item) for item in obj["size"])
         theta = math.radians(float(obj.get("rotation_y", 0.0)))
-        candidates: list[list[float]] = []
-        for local_x, local_z in ((-sx / 2 - 0.02, 0.0), (sx / 2 + 0.02, 0.0),
-                                 (0.0, -sz / 2 - 0.02), (0.0, sz / 2 + 0.02)):
-            # Invert the local convention used by the shared contract tests.
-            x = cx + local_x * math.cos(theta) + local_z * math.sin(theta)
-            z = cz - local_x * math.sin(theta) + local_z * math.cos(theta)
-            candidates.append(_inside_room([x, result[1], z], room))
+        cos_theta, sin_theta = math.cos(theta), math.sin(theta)
+        # local_x/local_z are affine in the coordinate along this wall line.
+        if along_is_z:
+            x_const = result[0]
+            coefficients = ((-sin_theta, (x_const - cx) * cos_theta + cz * sin_theta),
+                            (cos_theta, (x_const - cx) * sin_theta - cz * cos_theta))
+        else:
+            z_const = result[2]
+            coefficients = ((cos_theta, -cx * cos_theta - (z_const - cz) * sin_theta),
+                            (sin_theta, -cx * sin_theta + (z_const - cz) * cos_theta))
+        interval = (-math.inf, math.inf)
+        for index, (coefficient, intercept) in enumerate(coefficients):
+            half_size = (sx, sz)[index] / 2
+            if abs(coefficient) < 1e-10:
+                if abs(intercept) >= half_size:
+                    return None
+                continue
+            values = sorted(((-half_size - intercept) / coefficient, (half_size - intercept) / coefficient))
+            interval = (max(interval[0], values[0]), min(interval[1], values[1]))
+        return interval if interval[0] < interval[1] else None
+
+    for obj in room.get("objects", []):
+        if not _inside_object(result, obj):
+            continue
+        interval = footprint_interval(obj)
+        if interval is None:
+            warnings.append(f"{role} could not avoid object {obj.get('id', 'unknown')} on its wall")
+            continue
+        candidates = [point_at(value) for value in (interval[0] - 0.02, interval[1] + 0.02)
+                      if lower <= value <= upper]
         legal = [candidate for candidate in candidates if not _inside_object(candidate, obj)]
         if legal:
-            result = min(legal, key=lambda item: math.hypot(item[0] - position[0], item[2] - position[2]))
+            result = min(legal, key=lambda item: abs((item[2] if along_is_z else item[0]) - original_along))
             warnings.append(f"{role} slid to avoid object {obj.get('id', 'unknown')}")
+        else:
+            warnings.append(f"{role} could not avoid object {obj.get('id', 'unknown')} on its wall")
     return result, warnings
 
 
@@ -259,10 +296,10 @@ def optimize(room: dict, options: dict | None = None) -> dict:
         room_json = json.dumps(_canonical_room(room), sort_keys=True, separators=(",", ":"), allow_nan=False)
         return copy.deepcopy(_optimise_cached(room_json, absorption))
     except Exception as exc:  # Engine errors must never turn an API request into a 500.
-        # The deterministic stub normally supplies the fallback layout.  Its
-        # coarse clamp can reverse a pair beside a wall, so use an angle-safe
-        # equivalent only for that degenerate case.
-        fallback_layout = _safe_fallback_layout(room)
+        try:
+            fallback_layout = copy.deepcopy(engine_stub.optimize(room)["layout"])
+        except Exception:
+            fallback_layout = _safe_fallback_layout(room)
         metrics = acoustics.evaluate(room, fallback_layout)
         metrics["engine"] = {"name": "speakerplacer", "score_db": None, "placements": []}
         metrics["warnings"].append(f"speakerplacer failed: {type(exc).__name__}: {exc}")
