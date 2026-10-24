@@ -2,7 +2,9 @@
 import importlib
 import os
 
-from .schemas import Room
+from pydantic import ValidationError
+
+from .schemas import LayoutResult, Room
 from .stubs import engine_stub
 
 
@@ -18,10 +20,16 @@ def _backend():
 def _run(method: str, room: Room, *args) -> dict:
     backend = _backend()
     try:
-        return getattr(backend, method)(room.model_dump(mode="json"), *args)
+        result = getattr(backend, method)(room.model_dump(mode="json"), *args)
+        if method == "optimize":
+            LayoutResult.model_validate(result)
+        elif not isinstance(result, dict) or not isinstance(result.get("metrics"), dict):
+            raise ValueError("invalid result")
+        return result
     except Exception as exc:
         result = getattr(engine_stub, method)(room.model_dump(mode="json"), *args)
-        result.setdefault("metrics", {}).setdefault("warnings", []).append(f"engine fallback: {type(exc).__name__}")
+        reason = "invalid result" if isinstance(exc, (ValueError, ValidationError)) else type(exc).__name__
+        result.setdefault("metrics", {}).setdefault("warnings", []).append(f"engine fallback: {reason}")
         return result
 
 

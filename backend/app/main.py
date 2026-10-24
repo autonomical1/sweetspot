@@ -1,4 +1,6 @@
 """FastAPI entry point."""
+import importlib
+import importlib.util
 import os
 from datetime import datetime, timezone
 
@@ -42,11 +44,8 @@ def create_app() -> FastAPI:
         return {"session_id": item["session_id"]}
 
     application.include_router(rooms.router)
-    try:
-        from .materials_router import router as materials_router
-    except ImportError:
-        pass
-    else:
+    if importlib.util.find_spec("backend.app.materials_router") is not None:
+        materials_router = importlib.import_module("backend.app.materials_router").router
         application.include_router(materials_router)
     return application
 

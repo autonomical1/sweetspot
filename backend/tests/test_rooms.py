@@ -1,11 +1,13 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
 
+import pytest
 from fastapi.testclient import TestClient
 
-from backend.app import sessions
+from backend.app import rooms, sessions
 from backend.app.main import create_app
-from backend.app.schemas import Room
+from backend.app.rooms import _wall_area
+from backend.app.schemas import Room, Surface
 
 
 def test_rect_and_demo(data_dir, fixtures_dir):
@@ -33,6 +35,16 @@ def test_rect_and_demo(data_dir, fixtures_dir):
     assert Room.model_validate(demo)
     assert {**demo, "room_id": fixture["room_id"]} == Room.model_validate(fixture).model_dump(mode="json")
     assert client.get(f'/rooms/{demo["room_id"]}').json() == demo
+    sofa = next(obj for obj in demo["objects"] if obj["category"] == "sofa")
+    tv = next(obj for obj in demo["objects"] if obj["category"] == "television")
+    assert sofa["center"][2] + sofa["size"][2] / 2 == demo["dimensions"]["length"]
+    assert abs(demo["listener"]["position"][0] - sofa["center"][0]) <= sofa["size"][0] / 2
+    assert abs(demo["listener"]["position"][2] - sofa["center"][2]) <= sofa["size"][2] / 2
+    assert tv["center"][2] - tv["size"][2] / 2 == 0
+    surfaces = {surface["id"]: surface for surface in demo["surfaces"]}
+    assert all(set(surface["absorption"]) == {"125", "250", "500", "1000", "2000", "4000"} for surface in surfaces.values())
+    assert surfaces["floor"]["absorption"] != surfaces["wall_n"]["absorption"]
+    assert surfaces["window_e"]["absorption"] != surfaces["wall_n"]["absorption"]
 
 
 def test_full_room_and_expiry(data_dir, room_rect, monkeypatch):
@@ -64,3 +76,37 @@ def test_persistence_corruption_and_concurrency(data_dir):
     (data_dir / "rooms" / f"{ids[0]}.json").write_text("broken")
     result = fresh.get(f"/rooms/{ids[0]}")
     assert result.status_code == 500 and "detail" in result.json()
+
+
+def test_listener_validation(data_dir, room_rect):
+    client = TestClient(create_app())
+    base = {"width": 12, "length": 15}
+    for field, value in (("listener", [1, 2]), ("listener", []), ("facing", [0, 0]), ("facing", [])):
+        assert client.post("/rooms/rect", json={**base, field: value}).status_code == 422
+    assert client.post("/rooms/rect", content=json.dumps({**base, "listener": [float("nan"), 1, 1]}),
+                       headers={"content-type": "application/json"}).status_code == 422
+    assert client.post("/rooms/rect", json={**base, "listener": [99, 1, 1]}).status_code == 400
+    room = client.post("/rooms/rect", json={**base, "facing": [3, 4]}).json()
+    assert room["listener"]["facing"] == [0.6, 0.8]
+    patch = f'/rooms/{room["room_id"]}/listener'
+    assert client.patch(patch, json={"position": [1, 2], "facing": [0, -1]}).status_code == 422
+    assert client.patch(patch, json={"position": [1, 2, 3], "facing": [0, 0]}).status_code == 422
+    assert client.patch(patch, json={"position": [1, 2, 3], "facing": [3, 4]}).json()["listener"]["facing"] == [0.6, 0.8]
+    assert client.post("/rooms", json={**room_rect, "listener": {"position": [1, 2], "facing": [0, -1]}}).status_code == 422
+    full = client.post("/rooms", json={**room_rect, "listener": {"position": [1, 2, 3], "facing": [3, 4]}})
+    assert full.json()["listener"]["facing"] == [0.6, 0.8]
+
+
+def test_wall_area_uses_whole_polygon():
+    trapezoid = Surface(id="trapezoid", kind="wall", polygon=[[0, 0, 0], [4, 0, 0], [1, 2, 0], [0, 2, 0]])
+    rectangle = Surface(id="rectangle", kind="wall", polygon=[[0, 0, 0], [4, 0, 0], [4, 2, 0], [0, 2, 0]])
+    assert _wall_area(trapezoid) == 5
+    assert _wall_area(rectangle) == 8
+
+
+def test_scan_import_error_is_not_hidden(data_dir, monkeypatch):
+    client = TestClient(create_app())
+    monkeypatch.setattr(rooms.importlib.util, "find_spec", lambda name: object())
+    monkeypatch.setattr(rooms.importlib, "import_module", lambda name: (_ for _ in ()).throw(ImportError("missing dependency")))
+    with pytest.raises(ImportError, match="missing dependency"):
+        client.post("/rooms", json={"captured_room": {"format": "sweetspot.roomplan.v1"}})

@@ -1,5 +1,7 @@
 """Room creation and layout endpoints."""
 import json
+import importlib
+import importlib.util
 import math
 from pathlib import Path
 
@@ -67,6 +69,20 @@ def _save(room: Room) -> Room:
     return room
 
 
+def validate_listener(position: list[float], facing: list[float], dims: Dimensions) -> tuple[list[float], list[float]]:
+    if len(position) != 3 or not all(math.isfinite(value) for value in position):
+        raise HTTPException(422, "invalid listener position")
+    if len(facing) != 2 or not all(math.isfinite(value) for value in facing):
+        raise HTTPException(422, "invalid facing")
+    magnitude = math.hypot(*facing)
+    if magnitude == 0:
+        raise HTTPException(422, "invalid facing")
+    x, y, z = position
+    if not (0 <= x <= dims.width and 0 <= y <= dims.height and 0 <= z <= dims.length):
+        raise HTTPException(400, "listener outside room")
+    return position, [value / magnitude for value in facing]
+
+
 def build_rect(request: RectRequest) -> Room:
     w, length, h = request.width, request.length, request.height
     polygons = {
@@ -79,8 +95,10 @@ def build_rect(request: RectRequest) -> Room:
     }
     surfaces = [Surface(id=key, kind="wall" if key.startswith("wall") else key,
                         polygon=polygon, absorption=ABSORPTION.copy()) for key, polygon in polygons.items()]
-    position = request.listener or [w / 2, 3.6, 0.7 * length]
-    facing = request.facing or [0, -1]
+    position = request.listener if request.listener is not None else [w / 2, 3.6, 0.7 * length]
+    facing = request.facing if request.facing is not None else [0, -1]
+    dimensions = Dimensions(width=w, length=length, height=h)
+    position, facing = validate_listener(position, facing, dimensions)
     return Room(room_id=store.new_id("r"), session_id=request.session_id, dimensions=Dimensions(width=w, length=length, height=h),
                 surfaces=surfaces, listener=Listener(position=position, facing=facing), budget=request.budget)
 
@@ -95,6 +113,7 @@ def create_rect(request: RectRequest) -> Room:
 def create_demo(body: dict | None = None) -> Room:
     session_id = (body or {}).get("session_id")
     _session_check(session_id)
+    # Fixture absorption values are provisional; keep them aligned with materials.ABSORPTION later.
     data = json.loads((FIXTURES / "room_demo.json").read_text(encoding="utf-8"))
     data.update(room_id=store.new_id("r"), session_id=session_id)
     return _save(Room.model_validate(data))
@@ -105,10 +124,9 @@ def create_room(body: dict) -> Room:
     session_id = body.get("session_id")
     _session_check(session_id)
     if body.get("captured_room") is not None and "surfaces" not in body:
-        try:
-            from .roomplan import convert_dto
-        except ImportError:
+        if importlib.util.find_spec("backend.app.roomplan") is None:
             raise HTTPException(501, "scan conversion not available yet") from None
+        convert_dto = importlib.import_module("backend.app.roomplan").convert_dto
         try:
             room = convert_dto(body["captured_room"], room_id=store.new_id("r"), session_id=session_id,
                                budget=body.get("budget"), listener=body.get("listener"))
@@ -119,6 +137,8 @@ def create_room(body: dict) -> Room:
             room = Room.model_validate(body)
         except ValidationError as exc:
             raise HTTPException(422, str(exc)) from None
+        position, facing = validate_listener(room.listener.position, room.listener.facing, room.dimensions)
+        room.listener = Listener(position=position, facing=facing)
     return _save(room)
 
 
@@ -130,13 +150,8 @@ def get_room(room_id: str) -> Room:
 @router.patch("/rooms/{room_id}/listener", response_model=Room)
 def update_listener(room_id: str, body: ListenerRequest) -> Room:
     room = _room(room_id)
-    x, y, z = body.position if len(body.position) == 3 else (math.inf,) * 3
-    d = room.dimensions
-    if not (0 <= x <= d.width and 0 <= y <= d.height and 0 <= z <= d.length):
-        raise HTTPException(400, "listener outside room")
-    if len(body.facing) != 2 or not all(math.isfinite(v) for v in body.facing) or math.hypot(*body.facing) == 0:
-        raise HTTPException(422, "invalid facing")
-    room.listener = Listener(position=body.position, facing=body.facing)
+    position, facing = validate_listener(body.position, body.facing, room.dimensions)
+    room.listener = Listener(position=position, facing=facing)
     store.save_room(room)
     return room
 
@@ -144,8 +159,12 @@ def update_listener(room_id: str, body: ListenerRequest) -> Room:
 def _wall_area(surface: Surface) -> float:
     if len(surface.polygon) < 3:
         return 0
-    p = surface.polygon
-    return math.dist(p[0], p[1]) * math.dist(p[1], p[2])
+    cross_sum = [0.0, 0.0, 0.0]
+    for point, next_point in zip(surface.polygon, surface.polygon[1:] + surface.polygon[:1]):
+        cross_sum[0] += point[1] * next_point[2] - point[2] * next_point[1]
+        cross_sum[1] += point[2] * next_point[0] - point[0] * next_point[2]
+        cross_sum[2] += point[0] * next_point[1] - point[1] * next_point[0]
+    return math.sqrt(sum(value * value for value in cross_sum)) / 2
 
 
 @router.get("/rooms/{room_id}/photo-targets")

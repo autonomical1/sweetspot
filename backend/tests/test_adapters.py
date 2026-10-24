@@ -18,3 +18,14 @@ def test_runtime_fallback(room_rect, monkeypatch):
     assert "fallback" in " ".join(engine.run_score(room, result["layout"])["metrics"]["warnings"])
     output = products.run_products(result["layout"], 1000)
     assert output["total"] <= 1000 and output["warnings"]
+
+
+def test_invalid_engine_results_fall_back(room_rect, monkeypatch):
+    monkeypatch.setenv("ENGINE_BACKEND", "auto")
+    monkeypatch.setitem(sys.modules, "speakerplacer", SimpleNamespace(optimize=lambda *args: {"layout": "bad"},
+                                                                  score=lambda *args: {"metrics": "bad"}))
+    room = Room.model_validate(room_rect)
+    optimized = engine.run_optimize(room)
+    assert "engine fallback: invalid result" in optimized["metrics"]["warnings"]
+    scored = engine.run_score(room, optimized["layout"])
+    assert "engine fallback: invalid result" in scored["metrics"]["warnings"]

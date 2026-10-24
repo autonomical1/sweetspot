@@ -1,7 +1,9 @@
 from time import perf_counter
 
+import pytest
 from fastapi.testclient import TestClient
 
+from backend.app import main
 from backend.app.main import create_app
 
 
@@ -33,3 +35,10 @@ def test_openapi_paths(data_dir):
                  "/rooms/demo", "/rooms/{room_id}", "/rooms/{room_id}/listener", "/rooms/{room_id}/photo-targets",
                  "/rooms/{room_id}/optimize", "/rooms/{room_id}/score", "/rooms/{room_id}/layout", "/rooms/{room_id}/products"):
         assert path in paths
+
+
+def test_materials_import_error_is_not_hidden(monkeypatch):
+    monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: object())
+    monkeypatch.setattr(main.importlib, "import_module", lambda name: (_ for _ in ()).throw(ImportError("missing dependency")))
+    with pytest.raises(ImportError, match="missing dependency"):
+        create_app()
