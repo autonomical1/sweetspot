@@ -1,0 +1,5 @@
+backend/app/materials.py
+backend/app/materials_router.py
+backend/tests/test_materials.py
+backend/tests/test_materials_router.py
+orchestrate/tasks/materials/HANDOFF.md

@@ -1,0 +1,40 @@
+# contracts: contract-test suite, shared validators, DTO validator tool, recorded fixtures
+
+## Goal
+Give every teammate an offline test they can run against their own module before integration: engine (`speakerplacer`), products (`products`), materials, and the iOS scan DTO. Nothing here needs the network.
+
+## Read first
+docs/API.md (all), docs/TESTING.md sections 2, 3.3, 3.4, 3.5, 3.6, 3.7; backend/app/schemas.py; backend/app/stubs/engine_stub.py and products_stub.py (on master; do NOT edit); fixtures/room_rect.json, fixtures/room_demo.json; phoneapp_context/sample_payloads/*.json and phoneapp_context/01_roomplan_capture.md (DTO spec). `backend/app/materials.py` may not exist yet on your branch (a parallel task writes it): its tests must skip cleanly if it is missing.
+
+## Design decisions this brief encodes (do not change)
+- Validators are plain functions in `backend/tests/contract/checks.py` that raise `AssertionError` with a readable message, so teammates can import them into their own tests: `assert_valid_room(obj)`, `assert_valid_layout_result(obj, room=None, full_51=True)`, `assert_valid_metrics(obj, room=None)`, `assert_valid_products(obj, budget, layout=None)`, `assert_valid_classification(items, expected_ids)`.
+- Implementations under test are resolved in `backend/tests/contract/conftest.py`: a parametrized fixture `engine_impl` over `["stub","real"]` (stub = `backend.app.stubs.engine_stub`; real = `importlib.import_module("speakerplacer")`, skipped with a clear reason when not importable). Same pattern for products (`products_impl`; real = `products`, and the real case runs only under `-m live` because it may call SerpApi) and materials (`materials_impl`, mock only, skipped if `backend.app.materials` is missing).
+- Units are feet everywhere. Speed of sound 1125 ft/s. `layout`/`metrics` shapes are docs/API.md section 2.
+- Tolerances: L/R at 25-35 deg from the listener's facing (horizontal plane), C within 5 deg of facing, surrounds 90-135 deg (looser than the prose in TESTING.md because of wall clamping). Positions must lie inside the room box. Speakers must not be inside an object's box (3D).
+- If the **stub** (core-api, already merged and not yours to edit) violates an invariant, mark that test case `xfail(strict=False, reason=...)` for the stub parameter only, keep it live for the real engine, and list each one in HANDOFF.md. Do not weaken the invariant.
+
+## Deliverables
+1. `backend/tests/contract/__init__.py`, `conftest.py`, `checks.py` as above. Validators reuse `schemas.Room` / `schemas.LayoutResult` and add the extra rules:
+   - layout: six unique roles `L,R,C,LFE,Ls,Rs` when `full_51`; every position a finite 3-list; screen (if not null) has positive width/height and a `wall_id` that exists in `room`.
+   - metrics: reflections entries have `speaker`, `surface_id` (exists in room if given), finite `delay_ms >= 0`, `level_db <= 6`, `point` finite 3-list; `warnings` is a list of strings.
+   - products: keys `budget,total,items`; each item `role,title,price(>=0),currency,link,thumbnail,source`; `total <= budget` strictly and `abs(total - sum(prices)) <= 0.01`; every speaker role in `layout` has at least one item when `layout` is given.
+   - classification: one entry per expected id, material in the enum, confidence in [0,1].
+2. `test_checks.py`: each validator passes on golden data (build from `phoneapp_context/sample_payloads/layout.example.json` etc., and from the stubs) and fails with a clear message on at least three deliberately broken variants each.
+3. `test_engine_contract.py` (parametrized over `engine_impl`, with rooms `room_rect.json`, `room_demo.json`, a 4x4 ft room and a 60x8 ft room built with `backend.app.rooms.build_rect` and `RectRequest`):
+   - optimize result validates; six roles once; geometry tolerances above; deterministic (two calls equal); input dict not mutated (deepcopy compare).
+   - `score(room, layout)` returns valid metrics, takes < 100 ms (median of 5), and for the same layout its `metrics["score"]` equals the `optimize` score (abs tol 1e-6).
+   - Degenerate rooms and a listener 0.3 ft from a wall return a layout with no exception.
+   - **Real-engine-only** (skip for the stub) analytic test: 18x13x9 ft room, listener at (9, 3.6, 6.5) facing north, hand-built layout with L at (3, 3.6, 6.5): `score` must report a reflection for speaker `L` off `wall_w` with `delay_ms` within 0.15 of `(12 - 6) / 1125 * 1000 = 5.333` and `level_db <= 0`. Document the derivation (image source at x=-3, reflected path 12 ft, direct path 6 ft) in a comment.
+4. `test_products_contract.py`: validator tests on the stub for budgets `0.034, 1, 17.77, 1500` and layouts with and without a screen; the real implementation only under `-m live` with `SERPAPI_KEY` set. Plus `fixtures/serpapi_shopping_sample.json`: a **hand-authored** Google Shopping-style SerpApi response, marked by a top-level `"_note"` saying it is hand-written to mimic the shape and should be replaced by a real recording. Include `search_metadata`, `search_parameters`, and `shopping_results` with about 8 items each having `position`, `title`, `product_link` (or `link`), `source`, `price` (strings like "$129.99" and "$1,299.00"; one item with no price), `extracted_price` (number; missing on that same item), `thumbnail`, `rating`, `reviews`. Add a test that the fixture parses and has those shapes, so the SerpApi teammate can reuse it.
+5. `test_materials_contract.py` (skipped if `backend.app.materials` is missing): `classify_materials(backend="mock")` passes `assert_valid_classification`; `parse_model_output` fed each file in `fixtures/gemini_responses/` returns a valid classification for the expected ids and never raises. Create `fixtures/gemini_responses/` with `good.json`, `fenced_with_prose.txt`, `wrong_enum.json`, `missing_fields.json`, `empty.json`, `not_json.txt`, `extra_ids.json` (plain text or JSON the way a model might return it, all about the ids `wall_n, wall_s, floor, ceiling`), plus `expected.json` mapping each file to the expected materials per id (for `good.json`) or a "valid-but-degraded" flag for the rest.
+6. `tools/validate_dto.py`: stdlib-only CLI `python tools/validate_dto.py FILE [FILE...]`. Accepts the bare iOS DTO (`format == "sweetspot.roomplan.v1"`) or the request wrapper (`{"captured_room": {...}}`). Expose `validate(data: dict) -> tuple[list[str], list[str]]` (errors, warnings).
+   - **Errors** (exit 1): wrong or missing `format`; missing keys; `surfaces`/`objects` not lists; surface category not in `wall|door|window|opening|floor`; object category not one of the 16 RoomPlan names (`bathtub,bed,chair,dishwasher,fireplace,oven,refrigerator,sink,sofa,stairs,storage,stove,table,television,toilet,washerDryer`); `dimensions` not 3 finite numbers >= 0; `transform` not 16 finite numbers; `transform[15]` not 1 (tol 1e-3); duplicate ids; `is_open` set on a non-door.
+   - **Warnings** (exit 0): rotation part not orthonormal (tol 0.02); any translation component with absolute value > 100 (probably cm or mm instead of meters); fewer than 3 walls; no floor; no sofa; no television; a wall `dimensions[1]` outside 1.5-6.
+   - Output: a short summary (counts per category, bounding box of translations in meters and feet) and each finding on its own line prefixed `ERROR:` or `WARN:`.
+7. `test_validate_dto.py`: the sample payload (`phoneapp_context/sample_payloads/post_rooms_request.example.json`) passes with no errors; each error rule has a mutated failing case; each warning rule has a case; a CLI run via `subprocess` with `sys.executable` on a tmp file returns 0/1 as specified and works from any cwd.
+
+## Done when
+`python -m pytest backend -q` passes on this branch (xfails and skips allowed, each with a reason, all listed in HANDOFF.md); `python tools/validate_dto.py phoneapp_context/sample_payloads/post_rooms_request.example.json` exits 0; no edits outside OWNS.txt.
+
+## Out of scope
+Changing stubs or API contracts, writing the real engine/products/materials, live network calls, the converter (`roomplan.py` is a later task). Put any contract ambiguity you hit under `## Design questions` in HANDOFF.md.

@@ -7,14 +7,14 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 1
-- last_checkpoint: 2026-10-24 17:20
+- last_checkpoint: 2026-10-24 17:55
 
 ## Next action
-core-api MERGED to master (e55744c, tag demo-ok). Next: write BRIEF.md + OWNS.txt for materials and contracts (wave 1), GATE 3 for them, then DISPATCH start each (or run-wave). Then wave 2: roomplan (gpt-6-astra high) and deploy (luna). Remove stale worktree later: git worktree remove --force C:SERS
+core-api merged (e55744c) and pushed. Briefs for materials + contracts written, tasks ready. After GATE 3 OK: DISPATCH run-wave -Review (background, both in parallel). Then wave 2 briefs: roomplan (gpt-6-astra high), deploy (luna); deploy needs Vultr IP and domain from user (not yet created).
 EELMDESKTOPSWEETSPOT-WTRE-API.
 
 ## Waiting on user
-none
+GATE 3: approve materials + contracts briefs (orchestrate/tasks/materials and contracts) and dispatch wave 1.
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.

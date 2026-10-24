@@ -1,0 +1,5 @@
+backend/tests/contract/**
+tools/validate_dto.py
+fixtures/serpapi_shopping_sample.json
+fixtures/gemini_responses/**
+orchestrate/tasks/contracts/HANDOFF.md
