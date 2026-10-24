@@ -6,3 +6,6 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 13:27] Engine is Python but its architecture/deliverables are undecided; orchestrator proposes a pure-function module contract (score/optimize) in docs/API.md for the engine owner to accept - user
 - [2026-10-24 13:27] Storage: JSON files on disk + in-memory session map - simplest, demo room committable - user
 - [2026-10-24 13:27] Pairing: QR + 6-char code, pair before scan, desktop shows QR and phone scans - matches PROJECT_CONTEXT s6 - user
+- [2026-10-24 13:46] Priority layering: rectangular-room baseline (length/width/listener/facing) is MVP; RoomPlan scan is a high-priority layer on top via same contract - user
+- [2026-10-24 13:46] Engine contract: Python package speakerplacer with optimize(room)/score(room,layout) over shared room JSON, rectangular room is the simplest valid input - user approved
+- [2026-10-24 13:46] Gemini access method open: direct API vs backend-hosted gemini CLI on user's personal Pro account; keys: SerpApi in hand, Vultr account exists, domain easy - user
