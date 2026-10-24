@@ -27,3 +27,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 15:16] API.md: documented additive applied flag in /materials response; ABSORPTION described as approximate textbook values with no single citation; merging materials with review override - user approved
 - [2026-10-24 15:21] contracts retry 1: check PASS, review ISSUES (4 findings; is_open null finding judged invalid vs DTO spec); interrupting user per protocol - orchestrator
 - [2026-10-24 15:22] contracts: orchestrator patched 3 valid review findings (product roles/currency validation, non-object item AssertionError, no screen/projector requirement); is_open null finding rejected as contrary to DTO spec; merging with override - user approved
+- [2026-10-24 15:48] plot2d: user asked for a 2D plot page via a worker; static mount of web/ at /app added to main.py by orchestrator (shared file); run uvicorn locally until user says stop - user

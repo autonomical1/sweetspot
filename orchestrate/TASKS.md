@@ -9,6 +9,8 @@
 | deploy | Dockerfile, compose, Caddyfile, deploy notes, smoke.sh (3.9) | gpt-5.6-luna | medium | core-api | 2 | todo | owns deploy/*, DEPLOY.md |
 | integrate | tools/e2e.py, backend/tests/e2e, demo script, failure-drill checklist | gpt-5.6-luna | medium | core-api,materials,roomplan | 3 | todo | owns tools/e2e.py, backend/tests/e2e/**, DEMO.md |
 
+| plot2d | Top-down 2D plot page served at /app/plot2d/ (SVG, drag speakers, live score, products) | gpt-6-sol | medium | | 2 | ready | owns web/plot2d/**, backend/tests/test_plot2d.py; user-requested dev tool + demo fallback |
+
 status: todo | ready | running | review | done | blocked | cut
 
 Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as \| ; ids are lowercase-with-dashes; pass tasks to `review` after a wave; mark unwanted tasks `cut`/`blocked` before `merge -All`.

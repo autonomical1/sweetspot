@@ -7,10 +7,10 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 1
-- last_checkpoint: 2026-10-24 19:50
+- last_checkpoint: 2026-10-24 20:30
 
 ## Next action
-Wave 1 complete: core-api, materials, contracts all MERGED to master (tag demo-ok 926f98d), pushed. NEXT: user must decide scanned-room FRAME handling (recenter+yaw-align with a returned `frame` {yaw_deg, offset} vs keep raw world frame and add room bounds) because core-api code and the engine assume a room box [0,w]x[0,l] from the origin. Then write roomplan brief (gpt-6-astra high) and deploy brief (luna; needs Vultr IP + domain; ONE uvicorn worker; copy fixtures/ into image) and hit GATE 3. Stale worktrees: sweetspot-wt{core-api,materials,contracts}.
+plot2d task (gpt-6-sol medium) dispatched by user request (2D plot page at /app/plot2d/); local uvicorn running on 127.0.0.1:8000 until the user says stop. Wave 1 complete: core-api, materials, contracts all MERGED to master (tag demo-ok 926f98d), pushed. NEXT: user must decide scanned-room FRAME handling (recenter+yaw-align with a returned `frame` {yaw_deg, offset} vs keep raw world frame and add room bounds) because core-api code and the engine assume a room box [0,w]x[0,l] from the origin. Then write roomplan brief (gpt-6-astra high) and deploy brief (luna; needs Vultr IP + domain; ONE uvicorn worker; copy fixtures/ into image) and hit GATE 3. Stale worktrees: sweetspot-wt{core-api,materials,contracts}.
 EELMDESKTOPSWEETSPOT-WTRE-API.
 
 ## Waiting on user

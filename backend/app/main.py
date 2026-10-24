@@ -3,8 +3,10 @@ import importlib
 import importlib.util
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import rooms, sessions
@@ -47,6 +49,9 @@ def create_app() -> FastAPI:
     if importlib.util.find_spec("backend.app.materials_router") is not None:
         materials_router = importlib.import_module("backend.app.materials_router").router
         application.include_router(materials_router)
+    web_dir = Path(__file__).resolve().parents[2] / "web"
+    if web_dir.is_dir():
+        application.mount("/app", StaticFiles(directory=web_dir, html=True), name="web")
     return application
 
 
