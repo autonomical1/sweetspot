@@ -1,0 +1,11 @@
+.git
+.env
+data/
+.localdata/
+memory/
+orchestrate/
+__pycache__/
+.pytest_cache/
+*.pyc
+phoneapp_context/
+docs/
