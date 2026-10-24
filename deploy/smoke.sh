@@ -58,11 +58,13 @@ web_app() { curl -fsS --max-time 15 "$BASE_URL/app/plot2d/" -o "$TMP_DIR/web" &&
 run_check 'GET /app/plot2d/ (HTML)' web_app
 if [[ "$BASE_URL" == https://* ]]; then
     certificate() {
-        if command -v openssl >/dev/null 2>&1; then
-            local host expiry; host="${BASE_URL#https://}"; host="${host%%/*}"
-            expiry="$(printf '' | openssl s_client -servername "$host" -connect "$host:443" 2>/dev/null | openssl x509 -noout -enddate)"
-            [[ "$expiry" == notAfter=* ]]; printf '      %s\n' "$expiry"
-        else curl -fsSI --max-time 15 "$BASE_URL/" >/dev/null; fi
+        command -v openssl >/dev/null 2>&1 || return 1
+        local host expiry; host="${BASE_URL#https://}"; host="${host%%/*}"
+        expiry="$(printf '' | openssl s_client -servername "$host" -connect "$host:443" 2>/dev/null | openssl x509 -noout -enddate)" || return 1
+        [[ "$expiry" == notAfter=* ]] || return 1
+        printf '      %s\n' "$expiry"
     }
     run_check 'TLS certificate expiry' certificate
+else
+    printf 'SKIP TLS certificate expiry (HTTP URL)\n'
 fi

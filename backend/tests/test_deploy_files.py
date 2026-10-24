@@ -1,4 +1,9 @@
 from pathlib import Path
+import re
+import shutil
+import subprocess
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -49,3 +54,21 @@ def test_smoke_script_is_bash_and_covers_required_routes():
     assert "set -euo pipefail" in smoke
     for endpoint in ("/health", "/sessions", "/rooms/demo", "/optimize", "/layout", "/products?budget=1500", "/photo-targets", "/app/plot2d/"):
         assert endpoint in smoke
+    assert re.search(r'\[\[ "\$expiry" == notAfter=\* \]\] \|\| return 1', smoke)
+    assert "command -v openssl >/dev/null 2>&1 || return 1" in smoke
+
+
+def test_smoke_script_has_valid_bash_syntax():
+    bash = shutil.which("bash")
+    if bash is None:
+        pytest.skip("bash is not installed")
+    subprocess.run([bash, "-n", str(ROOT / "deploy/smoke.sh")], check=True)
+
+
+def test_deploy_checkout_and_env_are_owned_by_deploy_user():
+    instructions = read("DEPLOY.md")
+    assert 'sudo install -d -o "$USER" -g "$USER" /srv/sweetspot' in instructions
+    assert "git clone https://github.com/autonomical1/sweetspot.git /srv/sweetspot" in instructions
+    assert "sudo git clone" not in instructions
+    assert "sudo cp /srv/sweetspot/.env.example" not in instructions
+    assert "chmod 600 /srv/sweetspot/.env" in instructions

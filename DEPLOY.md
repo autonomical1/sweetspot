@@ -18,6 +18,8 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plug
 sudo usermod -aG docker "$USER"
 ```
 
+Log out and back in now so your new `docker` group membership takes effect. Run the remaining commands as the same user.
+
 Allow SSH and web traffic, and add a 2 GB swap file:
 
 ```bash
@@ -35,15 +37,15 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 Clone the repository and create the server-only environment file:
 
 ```bash
-sudo git clone <REPOSITORY_URL> /srv/sweetspot
-sudo cp /srv/sweetspot/.env.example /srv/sweetspot/.env
-sudo sed -i 's/^DOMAIN=.*/DOMAIN=144-202-27-51.sslip.io/' /srv/sweetspot/.env
-sudo sed -i 's/^SITE_ADDRESS=.*/SITE_ADDRESS=144-202-27-51.sslip.io/' /srv/sweetspot/.env
+sudo install -d -o "$USER" -g "$USER" /srv/sweetspot
+git clone https://github.com/autonomical1/sweetspot.git /srv/sweetspot
+cp /srv/sweetspot/.env.example /srv/sweetspot/.env
+chmod 600 /srv/sweetspot/.env
+sed -i 's/^DOMAIN=.*/DOMAIN=144-202-27-51.sslip.io/' /srv/sweetspot/.env
+sed -i 's/^SITE_ADDRESS=.*/SITE_ADDRESS=144-202-27-51.sslip.io/' /srv/sweetspot/.env
 cd /srv/sweetspot
-sudo docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml up -d --build
 ```
-
-Log out and back in after adding yourself to the `docker` group, or prefix subsequent Docker commands with `sudo`.
 
 ## Updates and rollback
 
