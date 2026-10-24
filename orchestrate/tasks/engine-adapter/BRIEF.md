@@ -41,3 +41,12 @@ docs/API.md sections 1, 1a, 2, 3; docs/TESTING.md 3.3; `speakerplacer/README.md`
 
 ## Out of scope
 Changing the teammate's package, a center model for it, 3D acoustics, higher-order reflections, performance work on the engine itself. Put unsettled choices (score weights, patch size, LFE height, center inset) under `## Design questions` in HANDOFF.md.
+
+---
+## RETRY 1 (2026-10-25): fix list. Your previous code is on this branch and the whole suite passed (244), but the run timed out before HANDOFF.md was written. Keep what works; change only what is listed; add a regression test for each; write HANDOFF.md FIRST (update it at the end). Run the full suite at most twice (it takes about 70 s); iterate with `-k` on your own test files.
+
+The Codex review (VERDICT: ISSUES) found:
+1. **Engine-failure fallback** (`engine_speakerplacer.py` ~l.265) returns `_safe_fallback_layout(room)`; the brief requires the stub's layout (`backend.app.stubs.engine_stub.optimize(room)["layout"]`) with our metrics and the `"speakerplacer failed: ..."` warning. Keep `_safe_fallback_layout` only if the stub itself raises.
+2. **Object avoidance leaves the wall** (~l.111): a moved speaker must stay on its wall: slide it along the wall line (constant inset from the wall) to the nearest position outside the object's footprint, within the room, keeping >= 0.5 ft from wall ends. If no such position exists on that wall, keep it in place and add a warning instead. Test with the demo room's sofa against the back wall and an LFE forced onto that wall.
+3. **Treatment patches for floor/ceiling** (`acoustics.py` ~l.111): only wall and window reflections produce patches.
+4. **Sabine double counting** (~l.123): when computing A, subtract each window/door/opening area from the wall it lies on (or count only the opening's area there), so A uses each piece of boundary once. Test: adding a window changes A by `area * (alpha_glass - alpha_wall)`, not by `area * alpha_glass`.
