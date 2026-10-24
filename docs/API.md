@@ -69,6 +69,8 @@ That is a right-handed rotation about +y (`simd_quatf(angle: t, axis: [0,1,0])`;
 
 ## 3. Engine module (owner: engine teammate; package `speakerplacer/` at repo root)
 
+**Integration note (2026-10-24):** the teammate package exposes `optimize_layout(polygon_m, listener_m, layout, facing, ...)` (2D, metres, north = +y, roles front/surround/bass, no center model) rather than the functions below. `backend/app/engine_speakerplacer.py` adapts it to this contract (center placed geometrically, one LFE, metrics from `backend/app/acoustics.py`); the backend and the contract tests use that adapter.
+
 ```python
 def optimize(room: dict, options: dict | None = None) -> dict   # returns {"layout":..., "metrics":...}
 def score(room: dict, layout: dict) -> dict                      # returns {"metrics":...}, target < 100 ms

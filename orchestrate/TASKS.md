@@ -9,6 +9,7 @@
 | deploy | Dockerfile, compose, Caddyfile, deploy notes, smoke.sh (3.9) | gpt-6-sol | medium | core-api | 2 | done | owns deploy/*, DEPLOY.md |
 | integrate | tools/e2e.py, backend/tests/e2e, demo script, failure-drill checklist | gpt-5.6-luna | medium | core-api,materials,roomplan | 3 | todo | owns tools/e2e.py, backend/tests/e2e/**, DEMO.md |
 | plot2d | Top-down 2D plot page served at /app/plot2d/ (SVG, drag speakers, live score, products) | gpt-6-sol | medium | | 2 | done | owns web/plot2d/**, backend/tests/test_plot2d.py; user-requested dev tool + demo fallback |
+| engine-adapter | Adapter: teammate speakerplacer -> backend optimize/score contract + acoustics.py (reflections, patches, modes, score) | gpt-5.6-terra | high | | 3 | ready | owns backend/app/{engine_speakerplacer,acoustics}.py + tests; user asked for terra |
 
 status: todo | ready | running | review | done | blocked | cut
 
