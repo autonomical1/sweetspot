@@ -1,0 +1,391 @@
+models:
+  generic_compact_wall:
+    model_id: generic_compact_wall
+    display_name: Generic compact wall speaker (PLACEHOLDER)
+    role_types:
+    - front
+    - surround
+    freq_low_hz: 100
+    freq_high_hz: 20000
+    crossover_hz: 120
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 85
+    sensitivity_basis: 1W_1m
+    rated_power_w: 50
+    amp_power_w: null
+    max_spl_db: 104
+    max_spl_lf_db: null
+    nominal_impedance_ohm: 8
+    coverage_h_deg: 110
+    coverage_v_deg: 90
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: cos_n
+    polar_table: null
+    on_axis_response: null
+    mount_type: on_wall
+    width_m: 0.24
+    height_m: 0.16
+    depth_m: 0.12
+    min_corner_clearance_m: 0.3
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 3
+    f3_hz: 0.0
+    enclosure: sealed
+    highpass_slope_db_oct: 12.0
+    max_toe_in_deg: 45.0
+  generic_bookshelf_onwall:
+    model_id: generic_bookshelf_onwall
+    display_name: Generic bookshelf on-wall (PLACEHOLDER)
+    role_types:
+    - front
+    - surround
+    freq_low_hz: 80
+    freq_high_hz: 20000
+    crossover_hz: 80
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 87
+    sensitivity_basis: 1W_1m
+    rated_power_w: 80
+    amp_power_w: null
+    max_spl_db: 108
+    max_spl_lf_db: null
+    nominal_impedance_ohm: 8
+    coverage_h_deg: 90
+    coverage_v_deg: 60
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: cos_n
+    polar_table: null
+    on_axis_response: null
+    mount_type: on_wall
+    width_m: 0.3
+    height_m: 0.2
+    depth_m: 0.18
+    min_corner_clearance_m: 0.3
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 3
+    f3_hz: 0.0
+    enclosure: sealed
+    highpass_slope_db_oct: 12.0
+    max_toe_in_deg: 45.0
+  generic_inwall_lcr:
+    model_id: generic_inwall_lcr
+    display_name: Generic in-wall LCR (PLACEHOLDER)
+    role_types:
+    - front
+    freq_low_hz: 70
+    freq_high_hz: 20000
+    crossover_hz: 80
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 88
+    sensitivity_basis: 1W_1m
+    rated_power_w: 100
+    amp_power_w: null
+    max_spl_db: 110
+    max_spl_lf_db: null
+    nominal_impedance_ohm: 8
+    coverage_h_deg: 80
+    coverage_v_deg: 60
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: cos_n
+    polar_table: null
+    on_axis_response: null
+    mount_type: in_wall
+    width_m: 0.46
+    height_m: 0.3
+    depth_m: 0.1
+    min_corner_clearance_m: 0.3
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 6
+    f3_hz: 0.0
+    enclosure: sealed
+    highpass_slope_db_oct: 12.0
+    max_toe_in_deg: 10
+  generic_narrow_onwall:
+    model_id: generic_narrow_onwall
+    display_name: Generic narrow-coverage on-wall (PLACEHOLDER)
+    role_types:
+    - front
+    - surround
+    freq_low_hz: 90
+    freq_high_hz: 20000
+    crossover_hz: 100
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 86
+    sensitivity_basis: 1W_1m
+    rated_power_w: 70
+    amp_power_w: null
+    max_spl_db: 106
+    max_spl_lf_db: null
+    nominal_impedance_ohm: 8
+    coverage_h_deg: 60
+    coverage_v_deg: 50
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: cos_n
+    polar_table: null
+    on_axis_response: null
+    mount_type: on_wall
+    width_m: 0.25
+    height_m: 0.18
+    depth_m: 0.14
+    min_corner_clearance_m: 0.3
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 3
+    f3_hz: 0.0
+    enclosure: sealed
+    highpass_slope_db_oct: 12.0
+    max_toe_in_deg: 45
+  generic_surround_wide:
+    model_id: generic_surround_wide
+    display_name: Generic wide surround (PLACEHOLDER)
+    role_types:
+    - surround
+    freq_low_hz: 120
+    freq_high_hz: 20000
+    crossover_hz: 120
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 85
+    sensitivity_basis: 1W_1m
+    rated_power_w: 60
+    amp_power_w: null
+    max_spl_db: 105
+    max_spl_lf_db: null
+    nominal_impedance_ohm: 8
+    coverage_h_deg: 120
+    coverage_v_deg: 90
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: cos_n
+    polar_table: null
+    on_axis_response: null
+    mount_type: on_wall
+    width_m: 0.28
+    height_m: 0.18
+    depth_m: 0.14
+    min_corner_clearance_m: 0.3
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 3
+    f3_hz: 0.0
+    enclosure: sealed
+    highpass_slope_db_oct: 12.0
+    max_toe_in_deg: 45.0
+  generic_inwall_sub:
+    model_id: generic_inwall_sub
+    display_name: Generic in-wall subwoofer (PLACEHOLDER)
+    role_types:
+    - bass
+    freq_low_hz: 25
+    freq_high_hz: 200
+    crossover_hz: 120
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 85
+    sensitivity_basis: 1W_1m
+    rated_power_w: 200
+    amp_power_w: null
+    max_spl_db: 112
+    max_spl_lf_db: 108
+    nominal_impedance_ohm: 4
+    coverage_h_deg: 360
+    coverage_v_deg: 180
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: omni
+    polar_table: null
+    on_axis_response: null
+    mount_type: in_wall
+    width_m: 0.45
+    height_m: 0.32
+    depth_m: 0.12
+    min_corner_clearance_m: 0.35
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 6
+    f3_hz: 30
+    enclosure: sealed
+    highpass_slope_db_oct: 12.0
+    max_toe_in_deg: 0
+  generic_onwall_sub:
+    model_id: generic_onwall_sub
+    display_name: Generic on-wall subwoofer (PLACEHOLDER)
+    role_types:
+    - bass
+    freq_low_hz: 30
+    freq_high_hz: 200
+    crossover_hz: 100
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 88
+    sensitivity_basis: 1W_1m
+    rated_power_w: 250
+    amp_power_w: null
+    max_spl_db: 116
+    max_spl_lf_db: 112
+    nominal_impedance_ohm: 4
+    coverage_h_deg: 360
+    coverage_v_deg: 180
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: omni
+    polar_table: null
+    on_axis_response: null
+    mount_type: on_wall
+    width_m: 0.5
+    height_m: 0.36
+    depth_m: 0.2
+    min_corner_clearance_m: 0.4
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 3
+    f3_hz: 35
+    enclosure: ported
+    highpass_slope_db_oct: 24.0
+    max_toe_in_deg: 0
+  generic_dipole_surround:
+    model_id: generic_dipole_surround
+    display_name: Generic dipole surround (PLACEHOLDER)
+    role_types:
+    - surround
+    freq_low_hz: 100
+    freq_high_hz: 20000
+    crossover_hz: 120
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 84
+    sensitivity_basis: 1W_1m
+    rated_power_w: 60
+    amp_power_w: null
+    max_spl_db: 104
+    max_spl_lf_db: null
+    nominal_impedance_ohm: 8
+    coverage_h_deg: 360
+    coverage_v_deg: 180
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: dipole
+    polar_table: null
+    on_axis_response: null
+    mount_type: on_wall
+    width_m: 0.35
+    height_m: 0.25
+    depth_m: 0.16
+    min_corner_clearance_m: 0.35
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 3
+    f3_hz: 0.0
+    enclosure: sealed
+    highpass_slope_db_oct: 12.0
+    max_toe_in_deg: 90
+  generic_onwall_sub_ported:
+    model_id: generic_onwall_sub_ported
+    display_name: Generic ported on-wall subwoofer (PLACEHOLDER)
+    role_types:
+    - bass
+    freq_low_hz: 25
+    freq_high_hz: 200
+    crossover_hz: 100
+    crossover_slope_db_oct: 24.0
+    sensitivity_db: 88
+    sensitivity_basis: 1W_1m
+    rated_power_w: 250
+    amp_power_w: null
+    max_spl_db: 116
+    max_spl_lf_db: 112
+    nominal_impedance_ohm: 4
+    coverage_h_deg: 360
+    coverage_v_deg: 180
+    coverage_h_vs_freq: null
+    directivity_band_weights:
+    - 0.25
+    - 0.25
+    - 0.25
+    - 0.25
+    directivity_model: omni
+    polar_table: null
+    on_axis_response: null
+    mount_type: on_wall
+    width_m: 0.5
+    height_m: 0.36
+    depth_m: 0.2
+    min_corner_clearance_m: 0.4
+    min_listening_distance_m: 0.6
+    max_listening_distance_m: 8.0
+    min_spacing_to_other_speakers_m: 0.5
+    mount_height_range_m:
+    - 0.5
+    - 2.5
+    wall_gain_db: 3
+    f3_hz: 35
+    enclosure: ported
+    highpass_slope_db_oct: 24.0
+    max_toe_in_deg: 0
