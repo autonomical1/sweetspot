@@ -27,3 +27,15 @@ docs/API.md (all: room JSON, layout/metrics shapes, endpoints), phoneapp_context
 
 ## Out of scope
 3D, WebSocket, auth, QR/pairing UI, material or photo features, any build tooling or frameworks. Put unsettled choices (colors, drag feel, tooltip wording) under `## Design questions` in HANDOFF.md. Tell me in HANDOFF.md exactly what you could not verify in a browser.
+
+---
+## RETRY 1 (2026-10-24): fix list. Keep what works; change only what is listed; add tests where possible.
+
+Your previous result is on this branch (checks pass). Fix:
+1. **Stale optimize responses** (`plot.js` ~l.324): tie every request to the room it was started for (a request id or room generation counter). If the user has loaded/opened another room before the response arrives, discard the response.
+2. **Stale products responses** (~l.329): same guard for `GET /rooms/{id}/products`; also clear the products panel when the room changes.
+3. **Treatment patches** (~l.129): draw each `metrics.treatment_patches` entry as a translucent filled rectangle (about 35% opacity) lying along its wall, `size[0]` long in plan view, not an opaque thick line.
+4. **Fit padding** (~l.182): exactly 0.5 ft on every side.
+5. **Object rotation units** (~l.112): `rotation_y` is in **degrees** (docs/API.md section 1 and 1a, updated after your first run; re-read them), right-handed about +y, where +90 deg maps +x to -z. The canvas draws x to the right and z downward, so a positive `rotation_y` must appear counter-clockwise on screen: use SVG `rotate(-rotation_y)`. Remove the radians conversion. Add a `format.js` (or geometry) helper for the transform and a Node test case if `node` is available.
+
+Also note: rooms now include `warnings` (list of strings) and `frame` (null for rect/demo rooms); show room `warnings` in the info panel next to the metrics warnings. Ignore `frame` (the plot always draws the room frame).
