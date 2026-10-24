@@ -7,14 +7,14 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 1
-- last_checkpoint: 2026-10-24 19:20
+- last_checkpoint: 2026-10-24 19:50
 
 ## Next action
-materials MERGED (c73fb8a). contracts retry 1: check PASS, review ISSUES again (4 findings: 3 valid minor in checks.py/test_products_contract.py, 1 invalid: is_open null on non-door is correct per DTO spec). Awaiting user choice: orchestrator patches the 3 valid ones + merge -Id contracts override (recommended), or retry 2. Then wave 2 briefs: roomplan (gpt-6-astra high), deploy (luna; needs Vultr IP + domain; ONE uvicorn worker). Stale worktrees: sweetspot-wtre-api, materials.
+Wave 1 complete: core-api, materials, contracts all MERGED to master (tag demo-ok 926f98d), pushed. NEXT: user must decide scanned-room FRAME handling (recenter+yaw-align with a returned `frame` {yaw_deg, offset} vs keep raw world frame and add room bounds) because core-api code and the engine assume a room box [0,w]x[0,l] from the origin. Then write roomplan brief (gpt-6-astra high) and deploy brief (luna; needs Vultr IP + domain; ONE uvicorn worker; copy fixtures/ into image) and hit GATE 3. Stale worktrees: sweetspot-wt{core-api,materials,contracts}.
 EELMDESKTOPSWEETSPOT-WTRE-API.
 
 ## Waiting on user
-Gate 4 second ISSUES on contracts: patch 3 valid findings myself and merge with override, or retry 2?
+API design question (always interrupts): how scanned rooms map into the engine frame.
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.
