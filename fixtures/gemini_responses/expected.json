@@ -1,0 +1,1 @@
+{"good.json":{"wall_n":"drywall","wall_s":"brick","floor":"hardwood","ceiling":"drywall"},"fenced_with_prose.txt":{"valid-but-degraded":true},"wrong_enum.json":{"valid-but-degraded":true},"missing_fields.json":{"valid-but-degraded":true},"empty.json":{"valid-but-degraded":true},"not_json.txt":{"valid-but-degraded":true},"extra_ids.json":{"valid-but-degraded":true}}
