@@ -7,14 +7,14 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 1
-- last_checkpoint: 2026-10-24 21:50
+- last_checkpoint: 2026-10-24 22:05
 
 ## Next action
-Frame decision done (option 1): schemas Frame + warnings, API.md 1a, TESTING 3.6/3.7, phoneapp 01/02/04/05/README, frame_test_vectors.json, fixtures updated (143 tests pass). roomplan brief written (gpt-6-astra high), status todo pending GATE 3. plot2d: check PASS, review ISSUES (stale optimize/products responses on room switch; patches must be translucent rects; padding 0.5 ft) + orchestrator found rotation_y treated as radians (must be DEGREES, SVG rotate(-deg)); plot2d retry 1 dispatched (gpt-6-sol medium) per user; preview of the plot2d worktree served on 127.0.0.1:8001. Then merge plot2d, restart local uvicorn (running 127.0.0.1:8000 until user says stop), push. Deploy brief needs Vultr IP + domain (instance is up per user).
+Frame decision done (option 1): schemas Frame + warnings, API.md 1a, TESTING 3.6/3.7, phoneapp 01/02/04/05/README, frame_test_vectors.json, fixtures updated (143 tests pass). roomplan brief written (gpt-6-astra high), status todo pending GATE 3. plot2d: check PASS, review ISSUES (stale optimize/products responses on room switch; patches must be translucent rects; padding 0.5 ft) + orchestrator found rotation_y treated as radians (must be DEGREES, SVG rotate(-deg)); plot2d retry 1 dispatched (gpt-6-sol medium) per user; preview of the plot2d worktree served on 127.0.0.1:8001. Then merge plot2d, restart local uvicorn (running 127.0.0.1:8000 until user says stop), push. Vultr VPS IP 144.202.27.51, no domain yet: deploy brief written for Caddy auto-HTTPS on 144-202-27-51.sslip.io via SITE_ADDRESS (switch to .tech later). deploy task (luna medium) todo pending GATE 3. Actual deploy is run by orchestrator over SSH after merge, with user OK.
 EELMDESKTOPSWEETSPOT-WTRE-API.
 
 ## Waiting on user
-GATE 3 roomplan brief approval + Vultr IP and domain.
+GATE 3: approve roomplan (gpt-6-astra high) and deploy (luna medium) briefs to dispatch; can this machine SSH to root@144.202.27.51 (key)?
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.
