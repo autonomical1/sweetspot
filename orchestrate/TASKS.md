@@ -8,7 +8,7 @@
 | roomplan | iOS DTO (meters) -> Room JSON (feet) converter, photo-targets, listener rules, golden tests 3.6 | gpt-6-astra | high | core-api | 2 | todo | owns backend/app/roomplan.py, fixtures/roomplan_sample.json, tests; swap in real iOS sample when it arrives |
 | deploy | Dockerfile, compose, Caddyfile, deploy notes, smoke.sh (3.9) | gpt-5.6-luna | medium | core-api | 2 | todo | owns deploy/*, DEPLOY.md |
 | integrate | tools/e2e.py, backend/tests/e2e, demo script, failure-drill checklist | gpt-5.6-luna | medium | core-api,materials,roomplan | 3 | todo | owns tools/e2e.py, backend/tests/e2e/**, DEMO.md |
-| plot2d | Top-down 2D plot page served at /app/plot2d/ (SVG, drag speakers, live score, products) | gpt-6-sol | medium | | 2 | review | owns web/plot2d/**, backend/tests/test_plot2d.py; user-requested dev tool + demo fallback |
+| plot2d | Top-down 2D plot page served at /app/plot2d/ (SVG, drag speakers, live score, products) | gpt-6-sol | medium | | 2 | done | owns web/plot2d/**, backend/tests/test_plot2d.py; user-requested dev tool + demo fallback |
 
 status: todo | ready | running | review | done | blocked | cut
 
