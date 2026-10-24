@@ -7,14 +7,14 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 1
-- last_checkpoint: 2026-10-24 17:55
+- last_checkpoint: 2026-10-24 18:20
 
 ## Next action
-core-api merged (e55744c) and pushed. Briefs for materials + contracts written, tasks ready. After GATE 3 OK: DISPATCH run-wave -Review (background, both in parallel). Then wave 2 briefs: roomplan (gpt-6-astra high), deploy (luna); deploy needs Vultr IP and domain from user (not yet created).
+Wave 1b dispatched: materials (gpt-6-sol) + contracts (luna) running via run-wave -Review in background. When it exits: read summary lines only, mark PASS tasks review in TASKS.md, show GATE 4; fix per findings (one retry max), then merge -All (GATE 5), push. Then wave 2 briefs: roomplan (gpt-6-astra high), deploy (luna; needs user Vultr IP + domain, not created yet).
 EELMDESKTOPSWEETSPOT-WTRE-API.
 
 ## Waiting on user
-GATE 3: approve materials + contracts briefs (orchestrate/tasks/materials and contracts) and dispatch wave 1.
+none
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.
