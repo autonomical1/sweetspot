@@ -51,3 +51,14 @@ def test_object_avoidance_slides_along_the_same_wall():
     assert position[2] == 12.9
     assert not engine_speakerplacer._inside_object(position, room["objects"][0])
     assert any("LFE slid to avoid object obj_sofa" == warning for warning in warnings)
+
+
+def test_object_avoidance_clears_all_objects_at_once():
+    room = {"dimensions": {"width": 18.0, "length": 13.0, "height": 9.0},
+            "objects": [{"id": "a", "center": [6.0, 2.0, 1.0], "size": [4.0, 4.0, 2.0], "rotation_y": 0.0},
+                        {"id": "b", "center": [9.5, 2.0, 1.0], "size": [3.5, 4.0, 2.0], "rotation_y": 0.0}]}
+    position, warnings = engine_speakerplacer._avoid_objects([7.0, 1.0, 0.16], room, "LFE")
+    assert not any(engine_speakerplacer._inside_object(position, obj) for obj in room["objects"])
+    assert position[1] == 1.0 and position[2] == 0.16  # stays on the north wall at the same height
+    assert position[0] < 4.0 or position[0] > 11.25
+    assert any("slid" in warning for warning in warnings)

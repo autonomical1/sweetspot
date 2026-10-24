@@ -122,21 +122,25 @@ def _avoid_objects(position: list[float], room: dict, role: str) -> tuple[list[f
             interval = (max(interval[0], values[0]), min(interval[1], values[1]))
         return interval if interval[0] < interval[1] else None
 
-    for obj in room.get("objects", []):
-        if not _inside_object(result, obj):
-            continue
+    objects = room.get("objects", [])
+    blocking = [obj for obj in objects if _inside_object(result, obj)]
+    if not blocking:
+        return result, warnings
+    names = ", ".join(str(obj.get("id", "unknown")) for obj in blocking)
+    # Candidate stops are just outside every object's footprint on this wall line; a stop is legal only
+    # if it clears all objects at once, so sliding out of one box can never land inside another.
+    stops = []
+    for obj in objects:
         interval = footprint_interval(obj)
-        if interval is None:
-            warnings.append(f"{role} could not avoid object {obj.get('id', 'unknown')} on its wall")
-            continue
-        candidates = [point_at(value) for value in (interval[0] - 0.02, interval[1] + 0.02)
-                      if lower <= value <= upper]
-        legal = [candidate for candidate in candidates if not _inside_object(candidate, obj)]
-        if legal:
-            result = min(legal, key=lambda item: abs((item[2] if along_is_z else item[0]) - original_along))
-            warnings.append(f"{role} slid to avoid object {obj.get('id', 'unknown')}")
-        else:
-            warnings.append(f"{role} could not avoid object {obj.get('id', 'unknown')} on its wall")
+        if interval is not None:
+            stops.extend((interval[0] - 0.02, interval[1] + 0.02))
+    legal = [point_at(value) for value in stops if lower <= value <= upper]
+    legal = [candidate for candidate in legal if not any(_inside_object(candidate, obj) for obj in objects)]
+    if legal:
+        result = min(legal, key=lambda item: abs((item[2] if along_is_z else item[0]) - original_along))
+        warnings.append(f"{role} slid to avoid object {names}")
+    else:
+        warnings.append(f"{role} could not avoid object {names} on its wall")
     return result, warnings
 
 
