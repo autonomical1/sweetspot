@@ -1,3 +1,4 @@
+import importlib.util
 import json
 from concurrent.futures import ThreadPoolExecutor
 
@@ -54,7 +55,9 @@ def test_full_room_and_expiry(data_dir, room_rect, monkeypatch):
     assert room.status_code == 200
     assert room.json() == room_rect
     assert client.post("/rooms", json={"surfaces": []}).status_code == 422
-    assert client.post("/rooms", json={"captured_room": {"format": "sweetspot.roomplan.v1"}}).status_code == 501
+    # 501 until the scan converter (backend/app/roomplan.py) exists; afterwards a malformed DTO is a 422.
+    expected = 501 if importlib.util.find_spec("backend.app.roomplan") is None else 422
+    assert client.post("/rooms", json={"captured_room": {"format": "sweetspot.roomplan.v1"}}).status_code == expected
     tick = [1.0]
     monkeypatch.setattr(sessions, "now", lambda: tick[0])
     session_id = client.post("/sessions").json()["session_id"]
