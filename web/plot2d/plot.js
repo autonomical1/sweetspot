@@ -357,6 +357,11 @@ $('btn-products').addEventListener('click', () => action(async () => {
 
 // Opening the dev page immediately shows the same demo room used by the button.
 action(async () => {
-  setRoom(await api('/rooms/demo', json({})));
-  setLayout(await api(`/rooms/${encodeURIComponent(room.room_id)}/optimize`, json({})));
+  const startVersion = generation;
+  const demo = await api('/rooms/demo', json({}));
+  if (generation !== startVersion) return; // the user loaded or opened a room first
+  setRoom(demo);
+  const roomId = room.room_id, version = generation;
+  const result = await api(`/rooms/${encodeURIComponent(roomId)}/optimize`, json({}));
+  if (version === generation && room?.room_id === roomId) setLayout(result);
 });
