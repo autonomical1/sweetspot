@@ -70,8 +70,11 @@ def test_degenerate_rooms_do_not_raise(engine_impl, rect_request):
     room = build_rect(rect_request).model_dump()
     result = engine_impl.optimize(room)
     assert_valid_layout_result(result, room)
-    if engine_impl.__name__.endswith("engine_stub") and rect_request.listener == [0.3, 3.6, 5]:
-        pytest.xfail("stub clamps L to x=1 near west wall: front angle 15.08 degrees and L crosses to the right side")
+    if rect_request.listener == [0.3, 3.6, 5]:
+        # Listener 0.3 ft from the west wall: no position exists 25-35 deg to the listener's left, so the
+        # contract (TESTING.md 3.3) only requires a valid layout plus an explanatory warning, not ITU geometry.
+        assert result["metrics"].get("warnings"), "degenerate placement must explain itself in metrics.warnings"
+        return
     assert_geometry(room, result["layout"])
 
 
