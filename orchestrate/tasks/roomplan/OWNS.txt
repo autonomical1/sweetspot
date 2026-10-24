@@ -1,0 +1,4 @@
+backend/app/roomplan.py
+backend/tests/test_roomplan.py
+fixtures/roomplan_sample.json
+orchestrate/tasks/roomplan/HANDOFF.md

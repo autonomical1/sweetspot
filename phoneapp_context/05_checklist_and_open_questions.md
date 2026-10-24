@@ -24,6 +24,8 @@ Home screen buttons: **Connect to desktop** (QR), **Start scan**, **Use demo roo
 - [ ] Typed code works.
 - [ ] Each photo uploads (<300 KB); `materials` returns.
 - [ ] Layout fetch returns and parses.
+- [ ] Frame conversion XCTest passes on all of `frame_test_vectors.json`.
+- [ ] Debug overlay: the room's wall corners converted with `frame` land on the real walls.
 - [ ] AR: marker at a known wall corner lands on the corner (shared session). If not, option C works.
 - [ ] Airplane-mode / backend-down path shows a readable error and the saved-scan path still works.
 

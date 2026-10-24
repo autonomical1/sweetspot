@@ -72,7 +72,9 @@ Standalone, no network by default:
 
 ### 3.6 RoomPlan converter (owner: backend; fed by iOS)
 - Golden test on `post_rooms_request.example.json` and later the real `roomplan_sample.json`: counts of walls/doors/windows/floors/objects; each translation scaled m -> ft (x 3.28084, check a hand-computed value); wall corner polygons derived from `dimensions` and `transform` (4 corners, ft, a rotated wall checked by hand); door and window become kinds with a parent wall.
-- Frame preserved: no recentering, a shift of the whole scan by (10, 0, 5) m shifts all output by exactly (32.8084, 0, 16.4042) ft.
+- Normalization: every wall direction within 2 deg of the x or z axis; the wall bounding box spans exactly (0..width, 0..length); floor at y=0; listener facing within 45 deg of north (-z) when a TV or sofa exists.
+- Frame round trip: for every wall corner and object center, `R_y(yaw)*room_ft + offset` (API.md section 1a) reproduces the DTO world position (x 3.28084) within 0.01 ft; rotating the whole scan by any yaw and shifting it by any offset yields the same normalized room (within 0.01 ft) with a `frame` that absorbs the change.
+- `frame_test_vectors.json` reproduced to 1e-4 by the backend helper.
 - Listener: from the sofa (position at ear height 3.6 ft, facing from its transform); no sofa -> room centre facing the longest wall plus a warning; explicit `listener` in the request overrides.
 - Ids: RoomPlan UUID strings preserved; synthetic `floor` and `ceiling` added when absent; photo targets cover walls, floor, ceiling and are stable across calls.
 - Validation: malformed DTO (missing `transform`, 15 floats, NaN, wrong `format`) returns 422 with a clear `detail`; empty room rejected; huge values (cm instead of m) flagged in `warnings`.
@@ -80,7 +82,7 @@ Standalone, no network by default:
 
 ### 3.7 iOS app (owner: iOS teammate)
 Standalone without the backend using a **mock mode** (a flag that serves the files in `phoneapp_context/sample_payloads/`).
-- XCTest unit tests: `flat(matrix)` column-major order and translation at elements 12-14; DTO builder on hand-made values (RoomPlan types cannot be constructed directly, so put the conversion behind plain structs); ft -> m (x 0.3048) and ft-in formatting identical to the backend table above; QR parsing (`https://x.tech/pair/s_abc` -> `s_abc`, junk -> nil, wrong host rejected); multipart body builder byte-for-byte for a tiny JPEG; JPEG resize keeps long edge 1024 and size <300 KB; URLProtocol-mocked client: success, 404, 500, timeout, expired session.
+- XCTest unit tests: frame conversion reproduces every case in `phoneapp_context/sample_payloads/frame_test_vectors.json` to 1e-4 (points and directions); `flat(matrix)` column-major order and translation at elements 12-14; DTO builder on hand-made values (RoomPlan types cannot be constructed directly, so put the conversion behind plain structs); ft -> m (x 0.3048) and ft-in formatting identical to the backend table above; QR parsing (`https://x.tech/pair/s_abc` -> `s_abc`, junk -> nil, wrong host rejected); multipart body builder byte-for-byte for a tiny JPEG; JPEG resize keeps long edge 1024 and size <300 KB; URLProtocol-mocked client: success, 404, 500, timeout, expired session.
 - `tools/validate_dto.py` on every exported scan file before sending it to the backend person.
 - Device checklist is in `phoneapp_context/05_checklist_and_open_questions.md`. Plus: airplane mode mid-upload shows an error and the saved scan can be re-sent; scan with no sofa works; app killed mid-photo resumes; second scan replaces the first.
 - AR: debug wireframe of the scanned walls overlays the real room within a few inches; marker at a known corner lands on the corner (inch-level error is acceptable, a foot is not).
