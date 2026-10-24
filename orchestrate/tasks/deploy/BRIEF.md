@@ -26,3 +26,12 @@ docs/API.md sections 6-8, docs/TESTING.md section 3.9, .env.example (shared; do 
 
 ## Out of scope
 Running anything on the server, CI, Kubernetes, managed databases, monitoring stacks, the .tech purchase. Put unsettled choices (image size trade-offs, redirect target, body limit) under `## Design questions` in HANDOFF.md.
+
+---
+## RETRY 1 (2026-10-24): fix list. Keep what works; change only what is listed; add tests where possible.
+
+The Codex review (VERDICT: ISSUES) found:
+1. **Root-owned checkout** (`DEPLOY.md` ~l.38): `sudo git clone` makes `/srv/sweetspot` root-owned, so the documented `git pull`/rollback fail for the non-root user. Create the directory with sudo, `chown` it to the deploy user, then clone as that user (or document running everything as root consistently; prefer a non-root `deploy` user in the `docker` group). Make every later command in DEPLOY.md consistent with that ownership.
+2. **Root-owned `.env`** (~l.71): the `sed -i` domain-switch commands must work for the same user; `.env` owned by that user with mode 600.
+3. **False PASS on certificate check** (`deploy/smoke.sh` ~l.64): if no expiry date can be obtained, that step must FAIL (non-zero exit), never print PASS. Only skip it (print SKIP) for `http://` URLs.
+4. **Missing `bash -n` check** (`backend/tests/test_deploy_files.py` ~l.45): run `bash -n deploy/smoke.sh` via `subprocess` when `shutil.which("bash")` finds bash, skip otherwise; also assert the expiry step's failure path exits non-zero (text/regex check is fine).

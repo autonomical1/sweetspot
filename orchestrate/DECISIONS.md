@@ -35,3 +35,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 16:13] plot2d retry 1: check PASS, review ISSUES (1 finding: unguarded initial auto-load optimize); interrupting user per protocol - orchestrator
 - [2026-10-24 16:17] plot2d: orchestrator patched the last review finding (guarded initial demo auto-load), check PASS, merging with override - user approved
 - [2026-10-24 16:20] Gate 3 approved: dispatching roomplan (gpt-6-astra high) and deploy (gpt-5.6-luna medium) in wave 2 - user
+- [2026-10-24 16:27] Wave 2: roomplan failed only on obsolete core-api test (501 -> 422 once converter exists), fixed on master; deploy review ISSUES (4 valid) -> retry 1 with gpt-6-sol medium - orchestrator
