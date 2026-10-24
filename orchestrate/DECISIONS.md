@@ -39,3 +39,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 16:32] deploy retry 1 review ISSUES (4 doc/config nits) patched by orchestrator; check PASS; awaiting user at GATE 5 - orchestrator
 - [2026-10-24 16:41] GATE 5: merge roomplan (review OK) and deploy (patched, override); push. Server setup not yet approved - user
 - [2026-10-24 16:56] speakerplacer integrated via backend adapter (teammate package untouched): 5.1 = front pair L/R + surround pair Ls/Rs + 1 bass LFE, center placed geometrically (no center model), metrics from our acoustics.py for both optimize and score (fast, consistent), engine score_db in metrics.engine; worker gpt-5.6-terra per user; uvicorn stopped per user - user directed, mapping by orchestrator
+- [2026-10-24 17:13] engine-adapter run 1 timed out after committing passing code; review ISSUES (4 valid); retry 1 on gpt-5.6-terra high with timeoutSec 1800 - orchestrator
