@@ -28,7 +28,13 @@ class RoomObject(BaseModel):
     category: str
     center: Vec3
     size: Vec3
-    rotation_y: float = 0.0
+    rotation_y: float = 0.0  # degrees about +y; world = center + R_y(rotation_y) * local
+
+
+class Frame(BaseModel):
+    """Room frame -> scan world frame: world_ft = R_y(yaw_deg) * room_ft + offset (see docs/API.md)."""
+    yaw_deg: float = 0.0
+    offset: Vec3 = Field(default_factory=lambda: [0.0, 0.0, 0.0])
 
 
 class Listener(BaseModel):
@@ -47,6 +53,8 @@ class Room(BaseModel):
     objects: list[RoomObject] = Field(default_factory=list)
     listener: Listener
     budget: float | None = None
+    warnings: list[str] = Field(default_factory=list)  # e.g. converter notes such as 'no sofa detected'
+    frame: Frame | None = None  # scanned rooms only; None = the room frame is the only frame
     captured_room: dict | None = None
 
 

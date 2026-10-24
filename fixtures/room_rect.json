@@ -234,5 +234,7 @@
     ]
   },
   "budget": 1500.0,
+  "warnings": [],
+  "frame": null,
   "captured_room": null
 }

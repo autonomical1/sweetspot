@@ -108,7 +108,7 @@ func exportDTO(_ room: CapturedRoom) -> [String: Any] {
 ## Coordinates
 - World frame is the ARSession's: **y up (gravity-aligned)**, right-handed, meters, origin where the session started. Matches three.js. **Do not flip axes anywhere.**
 - Surface/object `transform` positions the plane/box **center** in world space; `dimensions` are the extents along the item's local axes. Which local axis is a wall's normal is **VERIFY**; the backend uses `dimensions` plus `transform` only, so just send them unmodified.
-- For scanned rooms the backend **keeps this world frame** (it does not recenter), so returned speaker positions are valid ARKit world coordinates if the AR session shares the scan's session.
+- The backend **normalizes** scanned rooms (straightens and shifts them into a box starting at the origin, in feet) and returns `frame: {yaw_deg, offset}` with the room. To place anything in AR, convert room-frame feet back to the scan's world meters with the code in `04_ar_overlay.md` (Step 0). Never pre-normalize on the phone; the DTO stays raw world meters.
 
 ## Local backup (protects the demo)
 Right after the scan, write the DTO JSON to `Documents/room_<timestamp>.json` and expose a share button (`ShareLink`). It is how the sample reaches the backend person, and it is the pre-scanned demo-room fallback. Add **"Load saved scan"**: read a saved file and upload it as if freshly scanned.

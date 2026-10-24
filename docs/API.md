@@ -22,16 +22,31 @@ Source of truth in code: `backend/app/schemas.py` (pydantic v2). Fixture: `fixtu
   ],
   "objects": [
     {"id": "obj_sofa", "category": "sofa | television | storage | table | other",
-     "center": [x,y,z], "size": [w,h,d], "rotation_y": 0.0}
+     "center": [x,y,z], "size": [w,h,d], "rotation_y": 0.0}      // rotation_y in DEGREES about +y
   ],
   "listener": {"position": [x, 3.6, z], "facing": [fx, fz]},
   "budget": 1500.0,
+  "warnings": [],                                       // e.g. "no sofa detected; listener at room centre"
+  "frame": {"yaw_deg": 0.0, "offset": [0.0, 0.0, 0.0]},   // scanned rooms only, else null
   "captured_room": null
 }
 ```
 - Rectangle builder creates 4 walls (`wall_n|s|e|w`), `floor`, `ceiling`, default drywall absorption, and no objects. `listener.facing` is a unit vector in x-z (north = [0,-1]).
-- RoomPlan converter fills the same shape from the iOS export DTO `sweetspot.roomplan.v1` (spec: `phoneapp_context/01_roomplan_capture.md`, example: `phoneapp_context/sample_payloads/post_rooms_request.example.json`), stored verbatim in `captured_room`. Surface/object `transform` is 16 floats column-major (translation = elements 12-14), `dimensions` = [w,h,d]. For scanned rooms the converter keeps the RoomPlan world frame (no recentering; only scales m -> ft by 3.28084; the DTO itself stays in raw meters) and uses the RoomPlan UUID strings as surface ids, plus synthetic `floor` and `ceiling`. Listener comes from the sofa transform (seat center, 3.6 ft ear height) with fallback to room center facing the longest wall.
+- RoomPlan converter fills the same shape from the iOS export DTO `sweetspot.roomplan.v1` (spec: `phoneapp_context/01_roomplan_capture.md`, example: `phoneapp_context/sample_payloads/post_rooms_request.example.json`), stored verbatim in `captured_room`. Surface/object `transform` is 16 floats column-major (translation = elements 12-14), `dimensions` = [w,h,d]. For scanned rooms the converter **normalizes** the scan into the standard room frame (walls axis-aligned, wall bounding box from (0,0,0) to (width,height,length), floor at y=0, listener facing roughly north = -z) and records how to get back to the scan's world frame in `frame` (section 1a). It uses the RoomPlan UUID strings as surface ids, plus synthetic `floor` and `ceiling`. Listener comes from the sofa transform (seat center, 3.6 ft ear height) with fallback to room center facing the longest wall.
 - `absorption` is always present on every surface (default table keyed by material in `backend/app/materials.py`).
+
+## 1a. Room frame vs scan world frame (`frame`)
+
+All room, layout and metrics coordinates are in the **room frame** (feet; box from the origin; walls axis-aligned). Rectangular and demo rooms have `frame: null`: they exist only in the room frame. Scanned rooms carry `frame = {yaw_deg, offset}` (offset in feet) mapping the room frame to the ARKit/RoomPlan world frame of the scan session:
+
+```
+t = radians(yaw_deg)
+world_ft.x =  cos(t)*x + sin(t)*z + offset.x
+world_ft.y =  y                   + offset.y
+world_ft.z = -sin(t)*x + cos(t)*z + offset.z
+world_m    =  world_ft * 0.3048
+```
+That is a right-handed rotation about +y (`simd_quatf(angle: t, axis: [0,1,0])`; +90 deg maps +x to -z) followed by the offset. Directions (`aim`, `facing`) rotate only. The converter applies the inverse (`room = R_y(-t) * (world - offset)`). Shared test vectors: `phoneapp_context/sample_payloads/frame_test_vectors.json`; backend and iOS tests must both reproduce them. Object `rotation_y` uses the same rotation convention, in degrees.
 
 ## 2. Layout and metrics (engine output)
 
@@ -91,7 +106,7 @@ Backend implementations behind one interface: Gemini API (default, `GEMINI_API_K
 | `GET /sessions/{id}` | | `{"session_id","status":"waiting\|ready\|expired","room_id":null\|str}` |
 | `POST /sessions/by-code` | `{"code"}` | `{"session_id"}` |
 | `POST /rooms/rect` | `{"width","length","height?","listener?","facing?","budget?","session_id?"}` | Room JSON (section 1) |
-| `POST /rooms` | Room JSON or `{"captured_room": {DTO}, "session_id?","budget?","listener?"}` (iOS export; optional `listener` = `{position,facing}` overrides sofa detection) | Room JSON |
+| `POST /rooms` | Room JSON or `{"captured_room": {DTO}, "session_id?","budget?","listener?"}` (iOS export; optional `listener` = `{position,facing}` in **scan world meters**, overrides sofa detection; the converter maps it into the room frame) | Room JSON (scanned: normalized, with `frame` and `warnings`) |
 | `POST /rooms/demo` | `{"session_id?"}` | Room JSON from `fixtures/room_demo.json` through the same store path |
 | `GET /rooms/{id}` | | Room JSON |
 | `PATCH /rooms/{id}/listener` | `{"position","facing"}` | Room JSON |
