@@ -1,0 +1,69 @@
+{
+  "budget": 1500.0,
+  "total": 1350.0,
+  "items": [
+    {
+      "role": "L",
+      "title": "Demo L",
+      "price": 225.0,
+      "currency": "USD",
+      "link": "https://example.invalid/demo",
+      "thumbnail": null,
+      "source": "stub"
+    },
+    {
+      "role": "R",
+      "title": "Demo R",
+      "price": 225.0,
+      "currency": "USD",
+      "link": "https://example.invalid/demo",
+      "thumbnail": null,
+      "source": "stub"
+    },
+    {
+      "role": "C",
+      "title": "Demo C",
+      "price": 337.5,
+      "currency": "USD",
+      "link": "https://example.invalid/demo",
+      "thumbnail": null,
+      "source": "stub"
+    },
+    {
+      "role": "LFE",
+      "title": "Demo LFE",
+      "price": 225.0,
+      "currency": "USD",
+      "link": "https://example.invalid/demo",
+      "thumbnail": null,
+      "source": "stub"
+    },
+    {
+      "role": "Ls",
+      "title": "Demo Ls",
+      "price": 112.5,
+      "currency": "USD",
+      "link": "https://example.invalid/demo",
+      "thumbnail": null,
+      "source": "stub"
+    },
+    {
+      "role": "Rs",
+      "title": "Demo Rs",
+      "price": 112.5,
+      "currency": "USD",
+      "link": "https://example.invalid/demo",
+      "thumbnail": null,
+      "source": "stub"
+    },
+    {
+      "role": "screen",
+      "title": "Demo screen",
+      "price": 112.5,
+      "currency": "USD",
+      "link": "https://example.invalid/demo",
+      "thumbnail": null,
+      "source": "stub"
+    }
+  ]
+}

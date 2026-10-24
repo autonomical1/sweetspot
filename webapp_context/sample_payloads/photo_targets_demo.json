@@ -1,0 +1,32 @@
+[
+  {
+    "surface_id": "wall_n",
+    "kind": "wall",
+    "label": "Front wall"
+  },
+  {
+    "surface_id": "wall_s",
+    "kind": "wall",
+    "label": "Back wall"
+  },
+  {
+    "surface_id": "wall_e",
+    "kind": "wall",
+    "label": "Right wall"
+  },
+  {
+    "surface_id": "wall_w",
+    "kind": "wall",
+    "label": "Left wall"
+  },
+  {
+    "surface_id": "floor",
+    "kind": "floor",
+    "label": "Floor"
+  },
+  {
+    "surface_id": "ceiling",
+    "kind": "ceiling",
+    "label": "Ceiling"
+  }
+]

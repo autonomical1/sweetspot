@@ -26,6 +26,9 @@ Hackathon judges (Best Overall, Best Pitch) and track judges (SerpApi, Gemini, V
 - `/r/{room_id}` shareable link page.
 - Rate limiting, auth beyond unguessable ids.
 
+## Web app
+Specified in `webapp_context/` (screens, API usage with real sample payloads, 2D/3D views with a lossless toggle, panels, tests). Built by the web teammate (or a worker) as no-build ES modules at `web/index.html`, served at `/app/`.
+
 ## Non-goals
 ESP32/mic validation, Best Hardware Hack, USDZ-based web scene, universal links, accounts/login, database.
 
