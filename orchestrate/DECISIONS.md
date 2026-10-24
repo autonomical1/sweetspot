@@ -9,3 +9,5 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 13:46] Priority layering: rectangular-room baseline (length/width/listener/facing) is MVP; RoomPlan scan is a high-priority layer on top via same contract - user
 - [2026-10-24 13:46] Engine contract: Python package speakerplacer with optimize(room)/score(room,layout) over shared room JSON, rectangular room is the simplest valid input - user approved
 - [2026-10-24 13:46] Gemini access method open: direct API vs backend-hosted gemini CLI on user's personal Pro account; keys: SerpApi in hand, Vultr account exists, domain easy - user
+- [2026-10-24 13:52] Products: SerpApi Google Shopping JSON, module products.get_products(layout,budget) in repo root products/, adapter in backend with stub fallback - user said module lives on backend, signature undecided so orchestrator proposed - orchestrator
+- [2026-10-24 13:52] Assumed (user did not object): REST only no WebSocket; Gemini via API behind classify_materials interface - orchestrator

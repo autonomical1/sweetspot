@@ -3,17 +3,17 @@
 - project: Sweetspot
 - started: 2026-10-24 13:21
 - deadline: 2026-10-25 11:30
-- phase: spec   # discover | spec | plan | build | integrate | polish | done
+- phase: plan   # discover | spec | plan | build | integrate | polish | done
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 0
-- last_checkpoint: 2026-10-24 13:50
+- last_checkpoint: 2026-10-24 14:10
 
 ## Next action
-Await user answers on REST-only (recommended), Gemini API vs CLI (recommend API behind classify_materials interface), SerpApi open question; then draft docs/API.md (rectangular-first room contract, engine optimize/score, products.get_products), AGENTS.md, config.json test cmd, TASKS.md, and hit GATE 2.
+GATE 2: user approves task table in orchestrate/TASKS.md and docs/API.md. Then write BRIEF.md + OWNS.txt per wave-1 task under orchestrate/tasks/<id>/ and hit GATE 3.
 
 ## Waiting on user
-GATE 1 + forks: approve SPEC; confirm REST-only, Gemini API vs CLI, and what the SerpApi question is.
+GATE 2: approve plan; confirm assumed defaults (REST-only, Gemini API behind interface, engine/products contracts in API.md).
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.

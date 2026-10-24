@@ -1,8 +1,8 @@
 {
-    "setup":  "",
-    "base":  "master",
-    "setupTimeoutSec":  900,
-    "cmdTimeoutSec":  600,
-    "test":  "",
-    "timeoutSec":  900
+    "setup": "pip install -r backend/requirements.txt",
+    "base": "master",
+    "setupTimeoutSec": 900,
+    "cmdTimeoutSec": 600,
+    "test": "python -m pytest backend -q",
+    "timeoutSec": 900
 }
