@@ -7,16 +7,29 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 3
-- last_checkpoint: 2026-10-25 03:50
+- last_checkpoint: 2026-10-24 18:35   (real clock from `date`; older labels up to "2026-10-25 03:50" in history were mislabeled)
 
 ## Next action
-Frame decision done (option 1): schemas Frame + warnings, API.md 1a, TESTING 3.6/3.7, phoneapp 01/02/04/05/README, frame_test_vectors.json, fixtures updated (143 tests pass). roomplan brief written (gpt-6-astra high), status todo pending GATE 3. plot2d: check PASS, review ISSUES (stale optimize/products responses on room switch; patches must be translucent rects; padding 0.5 ft) + orchestrator found rotation_y treated as radians (must be DEGREES, SVG rotate(-deg)); plot2d MERGED (7d816d0, tag demo-ok); local uvicorn restarted on 127.0.0.1:8000 serving /app/plot2d/ (keep until user says stop); :8001 preview stopped. Then merge plot2d, restart local uvicorn (running 127.0.0.1:8000 until user says stop), push. Vultr VPS IP 144.202.27.51, no domain yet: deploy brief written for Caddy auto-HTTPS on 144-202-27-51.sslip.io via SITE_ADDRESS (switch to .tech later). Wave 2 ran: roomplan check FAIL only on obsolete test_rooms 501 assertion (fixed on master 'test_rooms: expect 422', merged master into task/roomplan): re-check PASS, review VERDICT OK -> merge-eligible, hold for GATE 5 together with deploy. deploy check PASS, review ISSUES (4: root-owned clone/.env in DEPLOY.md, smoke.sh cert false PASS, missing bash -n test) -> retry 1: check PASS, review ISSUES again (4 nits) -> orchestrator patched all 4 on task/deploy (GET-only root redirect, git/openssl/python3 prereqs, chained update), check PASS. Orchestrator reviewed Dockerfile/compose/DEPLOY.md: OK. Repo is public (clone needs no auth). When it exits: read summary, set PASS tasks to review, GATE 4/5, merge, push; then ask user before running DEPLOY.md over SSH (user creates server .env with keys). Actual deploy is run by orchestrator over SSH after merge, with user OK.
-EELMDESKTOPSWEETSPOT-WTRE-API.
+Ask the user whether to brief and dispatch the wave-3 tasks: `integrate` (tools/e2e.py against https://144-202-27-51.sslip.io, backend/tests/e2e, DEMO.md with failure drills) and `lint` (ruff, see Notes). Then GATE 3 -> run -> GATE 4/5 -> merge -> push -> on the server `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build` -> `bash deploy/smoke.sh https://144-202-27-51.sslip.io`.
 
 ## Waiting on user
-User to add API keys in /srv/sweetspot/.env on the server; decide who builds the web app (teammate vs worker).
+1. Dispatch `integrate` and `lint` now? 2. User adds GEMINI_API_KEY and SERPAPI_KEY to /srv/sweetspot/.env on the server (never through chat). 3. Web teammate builds the React + Vite app in webapp/ from webapp_context/.
+
+## Built and merged (master, pushed; local tag demo-ok at ac6a154; GitHub's demo-ok tag is stale because a force push was declined)
+- Tasks done: core-api, materials, contracts, roomplan (scan normalization + frame), deploy files, plot2d (/app/plot2d/), engine-adapter (backend/app/engine_speakerplacer.py + backend/app/acoustics.py) around the teammate `speakerplacer` engine (merged from origin/speakerplacer, unrelated history).
+- Full suite: `python -m pytest -q` = 249 passed (about 75 s; includes tests/ for the teammate engine).
+- Web app is SPEC only: webapp_context/ README + 01-07 + real sample payloads. Stack: React + Vite, base /app/, built into web/ at deploy.
+
+## Live deployment
+- https://144-202-27-51.sslip.io on VPS 144.202.27.51 (Ubuntu 26.04, root SSH key works from this machine, Docker 29.9, ufw 22/80/443, existing 8 GB swap). Repo /srv/sweetspot (pull before rebuild). .env mode 600 with DOMAIN/SITE_ADDRESS = 144-202-27-51.sslip.io, DATA_DIR=/data, keys empty. Caddy Let's Encrypt cert valid to 2027-01-22. smoke.sh all PASS; optimize runs speakerplacer (~8 s); root `/` redirects to /app/plot2d/.
 
 ## Notes for a fresh session
-- Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.
-- Orchestrated scope = Neel's area plus the shared JSON contract. Teammates' parts are developed outside this orchestration and plug in via docs/API.md.
-- PROJECT_CONTEXT.md is the seed context; sections 5-8 hold the contract, pairing and engine proposals.
+- Team: iOS (phoneapp_context/), engine teammate (speakerplacer, merged), SerpApi teammate (products/ module NOT delivered; backend uses the products stub), web teammate (webapp_context/). Neel = backend/integration + planning; this orchestration owns backend, contracts, deploy.
+- **Planned `lint` task (user request): ruff** for our Python code. Add `ruff.toml` at the repo root: `target-version = "py312"`, `line-length = 120`, `[lint] select = ["E","F","W","I","B","UP"]`, `extend-exclude = ["speakerplacer", "tests/test_speakerplacer.py"]` (teammate code, dense style; lint it only with their agreement). Pin `ruff` in backend/requirements.txt (dev). Fix existing findings in backend/, tools/, conftest.py, fix import order with `ruff check --fix`, then make the orchestrate test command `ruff check . && python -m pytest -q` so every merge is lint-gated. Do not reformat the whole tree with `ruff format` mid-hackathon (noisy diffs); `ruff format --check` optional later.
+- When webapp/ lands: Node build stage in deploy/Dockerfile (copy webapp/dist into web/), .dockerignore webapp/node_modules + webapp/dist, Caddy root redirect /app/plot2d/ -> /app/, backend/tests/test_web_app.py (skips without a build).
+- When products/ lands: contract tests (real products only under -m live); the adapter loads `products` automatically.
+- When the real iOS scan arrives: replace fixtures/roomplan_sample.json, run tools/validate_dto.py and the roomplan tests.
+- Known gaps: speakerplacer has no center model (adapter places C geometrically); Gemini model name gemini-2.5-flash unverified; no .tech domain yet.
+- Tooling gotchas: Codex sandbox leaves locked `.<task>-run/` dirs (excluded via .git/info/exclude `.*-run/`); worker timeoutSec 1800; `run-wave` only starts `ready` tasks; commit DECISIONS.md before `dispatch merge`; never force-push; heredocs containing ``` fences fail in the Bash tool (write scripts to .localdata/, which is git-excluded); `MSYS_NO_PATHCONV=1` for `git show rev:path`.
+- Models per user: gpt-6-sol / gpt-5.6-luna default, gpt-5.6-terra when the user asks, gpt-6-astra only for the hardest.
+- Local handover notes: memory/HANDOVER-2026-10-24-1504.md (local only, git-excluded).
