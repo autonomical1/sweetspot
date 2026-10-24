@@ -3,7 +3,7 @@
 Goal: after the backend computes a layout, the user walks around the room with the phone and sees markers where each speaker (and the screen, and treatment patches) should go. This is the riskiest and most demo-worthy feature; **time-box the alignment test to about 1 hour**, and build everything else first.
 
 ## The core problem: one shared world frame
-Layout coordinates (meters, y-up) are in the same frame as the RoomPlan scan **only if** the AR session that shows the markers is the same session (or relocalized into it). Three ways, best first:
+Layout coordinates come back in **feet** (y-up); multiply every coordinate and size by `0.3048` to get ARKit meters before placing anything: `let m = Float(0.3048)`. They are in the same frame as the RoomPlan scan **only if** the AR session that shows the markers is the same session (or relocalized into it). Three ways, best first:
 
 ### A. Reuse the scan's ARSession (preferred, zero alignment)
 **[Apple docs]** `RoomCaptureView` has `init(frame:arSession:)`, `RoomCaptureSession.arSession` exposes the session in use ("You may use this object to display your own AR experience"), and `stop(pauseARSession: Bool)` exists.
@@ -38,7 +38,7 @@ func alignment(room q1: SIMD3<Float>, _ q2: SIMD3<Float>, world p1: SIMD3<Float>
 ## What to draw
 - One marker per `layout.speakers[]`: role label (L, R, C, LFE, Ls, Rs), a small speaker-shaped box or sphere at `position`, and an arrow/line toward `aim`.
 - Screen: a translucent plane at `screen.center` with `width x height`, oriented to the wall (facing into the room). If orientation data is missing, face it toward the listener position.
-- Listener position: a small marker at the seat (ear height 1.1 m).
+- Listener position: a small marker at the seat (ear height 3.6 ft = 1.1 m).
 - Optional treatment patches (`metrics.treatment_patches`): colored translucent rectangles at `center` sized `[w, h]` on the named surface.
 - Optional: a floating label with the best score and top warnings.
 - Floor markers are easier to find in AR than wall markers; add a vertical line from the floor to each speaker position.

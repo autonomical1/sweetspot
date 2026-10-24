@@ -12,3 +12,6 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 13:52] Products: SerpApi Google Shopping JSON, module products.get_products(layout,budget) in repo root products/, adapter in backend with stub fallback - user said module lives on backend, signature undecided so orchestrator proposed - orchestrator
 - [2026-10-24 13:52] Assumed (user did not object): REST only no WebSocket; Gemini via API behind classify_materials interface - orchestrator
 - [2026-10-24 14:02] iOS->backend scan payload is an explicit DTO sweetspot.roomplan.v1 (not default Codable CapturedRoom) since Apple does not document simd/enum encoding; added GET photo-targets and optional listener to POST /rooms; scanned rooms keep RoomPlan world frame - orchestrator, pending user OK at Gate 2
+- [2026-10-24 14:17] No WebSocket anywhere, GET/POST/PATCH only; web polls sessions - user
+- [2026-10-24 14:17] Contract units are decimal feet (ft-in display only at UI edge); iOS DTO stays raw meters; converts at backend roomplan.py (m->ft) and iOS AR layer (ft->m) - user asked feet/inches, mechanics chosen by orchestrator to keep phone code simple
+- [2026-10-24 14:17] Testing: every component standalone-ready (own tests + stubs) before pairwise integration; docs/TESTING.md is the plan; added contracts task - user

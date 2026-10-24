@@ -33,7 +33,7 @@ The user opens the Sweetspot web page on a laptop, which shows a QR code. The iP
 - **Needs a LiDAR iPhone.** RoomPlan does not run in the Simulator. Test on the device from the start.
 - RoomPlan is **iOS 16.0+** (Apple docs). The `polygonCorners` property needs **iOS 17.0+**. Set the deployment target to **iOS 17.0**.
 - Backend is **HTTPS only** (App Transport Security blocks `http://`). One base-URL constant.
-- Units **meters**, **y-up**, **right-handed**. Do not flip or rescale anything.
+- **Units:** the scan you send stays in raw RoomPlan **meters** (never convert it on the phone). The backend works in **feet** and returns layouts in **decimal feet** (7.5 = 7 ft 6 in). Convert ft -> m (x 0.3048) only in the AR layer before placing anchors. Axes are y-up, right-handed; do not flip anything. Show distances to the user as feet and inches (`7' 6"`).
 - Do not photograph during a scan. Order: pair, scan, stop, upload scan, photos, upload photos, (optional) AR.
 
 ## How this was verified

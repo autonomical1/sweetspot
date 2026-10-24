@@ -17,7 +17,7 @@ Home screen buttons: **Connect to desktop** (QR), **Start scan**, **Use demo roo
 ## Test checklist (do in this order, on the real phone)
 - [ ] Scan runs; `CapturedRoom` arrives in `didPresent`.
 - [ ] DTO JSON saved to Documents and shared to the backend person. **(unblocks the converter)**
-- [ ] DTO transforms look sane: translation (elements 12,13,14) values within a few meters; dimensions in meters.
+- [ ] DTO transforms look sane: translation (elements 12,13,14) values within a few meters; dimensions in meters (the DTO is raw meters; only the backend converts to feet).
 - [ ] Upload succeeds against the deployed HTTPS backend; `room_id` stored.
 - [ ] Demo room button works with no scan.
 - [ ] QR scan yields the `session_id`; the laptop page switches to the viewer after upload.

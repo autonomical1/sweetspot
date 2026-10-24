@@ -23,7 +23,6 @@ Hackathon judges (Best Overall, Best Pitch) and track judges (SerpApi, Gemini, V
 
 ## Nice-to-have (cut first)
 - Gemini spec extraction from product results; plain-language layout rationale.
-- WebSocket instead of polling for pairing.
 - `/r/{room_id}` shareable link page.
 - Rate limiting, auth beyond unguessable ids.
 
@@ -39,11 +38,10 @@ ESP32/mic validation, Best Hardware Hack, USDZ-based web scene, universal links,
 6. Everything served over valid HTTPS from Vultr.
 
 ## Tech stack and constraints
-Python 3.11+, FastAPI, pydantic v2, numpy (engine), uvicorn, Docker Compose + Caddy on a Vultr VPS. Gemini via google-genai; SerpApi via HTTP. Coordinates: meters, y-up, right-handed (RoomPlan = three.js). Workers have no network: external APIs behind interfaces with recorded fixtures/mocks. Keys come from env (`.env`, never committed).
+Python 3.11+, FastAPI, pydantic v2, numpy (engine), uvicorn, Docker Compose + Caddy on a Vultr VPS. Gemini via google-genai; SerpApi via HTTP. Coordinates: feet (decimal, y-up, right-handed; ft-in strings are display only); RoomPlan meters are converted in the backend converter and the iOS AR layer. REST only (GET/POST/PATCH), no WebSocket. Workers have no network: external APIs behind interfaces with recorded fixtures/mocks. Keys come from env (`.env`, never committed).
 
 ## Open questions
 - Engine module signatures: owner must accept the proposal in docs/API.md.
 - SerpApi module location/signature: teammate must accept.
 - Final project name and .tech domain availability.
 - Who deploys to Vultr first, and are keys (Gemini, SerpApi, Vultr) in hand?
-- Is the web-viewer teammate expecting REST only, or also WebSocket?

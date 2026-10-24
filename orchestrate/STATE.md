@@ -7,13 +7,13 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 0
-- last_checkpoint: 2026-10-24 14:10
+- last_checkpoint: 2026-10-24 15:05
 
 ## Next action
-GATE 2: user approves task table in orchestrate/TASKS.md and docs/API.md. Then write BRIEF.md + OWNS.txt per wave-1 task under orchestrate/tasks/<id>/ and hit GATE 3.
+GATE 2: user approves task table (orchestrate/TASKS.md), docs/API.md (feet, no WebSocket) and docs/TESTING.md. Then write BRIEF.md + OWNS.txt per wave-1 task (core-api, materials, contracts) and hit GATE 3.
 
 ## Waiting on user
-GATE 2: approve plan; confirm assumed defaults (REST-only, Gemini API behind interface, engine/products contracts in API.md).
+GATE 2: approve plan, API (feet units, DTO in meters, photo-targets), TESTING.md; give Codex quota.
 
 ## Notes for a fresh session
 - Team of 4: iOS (RoomPlan app, LiDAR iPhone + Xcode Mac available), physics engine (teammate, in progress), SerpApi products (teammate, in progress), Neel = backend/integration (FastAPI, Vultr, Caddy, .tech, Gemini, contract, pairing) + planning.

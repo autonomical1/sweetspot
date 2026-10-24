@@ -37,15 +37,15 @@ Authoritative contract: `docs/API.md`. This file lists only what the iPhone app 
 ```json
 {"layout": {
    "speakers": [{"role":"L","position":[x,y,z],"aim":[x,y,z]}],   // roles L R C LFE Ls Rs
-   "screen": {"wall_id":"<uuid>","center":[x,y,z],"width":1.95,"height":1.1}   // may be null
+   "screen": {"wall_id":"<uuid>","center":[x,y,z],"width":6.4,"height":3.6}   // feet; may be null
  },
  "metrics": {"score":0.0,"reflections":[],"treatment_patches":[{"surface_id","center":[x,y,z],"size":[w,h]}],"warnings":[]}}
 ```
-Positions are meters, y-up. For scanned rooms they are in the scan's world frame.
+**Positions are decimal feet**, y-up (convert x 0.3048 to meters for ARKit). For scanned rooms they are in the scan's world frame (scaled to feet, not recentered).
 
 ### Demo and manual rooms
 - `POST /rooms/demo` `{"session_id":"s_..."}` (optional) -> Room JSON, no scan. Needs a visible **"Use demo room"** button. Demo coordinates are in the demo room's own frame, so AR uses a manual alignment (`04_ar_overlay.md`).
-- `POST /rooms/rect` `{"width":12,"length":15,"height":2.7,"listener":[7.5,1.1,4],"facing":[0,-1],"session_id":"s_..."}` for a no-LiDAR "enter room size" screen.
+- `POST /rooms/rect` (all values in feet) `{"width":12,"length":15,"height":9.0,"listener":[7.5,3.6,4],"facing":[0,-1],"session_id":"s_..."}` for a no-LiDAR "enter room size" screen.
 
 ## Swift snippets
 ```swift
@@ -82,7 +82,7 @@ func uploadPhoto(roomID: String, surfaceID: String, jpeg: Data) async throws {
 1. Send the DTO exactly as specified; never edit transforms or dimensions.
 2. For scanned rooms, backend surface ids are the RoomPlan UUID strings (plus synthetic `"floor"` and `"ceiling"`). Tag photos with those strings.
 3. Keep one `session_id` through the whole flow.
-4. Units are meters everywhere. Values like 300 or 3000 mean something converted to cm/mm.
+4. The scan DTO is raw meters (values like 300 or 3000 mean a stray cm/mm conversion); everything the backend returns is feet.
 
 ## Developing before the backend is deployed
 Run the backend locally (`uvicorn backend.app.main:app --host 0.0.0.0 --port 8000`) and point a **Debug build only** at `http://<mac-lan-ip>:8000` with a temporary ATS exception (`NSAllowsLocalNetworking`); remove it before the demo build. Or mock responses with the files in `sample_payloads/`.

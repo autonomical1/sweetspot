@@ -12,7 +12,7 @@ Role = Literal["L", "R", "C", "LFE", "Ls", "Rs"]
 class Dimensions(BaseModel):
     width: float
     length: float
-    height: float = 2.7
+    height: float = 9.0  # feet
 
 
 class Surface(BaseModel):
@@ -33,11 +33,12 @@ class RoomObject(BaseModel):
 
 class Listener(BaseModel):
     position: Vec3
-    facing: list[float]  # unit vector [fx, fz]; north = [0, -1]
+    facing: list[float]  # unit vector [fx, fz]; north = [0, -1]; positions are decimal feet
 
 
 class Room(BaseModel):
     schema_version: int = 1
+    units: Literal["ft"] = "ft"
     room_id: str
     session_id: str | None = None
     source: Literal["rectangle", "roomplan"] = "rectangle"
