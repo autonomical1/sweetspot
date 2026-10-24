@@ -20,3 +20,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 14:35] Gate 3 approved; core-api dispatched with gpt-6-sol medium - user
 - [2026-10-24 14:43] core-api check PASS, review ISSUES (5 findings); proposing one retry with findings appended to brief, awaiting user OK at Gate 4 - orchestrator
 - [2026-10-24 14:45] core-api retry 1: facing normalized to unit vector (not rejected); demo fixture uses typical hardwood/glass absorption (provisional until materials table); engine result validated else stub fallback; optional-router imports via find_spec; user approved inspect then retry
+- [2026-10-24 14:50] core-api retry 1: check PASS, review ISSUES again with 2 minor edge-case findings (listener y default vs height<3.6ft; products stub rounding vs tiny budget); interrupting user per protocol - orchestrator
