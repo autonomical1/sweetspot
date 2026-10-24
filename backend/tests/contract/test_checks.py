@@ -68,3 +68,23 @@ def test_classification_check_failures(mutator):
     value = {"surface_id": "wall_n", "material": "drywall", "confidence": 1}; mutator(value)
     with pytest.raises(AssertionError):
         assert_valid_classification([value], ["wall_n"])
+
+
+def test_classification_rejects_duplicates_and_extras():
+    item = {"surface_id": "wall_n", "material": "drywall", "confidence": 1}
+    for items in ([item, item.copy()], [item, {**item, "surface_id": "floor"}]):
+        with pytest.raises(AssertionError, match="exactly one"):
+            assert_valid_classification(items, ["wall_n"])
+
+
+@pytest.mark.parametrize("field,value", [
+    ("delay_ms", float("nan")), ("delay_ms", float("inf")), ("delay_ms", True),
+    ("level_db", float("nan")), ("level_db", float("inf")), ("level_db", False),
+    ("point", [0, float("nan"), 0]), ("point", [0, float("inf"), 0]),
+    ("point", [0, True, 0]),
+])
+def test_reflection_rejects_nonfinite_and_boolean_numbers(field, value):
+    reflection = {"speaker": "L", "surface_id": "wall_n", "delay_ms": 1.0, "level_db": -3.0, "point": [0, 0, 0]}
+    reflection[field] = value
+    with pytest.raises(AssertionError, match="reflection"):
+        assert_valid_metrics({"score": 0.5, "reflections": [reflection], "warnings": []})

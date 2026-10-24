@@ -11,7 +11,7 @@ BANDS = {"125", "250", "500", "1000", "2000", "4000"}
 
 def _finite_vec(value: Any, size: int, label: str) -> None:
     assert isinstance(value, (list, tuple)) and len(value) == size, f"{label} must be a finite {size}-list"
-    assert all(isinstance(x, (int, float)) and math.isfinite(x) for x in value), f"{label} must be a finite {size}-list"
+    assert all(isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x) for x in value), f"{label} must be a finite {size}-list"
 
 
 def assert_valid_room(obj: Any) -> None:
@@ -34,7 +34,7 @@ def assert_valid_room(obj: Any) -> None:
 
 def assert_valid_metrics(obj: Any, room: Any = None) -> None:
     assert isinstance(obj, dict), "metrics must be an object"
-    assert isinstance(obj.get("score"), (int, float)) and math.isfinite(obj["score"]), "metrics.score must be finite"
+    assert isinstance(obj.get("score"), (int, float)) and not isinstance(obj["score"], bool) and math.isfinite(obj["score"]), "metrics.score must be finite"
     reflections = obj.get("reflections", [])
     assert isinstance(reflections, list), "metrics.reflections must be a list"
     surface_ids = {s.id for s in Room.model_validate(room).surfaces} if room is not None else None
@@ -44,8 +44,8 @@ def assert_valid_metrics(obj: Any, room: Any = None) -> None:
         assert isinstance(reflection.get("surface_id"), str), "reflection surface_id is required"
         if surface_ids is not None:
             assert reflection["surface_id"] in surface_ids, f"unknown reflection surface {reflection['surface_id']}"
-        assert isinstance(reflection.get("delay_ms"), (int, float)) and math.isfinite(reflection["delay_ms"]) and reflection["delay_ms"] >= 0, "reflection delay_ms must be non-negative"
-        assert isinstance(reflection.get("level_db"), (int, float)) and reflection["level_db"] <= 6, "reflection level_db is too high"
+        assert isinstance(reflection.get("delay_ms"), (int, float)) and not isinstance(reflection["delay_ms"], bool) and math.isfinite(reflection["delay_ms"]) and reflection["delay_ms"] >= 0, "reflection delay_ms must be finite and non-negative"
+        assert isinstance(reflection.get("level_db"), (int, float)) and not isinstance(reflection["level_db"], bool) and math.isfinite(reflection["level_db"]) and reflection["level_db"] <= 6, "reflection level_db must be finite and at most 6"
         _finite_vec(reflection.get("point"), 3, "reflection point")
     assert isinstance(obj.get("warnings", []), list) and all(isinstance(w, str) for w in obj.get("warnings", [])), "metrics.warnings must be strings"
 
@@ -101,7 +101,9 @@ def assert_valid_products(obj: Any, budget: float, layout: Any = None) -> None:
 def assert_valid_classification(items: Any, expected_ids: Any) -> None:
     expected = set(expected_ids)
     assert isinstance(items, list), "classification must be a list"
-    assert {item.get("surface_id") for item in items} == expected, "classification ids do not match expected ids"
+    assert all(isinstance(item, dict) for item in items), "classification entries must be objects"
+    ids = [item.get("surface_id") for item in items]
+    assert len(items) == len(expected) and len(ids) == len(set(ids)) and set(ids) == expected, "classification needs exactly one entry per expected id"
     for item in items:
         assert item.get("material") in MATERIALS, f"invalid material for {item.get('surface_id')}"
         assert isinstance(item.get("confidence"), (int, float)) and 0 <= item["confidence"] <= 1, "confidence must be between 0 and 1"

@@ -4,13 +4,14 @@ import json
 import math
 import sys
 from collections import Counter
+from pathlib import Path
 
 SURFACE_CATEGORIES = {"wall", "door", "window", "opening", "floor"}
 OBJECT_CATEGORIES = {"bathtub", "bed", "chair", "dishwasher", "fireplace", "oven", "refrigerator", "sink", "sofa", "stairs", "storage", "stove", "table", "television", "toilet", "washerDryer"}
 
 
 def _numbers(value, count, nonnegative=False):
-    return isinstance(value, list) and len(value) == count and all(isinstance(x, (int, float)) and math.isfinite(x) and (not nonnegative or x >= 0) for x in value)
+    return isinstance(value, list) and len(value) == count and all(isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x) and (not nonnegative or x >= 0) for x in value)
 
 
 def validate(data: dict) -> tuple[list[str], list[str]]:
@@ -29,23 +30,23 @@ def validate(data: dict) -> tuple[list[str], list[str]]:
     if not isinstance(objects, list): errors.append("objects must be a list")
     if not isinstance(surfaces, list): surfaces = []
     if not isinstance(objects, list): objects = []
-    ids, translations, counts = set(), [], Counter()
+    ids = set()
     walls = 0; has_floor = False; has_sofa = False; has_tv = False
     def inspect(item, category, label):
         nonlocal walls, has_floor, has_sofa, has_tv
         for key in ("id", "dimensions", "transform"):
             if key not in item: errors.append(f"{label} missing {key}")
         ident = item.get("id")
-        if ident in ids: errors.append(f"duplicate id: {ident}")
-        if ident is not None: ids.add(ident)
+        if not isinstance(ident, str) or not ident: errors.append(f"{label} id must be a nonempty string")
+        elif ident in ids: errors.append(f"duplicate id: {ident}")
+        else: ids.add(ident)
         actual = item.get("category")
         allowed = SURFACE_CATEGORIES if category == "surface" else OBJECT_CATEGORIES
-        if actual not in allowed: errors.append(f"{label} category is invalid: {actual}")
-        counts[actual] += 1
+        if not isinstance(actual, str) or actual not in allowed: errors.append(f"{label} category is invalid: {actual}")
         if category == "surface":
             if actual == "wall": walls += 1
             if actual == "floor": has_floor = True
-            if actual == "wall" and isinstance(item.get("dimensions"), list) and len(item["dimensions"]) > 1 and not (1.5 <= item["dimensions"][1] <= 6):
+            if actual == "wall" and _numbers(item.get("dimensions"), 3, True) and not (1.5 <= item["dimensions"][1] <= 6):
                 warnings.append(f"wall {ident} height is outside 1.5-6 m")
             if actual != "door" and item.get("is_open") is not None: errors.append(f"is_open set on non-door {ident}")
         else:
@@ -58,7 +59,6 @@ def validate(data: dict) -> tuple[list[str], list[str]]:
             return
         if abs(transform[15] - 1) > 1e-3: errors.append(f"{label} transform[15] must be 1")
         translation = [transform[12], transform[13], transform[14]]
-        translations.append(translation)
         if any(abs(v) > 100 for v in translation): warnings.append(f"{label} translation is unusually large")
         # Column-major 3x3 rotation; rows/columns should each be unit and orthogonal.
         cols = [(transform[0], transform[1], transform[2]), (transform[4], transform[5], transform[6]), (transform[8], transform[9], transform[10])]
@@ -78,10 +78,11 @@ def validate(data: dict) -> tuple[list[str], list[str]]:
 
 
 def _summary(data, errors, warnings):
-    dto = data.get("captured_room", data)
+    dto = data.get("captured_room", data) if isinstance(data, dict) else data
+    if not isinstance(dto, dict): dto = {}
     entries = [x for group in (dto.get("surfaces", []), dto.get("objects", [])) if isinstance(group, list) for x in group if isinstance(x, dict) and _numbers(x.get("transform"), 16)]
     points = [(x["transform"][12], x["transform"][13], x["transform"][14]) for x in entries]
-    counts = Counter(x.get("category") for x in entries)
+    counts = Counter(str(x.get("category")) for x in entries)
     print(f"findings: {len(errors)} errors, {len(warnings)} warnings")
     print("counts: " + ", ".join(f"{key}={value}" for key, value in sorted(counts.items())))
     if points:
@@ -98,12 +99,13 @@ def main(argv):
     status = 0
     for filename in argv:
         try:
-            data = json.load(open(filename, encoding="utf-8"))
+            with Path(filename).open(encoding="utf-8") as source:
+                data = json.load(source)
             errors, warnings = validate(data)
             print(filename + ":")
             _summary(data, errors, warnings)
             status = max(status, 1 if errors else 0)
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
             print(f"{filename}: ERROR: {exc}"); status = 1
     return status
 

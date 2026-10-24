@@ -17,11 +17,11 @@ def engine_impl(request):
     return _module("speakerplacer", "real engine")
 
 
-@pytest.fixture(params=["stub", "real"])
+@pytest.fixture(params=["stub", pytest.param("real", marks=pytest.mark.live)])
 def products_impl(request):
     if request.param == "real":
-        if "live" not in request.config.getoption("-m", default="") and not os.getenv("SERPAPI_KEY"):
-            pytest.skip("real products contract is opt-in with -m live and SERPAPI_KEY")
+        if not os.getenv("SERPAPI_KEY"):
+            pytest.skip("real products contract requires SERPAPI_KEY")
         return _module("products", "real products")
     return importlib.import_module("backend.app.stubs.products_stub")
 
