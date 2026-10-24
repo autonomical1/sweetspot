@@ -23,3 +23,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 14:50] core-api retry 1: check PASS, review ISSUES again with 2 minor edge-case findings (listener y default vs height<3.6ft; products stub rounding vs tiny budget); interrupting user per protocol - orchestrator
 - [2026-10-24 14:59] core-api: orchestrator patched 2 minor review findings (listener y clamp, products stub floor rounding) with regression tests, check PASS (19 tests); merging with explicit override of ISSUES verdict - user chose option 1
 - [2026-10-24 15:06] Gate 3 approved for materials + contracts; dispatching run-wave -Review - user
+- [2026-10-24 15:15] Wave 1b: materials PASS+ISSUES (findings stem from brief vs API.md mismatch, not code); contracts PASS+ISSUES (8 real gaps) retry 1 with gpt-6-sol medium - orchestrator

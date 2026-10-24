@@ -38,3 +38,19 @@ docs/API.md (all), docs/TESTING.md sections 2, 3.3, 3.4, 3.5, 3.6, 3.7; backend/
 
 ## Out of scope
 Changing stubs or API contracts, writing the real engine/products/materials, live network calls, the converter (`roomplan.py` is a later task). Put any contract ambiguity you hit under `## Design questions` in HANDOFF.md.
+
+---
+## RETRY 1 (2026-10-24): fix list. Keep what works; change only what is listed; add a regression test for each.
+
+Your previous result is on this branch (checks pass). The Codex review (VERDICT: ISSUES) found real gaps:
+
+1. **Engine angle and object checks missing** (`test_engine_contract.py`). Add, for every room that has them: L and R within 25-35 deg of the listener's facing (horizontal plane, L on the left, R on the right), C within 5 deg, Ls/Rs 90-135 deg behind-side; and no speaker position inside any object's 3D box (`center`, `size`, `rotation_y` about the y axis). Use `room_demo.json` (has a sofa and TV). If the stub genuinely violates one, mark only the stub case `xfail(strict=False, reason=<measured values>)` and list it in HANDOFF.md; never loosen the tolerance.
+2. **Duplicates pass classification validation** (`checks.assert_valid_classification`). Require exactly one entry per expected id: same count as `expected_ids`, no duplicates, no extra ids.
+3. **Non-finite numbers pass the reflection validator** (`checks.py` ~l.55). Every numeric field in a reflection (`delay_ms`, `level_db`, `point` coordinates) must be a finite number; also reject booleans where numbers are expected. Test with NaN and inf.
+4. **Real products tests ran when `SERPAPI_KEY` was set** (`conftest.py`). The real `products` case must carry `pytest.mark.live` (so `-m "not live"` in pytest.ini deselects it) and additionally require `SERPAPI_KEY`. A set key alone must never trigger it. Test this behaviour with `monkeypatch` or by inspecting the parametrization marks.
+5. **Products tests only cover layouts without a screen** (`test_products_contract.py`). Cover layouts with a screen and without, for each budget in `0.034, 1, 17.77, 1500`.
+6. **Mock classification tested with no photos** (`test_materials_contract.py`). Call `classify_materials(backend="mock")` with photos for `wall_n`, `floor`, `ceiling`, `window_e` (tiny valid JPEG bytes built with Pillow) and validate the result with `assert_valid_classification`.
+7. **`tools/validate_dto.py` crashes on malformed values** (~l.48 `TypeError` on a non-numeric wall height). `validate()` must never raise for any JSON input: non-dict top level, lists where numbers belong, strings where numbers belong, null/missing keys, nested wrong types. Every such case becomes an `ERROR:` line. Add a table-driven test with at least 15 malformed inputs asserting no exception and at least one error.
+8. **CLI crash on `{"captured_room": null}`** (~l.81 `AttributeError`) and similar. The CLI must print `ERROR:` lines and exit 1, with no traceback, for: null/non-dict `captured_room`, invalid JSON, empty file, missing file, a directory path. Test each via `subprocess`.
+
+Add to HANDOFF.md under `## Decisions` which stub cases (if any) are xfail and why. No edits outside OWNS.txt.
