@@ -1,0 +1,1 @@
+{"surfaces":[{"surface_id":"wall_n","material":"drywall","confidence":0.8},{"surface_id":"wall_s","material":"drywall","confidence":0.8},{"surface_id":"floor","material":"carpet","confidence":0.8},{"surface_id":"ceiling","material":"unknown","confidence":0.2},{"surface_id":"not_expected","material":"brick","confidence":0.7}]}

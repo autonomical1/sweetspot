@@ -1,0 +1,15 @@
+{
+  "_note": "Hand-written Google Shopping-style SerpApi response; replace with a real recording when available.",
+  "search_metadata": {"id": "offline-sample", "status": "Success"},
+  "search_parameters": {"engine": "google_shopping", "q": "5.1 speaker"},
+  "shopping_results": [
+    {"position": 1, "title": "Front Speaker L", "product_link": "https://example.invalid/1", "source": "Example Audio", "price": "$129.99", "extracted_price": 129.99, "thumbnail": "https://example.invalid/1.jpg", "rating": 4.5, "reviews": 120},
+    {"position": 2, "title": "Front Speaker R", "link": "https://example.invalid/2", "source": "Example Audio", "price": "$129.99", "extracted_price": 129.99, "thumbnail": "https://example.invalid/2.jpg", "rating": 4.4, "reviews": 80},
+    {"position": 3, "title": "Center Speaker", "product_link": "https://example.invalid/3", "source": "Example Audio", "price": "$249.00", "extracted_price": 249.0, "thumbnail": "https://example.invalid/3.jpg", "rating": 4.7, "reviews": 210},
+    {"position": 4, "title": "Powered Subwoofer", "product_link": "https://example.invalid/4", "source": "Example Audio", "price": "$399", "extracted_price": 399, "thumbnail": "https://example.invalid/4.jpg", "rating": 4.6, "reviews": 95},
+    {"position": 5, "title": "Surround Speaker Pair", "product_link": "https://example.invalid/5", "source": "Example Audio", "price": "$179.00", "extracted_price": 179.0, "thumbnail": "https://example.invalid/5.jpg", "rating": 4.2, "reviews": 40},
+    {"position": 6, "title": "Projector Screen", "product_link": "https://example.invalid/6", "source": "Example Video", "price": "$1,299.00", "extracted_price": 1299.0, "thumbnail": "https://example.invalid/6.jpg", "rating": 4.8, "reviews": 305},
+    {"position": 7, "title": "Ceiling Mount", "product_link": "https://example.invalid/7", "source": "Example Video", "price": "$49", "extracted_price": 49, "thumbnail": "https://example.invalid/7.jpg", "rating": 4.1, "reviews": 18},
+    {"position": 8, "title": "Mystery Listing", "product_link": "https://example.invalid/8", "source": "Example Store", "thumbnail": "https://example.invalid/8.jpg", "rating": 3.9, "reviews": 7}
+  ]
+}
