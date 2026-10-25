@@ -40,6 +40,12 @@ def quality(row: dict, role: str, screen: dict | None) -> float:
         terms = [fit, scale(power, 20, 300, log=True)]
     elif role == "LFE":
         terms = [scale(number(specs.get("driver_in")), 8, 15), scale(power, 100, 1000, log=True)]
+    elif role == "receiver":
+        from .theater import receiver_quality
+
+        return receiver_quality(row, 5)
+    elif role in {"mount", "hdmi_cable", "speaker_wire"}:
+        terms = [NEUTRAL_SPEC]
     elif role == "projector":
         resolution = number(specs.get("resolution"))
         res = NEUTRAL_SPEC if resolution is None else 1.0 if resolution >= 2160 else 0.5 if resolution >= 1080 else 0.0

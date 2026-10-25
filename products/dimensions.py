@@ -3,6 +3,8 @@
 import json
 import re
 
+from .value import number
+
 LENGTH = r"(\d+(?:\.\d+)?)\s*(\"|”|inches|inch|in\b|cm\b|mm\b)"
 TRIPLE = re.compile(rf"{LENGTH}\s*[x×]\s*{LENGTH}\s*[x×]\s*{LENGTH}", re.I)
 LABELLED = re.compile(
@@ -28,9 +30,15 @@ def dimensions(row: dict, role: str, screen: dict | None) -> dict:
         if all(0.05 <= part <= 20 for part in parts):
             return dict(zip(("width", "height", "depth"), parts, strict=True), source="listing")
     factor = (row.get("specs") or {}).get("form_factor")
-    defaults = {"LFE": (1.1, 1.2, 1.2), "projector": (1.3, 0.5, 1.1), "C": (1.6, 0.6, 0.7)}
+    defaults = {"LFE": (1.1, 1.2, 1.2), "projector": (1.3, 0.5, 1.1),
+                "C": (1.6, 0.6, 0.7), "receiver": (17.1 / 12, 6.5 / 12, 14 / 12),
+                "mount": (0.8, 0.4, 0.8), "hdmi_cable": (0.1, 0.1, 10.0),
+                "speaker_wire": (0.5, 0.5, 0.5)}
     if role == "screen" and screen:
         size = (screen["width"], screen["height"], 0.15)
+    elif role == "tv":
+        diagonal = (number((row.get("specs") or {}).get("diagonal_in")) or 65) / 12
+        size = (diagonal * 16 / (337 ** 0.5), diagonal * 9 / (337 ** 0.5), 0.25)
     elif role in defaults:
         size = defaults[role]
     elif factor == "floorstanding":
