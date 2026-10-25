@@ -64,6 +64,7 @@ export interface Metrics {
 
 export interface LayoutResult { layout: Layout; metrics: Metrics }
 export interface ScoreResult { metrics: Metrics }
+export interface OptimizeStatus { state: 'idle' | 'queued' | 'running' | 'done' | 'failed' | 'superseded'; preset: string | null; started_at: string | null; elapsed_s: number | null; error: string | null }
 
 export interface ProductAlternative {
   title: string;
@@ -146,8 +147,10 @@ export const api = {
   getSession: (id: string) => request<SessionStatus>(`/sessions/${encodeURIComponent(id)}`),
   demoRoom: (sessionId?: string) => post<Room>('/rooms/demo', sessionId ? { session_id: sessionId } : {}),
   getRoom: (id: string) => request<Room>(`/rooms/${encodeURIComponent(id)}`),
+  patchListener: (id: string, listener: Room['listener']) => request<Room>(`/rooms/${encodeURIComponent(id)}/listener`, { method: 'PATCH', body: JSON.stringify(listener) }),
   optimize: (id: string, options?: Record<string, unknown>) => post<LayoutResult>(`/rooms/${encodeURIComponent(id)}/optimize`, options ? { options } : {}, 30_000),
   score: (id: string, layout: Layout) => post<ScoreResult>(`/rooms/${encodeURIComponent(id)}/score`, { layout }),
   getLayout: (id: string) => request<LayoutResult>(`/rooms/${encodeURIComponent(id)}/layout`),
+  getOptimizeStatus: (id: string) => request<OptimizeStatus>(`/rooms/${encodeURIComponent(id)}/optimize/status`),
   getProducts: (id: string, budget: number) => request<ProductsResult>(`/rooms/${encodeURIComponent(id)}/products?budget=${encodeURIComponent(budget)}`),
 };

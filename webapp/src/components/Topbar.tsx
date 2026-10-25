@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { parseRoomId } from '../lib/roomId';
+import { hasWebGL } from '../interaction/webgl';
 
 interface Props {
   loading: boolean;
@@ -28,8 +29,8 @@ export function Topbar({ loading, viewMode, onDemo, onPair, onOpenRoom, onView, 
       <button className="quiet" onClick={onDemo} disabled={loading}>{loading ? 'Loading room…' : 'Use demo room'}</button>
       <button className="quiet" onClick={onPair}>Pair your iPhone</button>
       <div className="view-segment" aria-label="View mode">
-        <button className={viewMode === '3d' ? 'active' : ''} onClick={() => onView('3d')}>3D</button>
         <button className={viewMode === '2d' ? 'active' : ''} onClick={() => onView('2d')}>2D</button>
+        <button className={viewMode === '3d' ? 'active' : ''} onClick={() => onView('3d')} disabled={!hasWebGL()} title={!hasWebGL() ? '3D requires WebGL' : undefined}>3D</button>
       </div>
       <button className="quiet" onClick={() => fileRef.current?.click()}>Load room file</button>
       <form className="room-id-form" onSubmit={openRoom} aria-label="Open a scanned room by its ID">
