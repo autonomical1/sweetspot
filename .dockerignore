@@ -10,3 +10,7 @@ __pycache__/
 phoneapp_context/
 docs/
 output/
+node_modules/
+webapp/node_modules/
+webapp/dist/
+webapp/.vite/

@@ -111,6 +111,32 @@ cd /srv/sweetspot
 bash deploy/smoke.sh https://sweetspotav.tech
 ```
 
+## Web app build
+
+The React/Vite app in `webapp/` is built in the Node stage of
+`deploy/Dockerfile`. Its output is copied into `web/` in the final API image,
+alongside the committed `web/plot2d/` page. The Vite app is served at `/app/`;
+the existing root redirect continues to open `/app/plot2d/`.
+
+Rebuild the production image locally or on the VPS with:
+
+```bash
+docker compose -f deploy/docker-compose.yml build api
+docker compose -f deploy/docker-compose.yml up -d api caddy
+```
+
+Verify the generated app and its assets after it starts:
+
+```bash
+bash deploy/smoke.sh http://localhost
+# Or, from a machine that can reach the deployment:
+bash deploy/smoke.sh https://sweetspotav.tech
+```
+
+The smoke script checks that `/app/` has Vite's `#root` element, follows its
+hashed JavaScript asset and verifies its JavaScript content type, and fetches
+`/app/models/projector.glb`.
+
 ## Live domain (2026-10-25)
 
 `https://sweetspotav.tech` is live: DNS `@ A 144.202.27.51` (registrar nameservers `tech-domains.venus.orderbox-dns.com`), `/srv/sweetspot/.env` has `DOMAIN=sweetspotav.tech` and `SITE_ADDRESS="sweetspotav.tech, 144-202-27-51.sslip.io"` (the sslip.io host stays as a fallback; the previous file is `.env.bak-pre-domain`). Caddy obtained the Let's Encrypt certificate itself; the first attempt failed because Let's Encrypt's secondary check still saw the old empty DNS answer, and Caddy's automatic retry about a minute later succeeded. Do not restart Caddy repeatedly while a certificate is pending (rate limits). The API keys (`GEMINI_API_KEY`, `SERPAPI_KEY`) and `GEMINI_MODEL=gemini-3.8-flash` are set in the server `.env`, so older notes above saying the keys are empty are out of date.
