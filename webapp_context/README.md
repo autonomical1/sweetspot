@@ -9,7 +9,7 @@ The desktop half of Sweetspot. A user opens the site on a laptop, pairs their ph
 - **Backend** (FastAPI): every endpoint you need is live and tested (`02_api_reference.md`). Run it locally: `pip install -r backend/requirements.txt` then `uvicorn backend.app.main:app --reload`, and open http://127.0.0.1:8000/docs.
 - **Engine**: `POST /rooms/{id}/optimize` runs the teammate's `speakerplacer` acoustic optimizer through an adapter. It takes **about 8 seconds**. `POST /rooms/{id}/score` takes **about 16 ms** and is what drag-to-rescore uses.
 - **2D plot page** at `/app/plot2d/` (`web/plot2d/`): a working SVG plan view with drag, live score, products, ft-in formatting and stale-response guards. It is the starting point for the 2D view; reuse `format.js` and the drawing code.
-- **Hosting**: the backend serves the `web/` folder at `/app/` from the same origin as the API, so `fetch("/rooms/...")` needs no CORS and no host name. Deployed behind Caddy with HTTPS at https://144-202-27-51.sslip.io (`DEPLOY.md`).
+- **Hosting**: the backend serves the `web/` folder at `/app/` from the same origin as the API, so `fetch("/rooms/...")` needs no CORS and no host name. Deployed behind Caddy with HTTPS at https://sweetspotav.tech (`DEPLOY.md`).
 - **Stack decision (team): React + Vite** single-page app (`base: '/app/'`), source in `webapp/`, built into `web/` at deploy time. Details in `05_2d_view_and_toggle.md`.
 
 ## You own / you do not
