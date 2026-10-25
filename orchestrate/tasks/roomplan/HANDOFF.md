@@ -25,9 +25,9 @@
 - For equal farthest-wall distances, preserve DTO order; distance comparisons round to ten decimal places to prevent floating-point rotation noise from changing symmetric-room ties.
 
 ## Design questions
-- What defines the largest sofa when several are detected? Used floor footprint (`width * depth`) with DTO-order ties; alternatives are bounding-box volume or width alone.
-- Which television should determine facing when several exist? Used the first in DTO order; alternatives include largest screen or nearest television.
-- What facing should be used when the inferred target coincides with the seat (for example, a sofa at the room centre without a TV)? Used the farthest wall midpoint and added a warning; alternatives are sofa orientation or requiring a listener override.
-- Should the listener be offset from the sofa box centre? Used the specified sofa-centre x-z position and clamped 3.6 ft ear height; alternatives are a seat/front-edge offset or an explicit user-selected seat.
-- Should TV-less facing use another policy? Implemented the brief's sofa-to-room-centre direction, or the farthest wall midpoint without a sofa; alternatives are sofa orientation or a user-selected front wall.
-- How should curved walls be represented later? Treated them as straight dimension/transform-derived spans and ignored polygon corners as instructed; alternatives are documented polygon geometry or explicit unsupported-scan rejection.
+- What defines the largest sofa when several are detected? Used floor footprint (`width * depth`) with DTO-order ties; alternatives are bounding-box volume or width alone. [resolved: largest by floor footprint, as built]
+- Which television should determine facing when several exist? Used the first in DTO order; alternatives include largest screen or nearest television. [resolved: largest TV by screen size; task roomplan-tv]
+- What facing should be used when the inferred target coincides with the seat (for example, a sofa at the room centre without a TV)? Used the farthest wall midpoint and added a warning; alternatives are sofa orientation or requiring a listener override. [resolved: keep farthest wall midpoint plus a warning]
+- Should the listener be offset from the sofa box centre? Used the specified sofa-centre x-z position and clamped 3.6 ft ear height; alternatives are a seat/front-edge offset or an explicit user-selected seat. [resolved: no offset: sofa centre, 3.6 ft ears]
+- Should TV-less facing use another policy? Implemented the brief's sofa-to-room-centre direction, or the farthest wall midpoint without a sofa; alternatives are sofa orientation or a user-selected front wall. [resolved: keep farthest wall midpoint plus a warning]
+- How should curved walls be represented later? Treated them as straight dimension/transform-derived spans and ignored polygon corners as instructed; alternatives are documented polygon geometry or explicit unsupported-scan rejection. [resolved: true polygon geometry; task polygon-walls (blocked, needs spec)]
