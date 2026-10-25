@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 import os
 import threading
 from collections import deque
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from unittest.mock import patch
 
 from . import acoustics, engine3d, store
 from .schemas import LayoutResult, Room
@@ -231,6 +233,25 @@ def _safe_reason(exc: Exception) -> str:
     return type(exc).__name__
 
 
+def _run_full_scene(job: Job, timeout: float) -> dict:
+    kwargs = {"preset": job.preset, "standard": job.standard, "timeout_s": timeout}
+    parameters = inspect.signature(engine3d.run_scene).parameters
+    accepts_fast = "fast" in parameters or any(
+        parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in parameters.values())
+    if accepts_fast:
+        return engine3d.run_scene(job.room, job.room["listener"], fast=False, **kwargs)
+
+    # The merged runner predates its fast parameter. Until it gains one, force
+    # its CLI builder to omit --fast while keeping the runner's timeout handling.
+    build_command = engine3d.build_command
+
+    def full_command(*args, **command_kwargs):
+        return build_command(*args, **{**command_kwargs, "fast": False})
+
+    with patch.object(engine3d, "build_command", full_command):
+        return engine3d.run_scene(job.room, job.room["listener"], **kwargs)
+
+
 def _work() -> None:
     while True:
         with _wake:
@@ -246,8 +267,7 @@ def _work() -> None:
             _set_status(job.key, _status("running", job.preset, job.standard, started_at=started))
         try:
             timeout = float(os.getenv("ENGINE3D_TIMEOUT_S", "150"))
-            scene = engine3d.run_scene(job.room, job.room["listener"], preset=job.preset,
-                                       standard=job.standard, timeout_s=timeout)
+            scene = _run_full_scene(job, timeout)
             mapped = engine3d.to_layout(scene, job.room)
             layout = mapped["layout"]
             layout.update(stage="refined", preset=job.preset, standard=job.standard)

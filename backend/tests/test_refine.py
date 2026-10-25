@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from backend.app import engine3d, store
+from backend.app import engine3d, refine, store
 from backend.app.main import create_app
 
 SCENES = Path(__file__).resolve().parents[2] / "fixtures" / "engine"
@@ -64,10 +64,34 @@ def test_quick_refining_refined_and_cache(data_dir, monkeypatch):
     assert "engine" in refined["metrics"]
     assert any("WARN" in warning for warning in refined["metrics"]["warnings"])
     assert calls[0]["timeout_s"] == 150
+    assert calls[0]["fast"] is False
     cached = client.post(root + "/optimize", json={}).json()
     assert cached["layout"]["stage"] == "refined"
     assert client.get(root + "/optimize/status").json()["from_cache"] is True
     assert len(calls) == 1
+
+
+def test_full_scene_omits_fast_with_legacy_runner(data_dir, monkeypatch):
+    commands = []
+
+    class FakeProcess:
+        returncode = 0
+
+        def __init__(self, command, **kwargs):
+            commands.append(command)
+            output = Path(command[command.index("--save-layout") + 1])
+            output.write_text((SCENES / "layout_5.1.json").read_text(encoding="utf-8"),
+                              encoding="utf-8")
+
+        def communicate(self, timeout=None):
+            return "", ""
+
+    monkeypatch.setattr(engine3d.subprocess, "Popen", FakeProcess)
+    room = json.loads((SCENES.parent / "room_rect.json").read_text(encoding="utf-8"))
+    job = refine.Job(("test", room["room_id"]), room, 1, "test", "5.1", "dolby")
+    assert refine._run_full_scene(job, 150)["schema_version"] == 2
+    assert len(commands) == 1
+    assert "--fast" not in commands[0]
 
 
 def test_superseded_by_listener_edit(data_dir, monkeypatch):
