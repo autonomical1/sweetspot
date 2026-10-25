@@ -69,6 +69,15 @@ That is a right-handed rotation about +y (`simd_quatf(angle: t, axis: [0,1,0])`;
 ```
 `screen` may be null. Minimum viable engine output is `layout.speakers` only; every other field may be empty.
 
+### 2a. 3D engine output (decided 2026-10-24, engine = teammate `speakerplacer` schema 2)
+
+The new engine places a full home-theater layout in 3D. Our layout keeps the shape of section 2 and gains OPTIONAL fields (clients must ignore what they do not know):
+- `speakers[].role` is one of `L R C LFE Ls Rs` (5.1, the default preset), `Lss Rss Lrs Rrs` (7.1: side and rear surrounds; `Ls/Rs` are used only for 5.1), overhead `Ltf Rtf Ltr Rtr Ltm Rtm` (.2/.4/.6 presets), `LFE2` when two subs are placed. `position`/`aim` stay feet in the ROOM frame (x width, y up, z length; north = -z); positions are real 3D (wall height, ceiling for overheads).
+- optional per speaker: `yaw_deg`, `pitch_deg`, `size` `{"width","height","depth"}` (feet, the placed box), `mount` (`on_wall|in_wall|on_ceiling|floor|stand`), `model_id`, `distance_ft` (to the listener), `receiver_delay_ms`, `receiver_trim_db`, `compliance` `{"status":"PASS|WARN|FAIL","azimuth_deg","azimuth_allowed","elevation_deg","elevation_allowed"}`.
+- optional layout level: `preset` (`"5.1"|"7.1"|"7.1.4"|...`), `standard` (`dolby|itu|thx`), `seats` `[{"row","seat","position":[x,y,z],"ear_height"}]`, `projector` `{"position":[x,y,z],"aim":[x,y,z]}` and `screen` as before, `stage` (`"quick"|"refining"|"refined"`, see below).
+- `metrics.engine` (optional): `compliance` rows, `receiver_calibration`, `rt60`, `first_reflections`, `crossover`, `sub_strategy_comparison`, `warnings`.
+- Run time: a full 3D run takes about 75 s (5.1) to 95 s (7.1.4) even with the engine's `--fast`, so it is NOT answered synchronously. `POST /rooms/{id}/optimize` keeps returning a quick result immediately (`stage: "quick"`, today's fast optimizer) and starts a background 3D run; `GET /rooms/{id}/layout` returns the latest layout with `stage` `"refining"` while it runs and `"refined"` when done, plus `GET /rooms/{id}/optimize/status` `{"state":"idle|running|failed","preset","started_at","elapsed_s","error"}`. Request option `{"options":{"preset":"5.1|7.1|7.1.4", "standard":"dolby|itu|thx"}}` selects the preset (default 5.1 / dolby). Refined results are cached per (room, listener, preset, standard, materials).
+
 ## 3. Engine module (owner: engine teammate; package `speakerplacer/` at repo root)
 
 **Integration note (2026-10-24):** the teammate package exposes `optimize_layout(polygon_m, listener_m, layout, facing, ...)` (2D, metres, north = +y, roles front/surround/bass, no center model) rather than the functions below. `backend/app/engine_speakerplacer.py` adapts it to this contract (center placed geometrically, one LFE, metrics from `backend/app/acoustics.py`); the backend and the contract tests use that adapter.

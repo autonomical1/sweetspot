@@ -1,11 +1,13 @@
 """FastAPI entry point."""
 import importlib
 import importlib.util
+import logging
 import os
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -18,6 +20,23 @@ class CodeRequest(BaseModel):
 
 def create_app() -> FastAPI:
     application = FastAPI()
+    request_log = logging.getLogger("sweetspot.request")
+
+    @application.middleware("http")
+    async def log_requests(request: Request, call_next):
+        # One line per request with its duration (path only: query strings can carry keys or budgets).
+        started = time.perf_counter()
+        status = 500
+        try:
+            response = await call_next(request)
+            status = response.status_code
+            return response
+        finally:
+            elapsed_ms = (time.perf_counter() - started) * 1000
+            client = request.client.host if request.client else "-"
+            request_log.info(
+                "%s %s -> %s in %.0f ms (client %s)", request.method, request.url.path, status, elapsed_ms, client
+            )
 
     @application.get("/health")
     def health() -> dict:

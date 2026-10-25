@@ -1,0 +1,4 @@
+backend/app/engine3d.py
+backend/tests/test_engine3d.py
+backend/tests/test_engine3d_live.py
+orchestrate/tasks/engine3d-core/HANDOFF.md

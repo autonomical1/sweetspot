@@ -1,0 +1,59 @@
+# Home-theater channel targets are reference guidance, not guarantees of local
+# compliance. Re-check each range against the chosen format's current documents.
+# Sources: ITU-R BS.775-3 (L/C/R and LS/RS angles) and Dolby 7.1.4 home setup
+# guide (overhead angle sector). Other channels/ranges are conservative seeds.
+# Status stays `verify` until a format expert confirms every channel and layout.
+status: verify
+sources:
+  itu_bs_775_3: https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.775-3-201208-S%21%21PDF-E.pdf
+  dolby_7_1_4: https://www.dolby.com/siteassets/about/support/guide/setup-guides/7.1.4-overhead-speaker-placement/7_1_4_overhead_speaker_setup.pdf
+provenance:
+  itu_5_1_angles: {source: itu_bs_775_3, status: cited, note: "Reference for conventional 5.1 front and side channel angles; project windows remain subject to verification."}
+  dolby_7_1_4_heights: {source: dolby_7_1_4, status: cited, note: "Reference for overhead-channel setup; numeric project windows remain subject to verification."}
+  other_layouts: {source: project_defaults, status: provisional, note: "Rear, wide, expanded, THX aliases, and custom bounds need format-specific confirmation."}
+standards:
+  itu:
+    LFE: {role: bass, azimuth_deg: 0, azimuth_range_deg: [-180, 180], elevation_deg: 0, elevation_range_deg: [-90, 90], surfaces: [wall, floor], symmetric: false}
+    L: {role: front, azimuth_deg: -30, azimuth_range_deg: [-30, -30], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front], symmetric: true}
+    C: {role: front, azimuth_deg: 0, azimuth_range_deg: [-5, 5], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front], symmetric: false}
+    R: {role: front, azimuth_deg: 30, azimuth_range_deg: [30, 30], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front], symmetric: true}
+    Lss: {role: surround, azimuth_deg: -110, azimuth_range_deg: [-120, -100], elevation_deg: 10, elevation_range_deg: [0, 15], surfaces: [left], symmetric: true}
+    Rss: {role: surround, azimuth_deg: 110, azimuth_range_deg: [100, 120], elevation_deg: 10, elevation_range_deg: [0, 15], surfaces: [right], symmetric: true}
+    Lrs: {role: surround, azimuth_deg: -140, azimuth_range_deg: [-150, -135], elevation_deg: 10, elevation_range_deg: [0, 15], surfaces: [back], symmetric: true}
+    Rrs: {role: surround, azimuth_deg: 140, azimuth_range_deg: [135, 150], elevation_deg: 10, elevation_range_deg: [0, 15], surfaces: [back], symmetric: true}
+    Lw: {role: front, azimuth_deg: -60, azimuth_range_deg: [-70, -50], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front, left], symmetric: true}
+    Rw: {role: front, azimuth_deg: 60, azimuth_range_deg: [50, 70], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front, right], symmetric: true}
+    Ltf: {role: height, azimuth_deg: -30, azimuth_range_deg: [-45, -15], elevation_deg: 45, elevation_range_deg: [30, 55], surfaces: [ceiling], symmetric: true}
+    Rtf: {role: height, azimuth_deg: 30, azimuth_range_deg: [15, 45], elevation_deg: 45, elevation_range_deg: [30, 55], surfaces: [ceiling], symmetric: true}
+    Ltm: {role: height, azimuth_deg: -90, azimuth_range_deg: [-110, -70], elevation_deg: 75, elevation_range_deg: [60, 90], surfaces: [ceiling], symmetric: true}
+    Rtm: {role: height, azimuth_deg: 90, azimuth_range_deg: [70, 110], elevation_deg: 75, elevation_range_deg: [60, 90], surfaces: [ceiling], symmetric: true}
+    Ltr: {role: height, azimuth_deg: -135, azimuth_range_deg: [-150, -120], elevation_deg: 45, elevation_range_deg: [30, 55], surfaces: [ceiling], symmetric: true}
+    Rtr: {role: height, azimuth_deg: 135, azimuth_range_deg: [120, 150], elevation_deg: 45, elevation_range_deg: [30, 55], surfaces: [ceiling], symmetric: true}
+  dolby:
+    LFE: {role: bass, azimuth_deg: 0, azimuth_range_deg: [-180, 180], elevation_deg: 0, elevation_range_deg: [-90, 90], surfaces: [wall, floor], symmetric: false}
+    L: {role: front, azimuth_deg: -26, azimuth_range_deg: [-30, -22], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front], symmetric: true}
+    C: {role: front, azimuth_deg: 0, azimuth_range_deg: [-5, 5], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front], symmetric: false}
+    R: {role: front, azimuth_deg: 26, azimuth_range_deg: [22, 30], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front], symmetric: true}
+    Lss: {role: surround, azimuth_deg: -110, azimuth_range_deg: [-120, -90], elevation_deg: 10, elevation_range_deg: [0, 15], surfaces: [left], symmetric: true}
+    Rss: {role: surround, azimuth_deg: 110, azimuth_range_deg: [90, 120], elevation_deg: 10, elevation_range_deg: [0, 15], surfaces: [right], symmetric: true}
+    Lrs: {role: surround, azimuth_deg: -140, azimuth_range_deg: [-150, -135], elevation_deg: 10, elevation_range_deg: [0, 15], surfaces: [back], symmetric: true}
+    Rrs: {role: surround, azimuth_deg: 140, azimuth_range_deg: [135, 150], elevation_deg: 10, elevation_range_deg: [0, 15], surfaces: [back], symmetric: true}
+    Lw: {role: front, azimuth_deg: -60, azimuth_range_deg: [-70, -50], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front, left], symmetric: true}
+    Rw: {role: front, azimuth_deg: 60, azimuth_range_deg: [50, 70], elevation_deg: 0, elevation_range_deg: [-10, 15], surfaces: [front, right], symmetric: true}
+    Ltf: {role: height, azimuth_deg: -30, azimuth_range_deg: [-45, -15], elevation_deg: 45, elevation_range_deg: [30, 55], surfaces: [ceiling], symmetric: true}
+    Rtf: {role: height, azimuth_deg: 30, azimuth_range_deg: [15, 45], elevation_deg: 45, elevation_range_deg: [30, 55], surfaces: [ceiling], symmetric: true}
+    Ltm: {role: height, azimuth_deg: -90, azimuth_range_deg: [-110, -70], elevation_deg: 75, elevation_range_deg: [60, 90], surfaces: [ceiling], symmetric: true}
+    Rtm: {role: height, azimuth_deg: 90, azimuth_range_deg: [70, 110], elevation_deg: 75, elevation_range_deg: [60, 90], surfaces: [ceiling], symmetric: true}
+    Ltr: {role: height, azimuth_deg: -135, azimuth_range_deg: [-150, -120], elevation_deg: 45, elevation_range_deg: [30, 55], surfaces: [ceiling], symmetric: true}
+    Rtr: {role: height, azimuth_deg: 135, azimuth_range_deg: [120, 150], elevation_deg: 45, elevation_range_deg: [30, 55], surfaces: [ceiling], symmetric: true}
+layouts:
+  "5.1": [L, C, R, Lss, Rss, LFE]
+  "5.2": [L, C, R, Lss, Rss, LFE, LFE2]
+  "7.1": [L, C, R, Lss, Rss, Lrs, Rrs, LFE]
+  "7.2": [L, C, R, Lss, Rss, Lrs, Rrs, LFE, LFE2]
+  "5.1.2": [L, C, R, Lss, Rss, LFE, Ltf, Rtf]
+  "5.1.4": [L, C, R, Lss, Rss, LFE, Ltf, Rtf, Ltr, Rtr]
+  "7.1.2": [L, C, R, Lss, Rss, Lrs, Rrs, LFE, Ltf, Rtf]
+  "7.1.4": [L, C, R, Lss, Rss, Lrs, Rrs, LFE, Ltf, Rtf, Ltr, Rtr]
+  "7.2.4": [L, C, R, Lss, Rss, Lrs, Rrs, LFE, LFE2, Ltf, Rtf, Ltr, Rtr]
+  "9.1.6": [L, C, R, Lss, Rss, Lrs, Rrs, Lw, Rw, LFE, Ltf, Rtf, Ltm, Rtm, Ltr, Rtr]
