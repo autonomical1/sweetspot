@@ -7,15 +7,16 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 7
-- last_checkpoint: 2026-10-24 23:05
+- last_checkpoint: 2026-10-24 22:10
 
 ## Next action
-Running (each a background `start` then `review` job): `ios-real-scan` is MERGED to master (demo-ok 3f1e8c1, not yet deployed to the server: deploy together with products-options), `products-options` (account 2, started about 22:40), `ios-products-ui` (Swift shop screen, account 1, started about 22:40). `ios-ar-frame` is done: its commits are on branch ios-phone_context (pushed), which was updated to master first; master got them by merging that branch.
+dispatch status: `products-options` RUNNING (account 2; merge normally when check + review pass, then redeploy together with ios-real-scan which is merged but not deployed). `ios-products-ui` worker-done check PASS after retry 1; needs `review -Id ios-products-ui`, but first append the user's 22:00 decision to its brief/retry: the shop is a PUSHED navigation screen, not a sheet (may need a small follow-up run). `ios-ar-frame` done (on ios-phone_context).
+Design forks resolved 22:00 (DECISIONS.md), NOT yet implemented: roomplan picks largest TV (small task); plot2d per-surface patch depth (small task); polygon/curved walls (large: needs its own spec in docs/API.md + engine/roomplan task; ask user before scheduling given the deadline).
 
 iOS RULE (user): all iOS changes are committed to branch `ios-phone_context`. Do NOT use `dispatch merge` for iOS tasks (it merges into master). Procedure for an iOS task that passed check + review: use the extra worktree ../sweetspot-ios (branch ios-phone_context): `git merge --no-ff task/<id>`, `git push origin ios-phone_context`, then in the main tree `git merge --no-ff ios-phone_context` into master (so later workers start from the latest app), set the task `done` in TASKS.md. Backend tasks (ios-real-scan, products-options) merge normally with `DISPATCH merge -Id <id>` then ruff + pytest, push, redeploy the server (`cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build`), run products/e2e checks; products-options also changes the response (alternatives): tell the web teammate; the iOS task consumes it as optional fields. A review ISSUES -> one retry (alternate accounts), then ask the user.
 
 ## Waiting on user
-1. Build the iOS branch in Xcode and run the device checks in orchestrate/tasks/ios-ar-frame/HANDOFF.md (needs a FULL room scan; the one on the server was an incomplete upload test). 2. Tell the iOS teammate their branch now contains master plus the AR frame fix, and another agent is adding the shop screen on the same branch. 3. Tell the SerpApi teammate their files moved to products/; the web/3D teammates get `dimensions`, `pair_with` and soon `alternatives`.
+1. Go-ahead to dispatch the small fork tasks (largest TV, plot2d patch depth) and whether to spec polygon walls. 2. Build the iOS branch in Xcode and run the device checks in orchestrate/tasks/ios-ar-frame/HANDOFF.md (needs a FULL room scan). 3. Tell the iOS teammate their branch has master plus the AR frame fix and the shop screen is being added; tell the SerpApi teammate their files moved to products/; web/3D teammates get `dimensions`, `pair_with` and soon `alternatives`.
 
 ## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
