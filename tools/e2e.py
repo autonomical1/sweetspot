@@ -197,7 +197,8 @@ def _scan(client: Any, state: dict[str, Any]) -> Any:
     assert room.get("frame") is not None, room
     result = _require(client.post(f"/rooms/{room['room_id']}/optimize", json={}))
     assert result["layout"]["speakers"], result
-    warnings = _warnings(room) + _warnings(result)
+    # run_e2e adds result["metrics"]["warnings"] itself, so only add the room's and the top-level ones here.
+    warnings = _warnings(room) + [str(item) for item in result.get("warnings", [])]
     return {**result, "warnings": warnings}
 
 

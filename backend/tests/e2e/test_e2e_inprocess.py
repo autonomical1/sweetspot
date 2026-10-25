@@ -128,7 +128,8 @@ class ScanClient:
 
 def test_scan_step_keeps_room_and_metrics_warnings():
     result = e2e._scan(ScanClient(), {})
-    assert result["warnings"] == ["scan warning", "metric warning"]
+    assert result["warnings"] == ["scan warning"]
+    assert e2e._warnings(result) == ["scan warning", "metric warning"]
 
 
 class ProductsClient:
