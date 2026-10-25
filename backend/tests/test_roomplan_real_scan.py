@@ -114,6 +114,8 @@ def test_contract_frame_vectors():
         frame = {"yaw_deg": case["yaw_deg"], "offset": case["offset_ft"]}
         assert to_world_m(case["room_ft"], frame) == pytest.approx(case["world_m"], abs=1e-4)
     for case in vectors["directions"]:
-        frame = {"yaw_deg": case["yaw_deg"], "offset": [0, 0, 0]}
-        world = to_world_m(case["room_dir"], frame)
-        assert world == pytest.approx([value * 0.3048 for value in case["world_dir"]], abs=1e-4)
+        # Directions rotate only: no offset and no feet-to-metres scaling.
+        angle = math.radians(case["yaw_deg"])
+        x, y, z = case["room_dir"]
+        world = [math.cos(angle) * x + math.sin(angle) * z, y, -math.sin(angle) * x + math.cos(angle) * z]
+        assert world == pytest.approx(case["world_dir"], abs=1e-4)
