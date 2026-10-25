@@ -33,7 +33,7 @@ Remove the `LabeledContent("Found", value: summary.text)` rows from the scan det
 Swift cannot be compiled here: mirror existing patterns, check every symbol with Grep, keep edits small. HANDOFF.md must list changed functions and a manual test script for the iOS tester (including: does the outline coincide with the walls? if not, which offset/rotation is it off by, so we can fix the frame instead of guessing).
 
 ## Done when
-`python -m ruff check . && python -m pytest -q` pass (backend wording tests updated); a Grep for `Gemini` shows no user-visible strings.
+`python -m ruff check .` and `python tools/smoke_tests.py` pass (the full pytest suite is slow: do NOT run it; run only the touched tests, backend/tests/test_gemini_limits.py and backend/tests/test_materials*.py); a Grep for `Gemini` shows no user-visible strings.
 
 ## Out of scope
 Backend logic changes, web app, QR pairing (held), the "Set my seat" step (queued).
