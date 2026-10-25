@@ -94,6 +94,7 @@ enum AppConfig {
 enum BackendError: LocalizedError {
     case invalidResponse
     case http(Int, String)
+    case busy(String, Int)
     case invalidQR
 
     var errorDescription: String? {
@@ -102,10 +103,17 @@ enum BackendError: LocalizedError {
             return "The server returned an invalid response."
         case .http(let status, let detail):
             return "Server error (\(status)): \(detail)"
+        case .busy(let detail, _):
+            return detail
         case .invalidQR:
             return "That QR code is not a Sweetspot pairing link."
         }
     }
+}
+
+private struct BackendErrorBody: Decodable {
+    let detail: String?
+    let retry_after_s: Int?
 }
 
 struct BackendClient {
@@ -144,11 +152,13 @@ struct BackendClient {
         }
 
         guard (200..<300).contains(http.statusCode) else {
-            let detail =
-                (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["detail"] as? String
+            let body = try? JSONDecoder().decode(BackendErrorBody.self, from: data)
+            let detail = body?.detail
                 ?? String(data: data, encoding: .utf8)
                 ?? "Request failed"
-
+            if http.statusCode == 429 {
+                throw BackendError.busy(detail, max(1, body?.retry_after_s ?? 10))
+            }
             throw BackendError.http(http.statusCode, detail)
         }
 
@@ -276,6 +286,10 @@ struct BackendClient {
             body: json([:]),
             timeout: 120
         )
+    }
+
+    func materialsStatus(roomID: String) async throws -> MaterialsStatus {
+        try await request("rooms/\(roomID)/materials/status")
     }
 
     func optimize(roomID: String) async throws -> LayoutResponse {
