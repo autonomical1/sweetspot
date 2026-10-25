@@ -29,7 +29,7 @@ type Tab = typeof tabs[number];
 
 export function Sidebar({ room, onSelect }: Props) {
   const [tab, setTab] = useState<Tab>('Layout');
-  const { layout, metrics } = useAppStore();
+  const { layout, metrics, stage, recompute } = useAppStore();
   const choose = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
@@ -42,7 +42,7 @@ export function Sidebar({ room, onSelect }: Props) {
       {tabs.map((name, index) => <button key={name} id={`panel-tab-${name}`} role="tab" aria-selected={tab === name} aria-controls={`panel-${name}`} tabIndex={tab === name ? 0 : -1} onKeyDown={event => choose(event, index)} onClick={() => setTab(name)}>{name}</button>)}
     </div>
     <div className="panel-scroll" id={`panel-${tab}`} role="tabpanel" aria-labelledby={`panel-tab-${tab}`}>
-      {tab === 'Layout' && <LayoutPanel room={room} layout={layout} metrics={metrics} onSelect={onSelect} />}
+      {tab === 'Layout' && <LayoutPanel room={room} layout={layout} metrics={metrics} onSelect={onSelect} onRecompute={preset => void recompute(preset)} busy={stage === 'loading'} />}
       {tab === 'Acoustics' && <AcousticsPanel room={room} metrics={metrics} onSelect={onSelect} />}
       {tab === 'Shop' && <ShopPanel room={room} hasLayout={Boolean(layout)} />}
       {tab === 'Room' && <RoomPanel room={room} />}

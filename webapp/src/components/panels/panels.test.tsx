@@ -18,6 +18,12 @@ describe('panels', () => {
     fireEvent.click(screen.getByText('L')); expect(select).toHaveBeenCalledWith('L');
   });
 
+  it('recomputes with the chosen layout and height speakers', () => {
+    const recompute = vi.fn(); render(<LayoutPanel room={room} layout={{ ...layout, preset: '5.1' }} metrics={metrics} onSelect={vi.fn()} onRecompute={recompute} />);
+    fireEvent.click(screen.getByRole('button', { name: '7.1' })); fireEvent.click(screen.getByRole('button', { name: '.4' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Recompute as 7.1.4' })); expect(recompute).toHaveBeenCalledWith('7.1.4');
+  });
+
   it('renders strong reflections and empty-shop placement hint', () => {
     render(<><AcousticsPanel room={room} metrics={metrics} onSelect={vi.fn()} /><ShopPanel room={room} hasLayout={false} /></>);
     expect(screen.getByText('strong')).toBeTruthy();

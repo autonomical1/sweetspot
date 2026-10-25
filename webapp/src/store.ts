@@ -30,6 +30,7 @@ interface AppState {
   nudgeListener: (dx: number, dz: number) => void;
   pollRefinement: () => Promise<void>;
   chooseRefined: (useRefined: boolean) => void;
+  recompute: (preset: string) => Promise<void>;
   clearNotice: () => void;
 }
 
@@ -41,10 +42,10 @@ let polling = false;
 
 function resetQueue() { scoreQueue?.stop(); scoreQueue = null; editSequence += 1; pendingRefined = null; }
 
-async function optimizeRoom(room: Room, current: () => boolean, set: (value: Partial<AppState>) => void) {
-  set({ room, layout: null, metrics: null, selected: null, stage: 'loading', error: null });
+async function optimizeRoom(room: Room, current: () => boolean, set: (value: Partial<AppState>) => void, preset?: string) {
+  set(preset ? { stage: 'loading', error: null } : { room, layout: null, metrics: null, selected: null, stage: 'loading', error: null });
   try {
-    const result = await api.optimize(room.room_id);
+    const result = await api.optimize(room.room_id, preset ? { preset } : undefined);
     if (current()) set({ layout: result.layout, metrics: result.metrics, stage: result.layout.stage ?? 'quick' });
   } catch (error) {
     if (current()) set({ stage: 'error', error: error instanceof Error ? error.message : 'Could not optimize room' });
@@ -118,6 +119,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (useRefined && pendingRefined) { resetQueue(); set({ ...pendingRefined, edited: false, notice: '3D layout refined' }); }
     pendingRefined = null;
     set({ refinedConflict: false });
+  },
+  recompute: async preset => {
+    const { room } = get();
+    if (!room || get().stage === 'loading') return;
+    const run = ++generation;
+    resetQueue();
+    set({ edited: false, refinedConflict: false, notice: null });
+    await optimizeRoom(room, () => run === generation, set, preset);
   },
   loadRoom: async roomId => {
     const run = ++generation;
