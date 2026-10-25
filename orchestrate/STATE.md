@@ -7,10 +7,10 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 11
-- last_checkpoint: 2026-10-25 00:38
+- last_checkpoint: 2026-10-25 00:45
 
 ## Next action
-RESUMED 00:37 on CODEX ACCOUNT 2 (account 1 unused). Background jobs running: (a) engine3d-wire start gpt-6-sol high + review; (b) docs-webspec then docs-demo, gpt-5.6-luna medium, each with review; (c) products-theater check + review. When each finishes: PASS + VERDICT OK -> set `review` in TASKS.md, then merge ONE at a time as a background job (engine3d-wire first). After engine3d-wire merges: ruff + pytest, push, deploy to the VPS, smoke + e2e against https://sweetspotav.tech, confirm `stage` quick -> refined live. After products-theater merges: run tools/expand_catalog.py on the VPS, copy the DB back, widen PRODUCT_ROLES, deploy. ISSUES -> one retry on account 2; a second ISSUES -> ask the user. Still paused by the user: polygon-geometry, polygon-engine, plot2d-patch-depth. Handover notes: memory/HANDOVER-2026-10-25-0035.md.
+RESUMED 00:37 on CODEX ACCOUNT 2 (00:43: docs-webspec worker done, review next; docs-demo queued behind it; engine3d-wire running its full suite; products-theater check running) (account 1 unused). Background jobs running: (a) engine3d-wire start gpt-6-sol high + review; (b) docs-webspec then docs-demo, gpt-5.6-luna medium, each with review; (c) products-theater check + review. When each finishes: PASS + VERDICT OK -> set `review` in TASKS.md, then merge ONE at a time as a background job (engine3d-wire first). After engine3d-wire merges: ruff + pytest, push, deploy to the VPS, smoke + e2e against https://sweetspotav.tech, confirm `stage` quick -> refined live. After products-theater merges: run tools/expand_catalog.py on the VPS, copy the DB back, widen PRODUCT_ROLES, deploy. ISSUES -> one retry on account 2; a second ISSUES -> ask the user. Still paused by the user: polygon-geometry, polygon-engine, plot2d-patch-depth. Handover notes: memory/HANDOVER-2026-10-25-0035.md.
 - iOS team (user, 2026-10-25 00:10): the iOS teammate is ONLY the builder/tester from now on; the user and the orchestrator write all Swift (branch ios-phone_context first, then master). The Swift has never been compiled: expect compile-error fix tasks from pasted Xcode output; ask the teammate to `git pull` before building and to report errors instead of pushing edits.
 
 ## Waiting on user
