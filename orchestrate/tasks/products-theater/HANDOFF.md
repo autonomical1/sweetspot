@@ -5,6 +5,7 @@
 - Retry review fixes: TV selection recalculates shares after removing projector, screen, and mount; TV pools filter on at least 90% of layout screen diagonal; projectors use the strict 2× share cap; a missing or incompatible projector no longer leaves an orphan screen or mount; and generic `5.1 System`/`5.1 Package` titles are recognized as bundles. Focused regression tests cover all five.
 - At 1500 USD the seed has no mount under its doubled share. The recommender omits that unavailable role and redistributes its share before selecting the projector, so the 479 USD seed projector fits the strict 2× cap. The picks and totals below remain current.
 - Added passive speaker, bundle, receiver, and TV rules in `products/theater.py`. The recommender now returns receiver, six speaker roles, projector and screen or TV, HDMI cable, projector mount when one fits its cap, and optional speaker wire. Pair, front-stage, and 5.1 bundle listings pay once with `included_in` on covered roles.
+- Tightened passive speaker filtering to reject excluded keywords in spec values such as `connectivity: Bluetooth 5.0`, with a regression test.
 - Added receiver, mount, cable, and 16:9 TV dimensions; normalized punctuation within model keys; filtered alternatives using the same family, variety, eligibility, bundle, and budget context as the pick. Alternatives refill after model deduplication.
 - Added `tools/expand_catalog.py` with the 20 requested queries, dry-run, query selection, explicit DB path, and a mandatory key for fetching.
 - Added regression tests for passive filtering, bundle roles and pricing, receiver channel parsing, display choice, all five products-options findings, catalog tool behavior, and 1500/3000/5000 USD demo results.
@@ -81,10 +82,10 @@ The mount is omitted with a warning: the cheapest seed projector ceiling mount i
 
 ## Verification
 
-- `python -m ruff check .`: passed after retry fixes.
-- `python -m pytest backend/tests/products/test_theater.py -q --basetemp backend/tests/products/.tmp_test`: 14 passed after retry fixes.
-- `python -m pytest backend/tests/products -q --basetemp backend/tests/products/.tmp_test`: 43 passed after retry fixes.
-- The full suite had one failure in `test_smoke_script_has_valid_bash_syntax`; running `backend/tests/test_deploy_files.py` alone confirmed that Windows `bash.exe` returns WSL `E_ACCESSDENIED` in this sandbox (6 passed, 1 failed). Deploy files and tests are outside this task's ownership. The full run and a second run excluding that deploy test were interrupted while later CPU-heavy engine tests were still running, so there is no new complete full-suite result after this retry.
+- `python -m ruff check .`: passed.
+- `python -m pytest backend/tests/products -q --basetemp backend/tests/products/.tmp_test`: 43 passed after the passive-filter change.
+- `python -m pytest -q --basetemp backend/tests/products/.tmp_test -k 'not test_smoke_script_has_valid_bash_syntax' --tb=short`: 365 passed, 11 deselected after the passive-filter change.
+- An unrestricted `python -m pytest -q` run completed with 297 passed, 68 setup errors from pytest's default temp directory (`C:\Users\neelm\AppData\Local\Temp\pytest-of-neelm`, access denied), and one unrelated deploy syntax failure: Windows `bash.exe` returns WSL `E_ACCESSDENIED`. Both are environment limitations; the deploy files and tests are outside this task's ownership.
 
 ## Design questions
 

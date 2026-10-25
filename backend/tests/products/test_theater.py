@@ -8,8 +8,7 @@ import pytest
 
 from backend.app.engine import run_optimize
 from backend.app.schemas import Room
-from products import catalog, get_products
-from products import recommend
+from products import catalog, get_products, recommend
 from products.recommend import _role_rows, _upgrades
 from products.theater import bundle_roles, choose_tv, passive_speaker, receiver_channels, receiver_eligible
 from products.variety import model_key
@@ -23,6 +22,7 @@ def test_passive_speakers_and_bundles():
     for word in ("Bluetooth", "powered", "wireless", "USB", "Sonos", "soundbar"):
         assert not passive_speaker({"title": f"Acme {word} speaker", "specs": {}})
     assert not passive_speaker({"title": "Acme speaker", "specs": {"bluetooth": "yes"}})
+    assert not passive_speaker({"title": "Acme speaker", "specs": {"connectivity": "Bluetooth 5.0"}})
     assert bundle_roles("Acme bookshelf speakers (Pair)") == ("L", "R")
     assert bundle_roles("Acme bookshelf speakers (Pair)", ("Ls", "Rs")) == ("Ls", "Rs")
     assert bundle_roles("Acme speakers (Pair) with X center") == ("C", "L", "R")

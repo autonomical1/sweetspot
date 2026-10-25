@@ -18,7 +18,10 @@ RECEIVER_WIFI_BONUS = 0.05
 def passive_speaker(row: dict) -> bool:
     title = row.get("title", "").lower()
     specs = row.get("specs") or {}
-    return not any(term in title or str(specs.get(term, "")).lower() in {"yes", "true", "1"}
+    spec_values = " ".join(str(value).lower() for value in specs.values())
+    return not any(re.search(rf"(?<!\w){re.escape(term)}(?!\w)", title)
+                   or re.search(rf"(?<!\w){re.escape(term)}(?!\w)", spec_values)
+                   or str(specs.get(term, "")).lower() in {"yes", "true", "1"}
                    for term in PASSIVE_EXCLUSIONS)
 
 
