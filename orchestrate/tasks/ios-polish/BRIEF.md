@@ -26,6 +26,9 @@ Deliver in `ARLayoutView.swift` and the caller `ARLayoutScreen`:
 4. **Floor snap:** when raycasting fails to find a horizontal plane, say so ("Point at the floor") instead of ignoring the tap.
 5. Keep per-frame work minimal: do not remove and re-add all anchors on every SwiftUI update unless the layout or transform changed.
 
+## 4. Remove the "Found" field (user request 2026-10-25)
+Remove the `LabeledContent("Found", value: summary.text)` rows from the scan detail views (`ScanHistoryView.swift` ~line 117 and `SweetspotApp.swift` ~line 1437) so the user no longer sees a "Found" field. Delete `summary.text` plumbing only if it becomes unused; keep the stored scan summary data.
+
 ## Deliverables and constraints
 Swift cannot be compiled here: mirror existing patterns, check every symbol with Grep, keep edits small. HANDOFF.md must list changed functions and a manual test script for the iOS tester (including: does the outline coincide with the walls? if not, which offset/rotation is it off by, so we can fix the frame instead of guessing).
 
