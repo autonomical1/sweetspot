@@ -61,7 +61,10 @@ def test_smoke_script_has_valid_bash_syntax():
     bash = shutil.which("bash")
     if bash is None:
         pytest.skip("bash is not installed")
-    subprocess.run([bash, "-n", str(ROOT / "deploy/smoke.sh")], check=True)
+    result = subprocess.run([bash, "-n", str(ROOT / "deploy/smoke.sh")], capture_output=True, check=False)
+    if result.returncode == 127 and "system32" in bash.lower():
+        pytest.skip("bash resolves to the WSL launcher without an installed distro")
+    assert result.returncode == 0, result.stderr.decode(errors="replace")
 
 
 def test_deploy_checkout_and_env_are_owned_by_deploy_user():
