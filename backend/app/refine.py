@@ -197,6 +197,9 @@ def optimize(room: Room, options: dict) -> dict:
             store.save_layout(room_id, result)
             _set_status(key, _status("failed", preset, standard, error="queue full"))
             return result
+        previous_status = _statuses.get(key)
+        if previous_status and previous_status["state"] == "running":
+            engine3d.cancel(room_id)  # a newer request replaces the run in progress instead of queueing behind it
         start()
         _queue.append(Job(key, snapshot, version, fingerprint, preset, standard))
         _set_status(key, _status("queued", preset, standard))
@@ -219,6 +222,8 @@ def invalidate(room_id: str) -> None:
             current["layout"]["stage"] = "quick"
             store.save_layout(room_id, current)
         old = _statuses.get(key)
+        if old and old["state"] == "running":
+            engine3d.cancel(room_id)
         if old and old["state"] in {"queued", "running"}:
             _set_status(key, _status("superseded", old["preset"], old["standard"],
                                      started_at=old["started_at"]))
@@ -265,7 +270,7 @@ def _safe_reason(exc: Exception) -> str:
 
 
 def _run_full_scene(job: Job, timeout: float) -> dict:
-    kwargs = {"preset": job.preset, "standard": job.standard, "timeout_s": timeout}
+    kwargs = {"preset": job.preset, "standard": job.standard, "timeout_s": timeout, "cancel_key": job.key[1]}
     parameters = inspect.signature(engine3d.run_scene).parameters
     accepts_fast = "fast" in parameters or any(
         parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in parameters.values())

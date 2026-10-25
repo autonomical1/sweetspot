@@ -8,6 +8,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -102,9 +103,23 @@ def _stop_process_tree(process: subprocess.Popen[str]) -> None:
     process.wait()
 
 
+_ACTIVE: dict[str, subprocess.Popen] = {}
+_ACTIVE_LOCK = threading.Lock()
+
+
+def cancel(cancel_key: str) -> bool:
+    """Kill the engine run registered under cancel_key (a newer request replaced it). True if one was running."""
+    with _ACTIVE_LOCK:
+        process = _ACTIVE.pop(cancel_key, None)
+    if process is None or process.poll() is not None:
+        return False
+    _stop_process_tree(process)
+    return True
+
+
 def run_scene(
     room: dict, listener: dict, *, preset: str, standard: str,
-    timeout_s: float = 150, workdir: str | Path | None = None,
+    timeout_s: float = 150, workdir: str | Path | None = None, cancel_key: str | None = None,
 ) -> dict:
     """Run speakerplacer in a disposable DATA_DIR/tmp subdirectory."""
     _validate_preset(preset)
@@ -121,6 +136,9 @@ def run_scene(
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                    text=True, creationflags=creationflags,
                                    start_new_session=os.name != "nt")
+        if cancel_key:
+            with _ACTIVE_LOCK:
+                _ACTIVE[cancel_key] = process
         try:
             stdout, stderr = process.communicate(timeout=timeout_s)
         except subprocess.TimeoutExpired as exc:
@@ -128,6 +146,11 @@ def run_scene(
             stdout, stderr = process.communicate()
             raise EngineError(f"engine timed out after {timeout_s}s; exit code {process.returncode}\n"
                               f"{_tail(stdout, stderr)}") from exc
+        finally:
+            if cancel_key:
+                with _ACTIVE_LOCK:
+                    if _ACTIVE.get(cancel_key) is process:
+                        del _ACTIVE[cancel_key]
         if process.returncode != 0:
             raise EngineError(f"engine exit code {process.returncode}\n{_tail(stdout, stderr)}")
         try:
