@@ -1376,6 +1376,8 @@ struct ScanScreen: View {
             }
         }
         .navigationTitle("Room scan")
+        .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }
 }
 
