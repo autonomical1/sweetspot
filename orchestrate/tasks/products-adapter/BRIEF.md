@@ -43,3 +43,8 @@ Editing teammate files or the seed DB, backend/app/** (the existing loader is en
 - products/recommend.py:141 the second (leftover-upgrade) pass must compare the same price-to-performance value (`q - 0.35 * price/share`) as the first pass, not raw quality, so it never replaces a pick with a worse-value one; add a test where the pricier higher-quality item has worse value and is NOT chosen.
 - products/value.py:53 screen ALR bonus must read the catalog's spec name `ambient_light_rejecting` (catalog.py RULES), not `alr`; add a test with a listing carrying that spec.
 Keep ruff and the full suite green.
+
+## Retry 2: review findings to fix (all valid)
+- products/recommend.py:91 front roles (L, R, C) accept both `bookshelf` and `floorstanding` form factors: the expansion trigger and the "fewer than 3 matches" count must not require `form_factor=bookshelf`. Surrounds stay bookshelf-preferred. Add a test where only floorstanding listings exist and no expansion is triggered.
+- products/recommend.py:145 the second pass must upgrade roles individually in the order C, L, R, LFE, Ls, Rs, screen, projector. For a pair listing, the pair's cap is the combined leftover plus both shares, and the pair is upgraded as one unit at the position of its first role; do not split the cap equally. Add a test where an L/R upgrade is available with leftover budget and is taken.
+Keep ruff and the full suite green.
