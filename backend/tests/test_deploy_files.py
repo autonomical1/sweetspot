@@ -1,10 +1,9 @@
-from pathlib import Path
 import re
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
-
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -52,7 +51,7 @@ def test_caddy_routes_and_limits_requests():
 def test_smoke_script_is_bash_and_covers_required_routes():
     smoke = read("deploy/smoke.sh")
     assert "set -euo pipefail" in smoke
-    for endpoint in ("/health", "/sessions", "/rooms/demo", "/optimize", "/layout", "/products?budget=1500", "/photo-targets", "/app/plot2d/"):
+    for endpoint in ("/health", "/sessions", "/rooms/demo", "/optimize", "/layout", "/products?budget=1500", "/photo-targets", "/app/plot2d/"):  # noqa: E501  # preserve behavior while retaining the existing expression
         assert endpoint in smoke
     assert re.search(r'\[\[ "\$expiry" == notAfter=\* \]\] \|\| return 1', smoke)
     assert "command -v openssl >/dev/null 2>&1 || return 1" in smoke

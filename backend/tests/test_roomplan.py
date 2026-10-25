@@ -32,7 +32,7 @@ def rotate(point: list[float], yaw: float) -> list[float]:
 
 def synthetic(yaw: float = 0, offset: tuple = (0, 0, 0)) -> dict:
     def item(ident: str, category: str, center: list, size: list, angle: float = 0) -> dict:
-        translation = [v + shift for v, shift in zip(rotate([v / FT for v in center], yaw), offset)]
+        translation = [v + shift for v, shift in zip(rotate([v / FT for v in center], yaw), offset, strict=False)]
         a = math.radians(angle + yaw)
         c, s = math.cos(a), math.sin(a)
         return {"id": ident, "category": category, "dimensions": [v / FT for v in size],
@@ -69,7 +69,7 @@ def assert_round_trip(room, dto: dict) -> None:
         m = item["transform"]
         w, h, _ = item["dimensions"]
         norm = math.hypot(m[0], m[2])
-        for point, (side, vertical) in zip(by_id[item["id"]].polygon, [(-1, -1), (1, -1), (1, 1), (-1, 1)]):
+        for point, (side, vertical) in zip(by_id[item["id"]].polygon, [(-1, -1), (1, -1), (1, 1), (-1, 1)], strict=False):  # noqa: E501  # preserve behavior while retaining the existing expression
             expected = [(m[12] + side * w / 2 * m[0] / norm) * FT,
                         (m[13] + vertical * h / 2) * FT,
                         (m[14] + side * w / 2 * m[2] / norm) * FT]
@@ -77,7 +77,7 @@ def assert_round_trip(room, dto: dict) -> None:
     by_id = {obj.id: obj for obj in room.objects}
     for item in dto["objects"]:
         obj = by_id[item["id"]]
-        assert frame_to_world(obj.center, room.frame) == pytest.approx([v * FT for v in item["transform"][12:15]], abs=0.01)
+        assert frame_to_world(obj.center, room.frame) == pytest.approx([v * FT for v in item["transform"][12:15]], abs=0.01)  # noqa: E501  # preserve behavior while retaining the existing expression
         assert obj.size == pytest.approx([v * FT for v in item["dimensions"]])
         # Object yaw and frame yaw must reconstruct its original local x axis.
         direction = rotate([1, 0, 0], obj.rotation_y)
@@ -115,10 +115,10 @@ def test_normalization_is_invariant(yaw, offset):
     assert -180 < room.frame.yaw_deg <= 180
     assert room.dimensions.model_dump() == pytest.approx({"width": 18, "length": 13, "height": 9}, abs=0.01)
     wall_points = []
-    for surface, expected in zip(room.surfaces, baseline.surfaces):
+    for surface, expected in zip(room.surfaces, baseline.surfaces, strict=False):
         assert surface.id == expected.id and surface.kind == expected.kind
         assert surface.absorption == ABSORPTION[surface.material]
-        for point, expected_point in zip(surface.polygon, expected.polygon):
+        for point, expected_point in zip(surface.polygon, expected.polygon, strict=False):
             assert point == pytest.approx(expected_point, abs=0.01)
         if surface.kind == "wall":
             wall_points.extend(surface.polygon)
@@ -129,7 +129,7 @@ def test_normalization_is_invariant(yaw, offset):
             assert all(point[1] == 0 for point in surface.polygon)
     assert [min(p[i] for p in wall_points) for i in range(3)] == pytest.approx([0, 0, 0], abs=1e-8)
     assert [max(p[i] for p in wall_points) for i in range(3)] == pytest.approx([18, 9, 13], abs=0.01)
-    for obj, expected in zip(room.objects, baseline.objects):
+    for obj, expected in zip(room.objects, baseline.objects, strict=False):
         assert obj.center == pytest.approx(expected.center, abs=0.01)
     assert room.listener.position == pytest.approx([9, 3.6, 10.5], abs=0.01)
     assert room.listener.facing == pytest.approx(baseline.listener.facing, abs=1e-8)
@@ -140,7 +140,7 @@ def test_normalization_is_invariant(yaw, offset):
 
 def test_listener_override_world_metres_and_clamping():
     yaw, offset = 17, (15, -2, -20)
-    point = [v + shift for v, shift in zip(rotate([6 / FT, 2 / FT, 8 / FT], yaw), offset)]
+    point = [v + shift for v, shift in zip(rotate([6 / FT, 2 / FT, 8 / FT], yaw), offset, strict=False)]
     direction = rotate([1, 0, 0], yaw)
     room = convert(synthetic(yaw, offset), {"position": point, "facing": direction[::2]})
     assert room.listener.facing == pytest.approx([0, -1], abs=1e-8)
@@ -268,7 +268,7 @@ def test_scan_endpoints(data_dir, monkeypatch):
         assert {speaker["role"] for speaker in speakers} == {"L", "R", "C", "LFE", "Ls", "Rs"}
         assert len(speakers) == 6
         bounds = [room["dimensions"][key] for key in ("width", "height", "length")]
-        assert all(0 <= v <= limit for speaker in speakers for v, limit in zip(speaker["position"], bounds))
+        assert all(0 <= v <= limit for speaker in speakers for v, limit in zip(speaker["position"], bounds, strict=False))  # noqa: E501  # preserve behavior while retaining the existing expression
         request["captured_room"]["format"] = "wrong"
         invalid = client.post("/rooms", json=request)
         assert invalid.status_code == 422

@@ -34,11 +34,11 @@ def optimize(room: dict, options: dict | None = None) -> dict:
                  "Rs": point(rear, -rear_side, 5)}
     horizontal = abs(fx) >= abs(fz)
     wall_id = ("wall_e" if fx > 0 else "wall_w") if horizontal else ("wall_s" if fz > 0 else "wall_n")
-    wall_distance = (width - listener[0] if fx > 0 else listener[0]) if horizontal else (length - listener[2] if fz > 0 else listener[2])
+    wall_distance = (width - listener[0] if fx > 0 else listener[0]) if horizontal else (length - listener[2] if fz > 0 else listener[2])  # noqa: E501  # preserve behavior while retaining the existing expression
     positions["LFE"] = point(max(1.0, wall_distance - 1), max(1.0, min(width, length) / 3), 3.6)
     screen_width = 2 * wall_distance * math.tan(math.radians(18))
-    center = [width if fx > 0 else 0.0, 4.5, listener[2]] if horizontal else [listener[0], 4.5, length if fz > 0 else 0.0]
-    speakers = [{"role": role, "position": positions[role], "aim": listener} for role in ("L", "R", "C", "LFE", "Ls", "Rs")]
+    center = [width if fx > 0 else 0.0, 4.5, listener[2]] if horizontal else [listener[0], 4.5, length if fz > 0 else 0.0]  # noqa: E501  # preserve behavior while retaining the existing expression
+    speakers = [{"role": role, "position": positions[role], "aim": listener} for role in ("L", "R", "C", "LFE", "Ls", "Rs")]  # noqa: E501  # preserve behavior while retaining the existing expression
     return {"layout": {"speakers": speakers, "screen": {"wall_id": wall_id, "center": center,
             "width": screen_width, "height": screen_width * 9 / 16}}, "metrics": _metrics()}
 

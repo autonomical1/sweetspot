@@ -34,7 +34,8 @@ def test_format_helpers_in_node():
       import {{ readFileSync }} from 'node:fs';
       import assert from 'node:assert/strict';
       const source = readFileSync(new URL('{module_uri}'), 'utf8');
-      const {{ formatFtIn, parseFtIn, objectSvgRotation }} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
+      const {{ formatFtIn, parseFtIn, objectSvgRotation }} = await import(
+        'data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
       assert.equal(formatFtIn(7.5), '7\\' 6"');
       assert.equal(formatFtIn(3.6), '3\\' 7"');
       assert.equal(formatFtIn(0), '0\\' 0"');

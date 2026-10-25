@@ -231,7 +231,7 @@ def _optimise_cached(room_json: str, absorption: float) -> dict:
     # The current teammate build's mirrored-surround candidate helper rejects
     # otherwise legal side-wall pairs; asking it for two independent surround
     # candidates retains the same model/targets and lets the adapter assign Ls/Rs.
-    layout_types = [DEFAULT_SPEAKER_TYPES["front"], dataclasses.replace(DEFAULT_SPEAKER_TYPES["surround"], symmetric=False),
+    layout_types = [DEFAULT_SPEAKER_TYPES["front"], dataclasses.replace(DEFAULT_SPEAKER_TYPES["surround"], symmetric=False),  # noqa: E501  # preserve behavior while retaining the existing expression
                     dataclasses.replace(DEFAULT_SPEAKER_TYPES["bass"], count=1, symmetric=False)]
     result = speakerplacer.optimize_layout(polygon_m, listener_m, layout_types, facing=facing, absorption=absorption)
     raw = result.best_pair["speakers"]
@@ -254,10 +254,10 @@ def _optimise_cached(room_json: str, absorption: float) -> dict:
                 point = np.asarray([u / _METRES_PER_FOOT, length - v / _METRES_PER_FOOT])
                 return float(np.dot(point - np.asarray([listener_ft[0], listener_ft[2]]), left))
             ordered = sorted(entries, key=side, reverse=True)
-            assignments = list(zip(role_names, ordered))
+            assignments = list(zip(role_names, ordered, strict=False))
         for role, entry in assignments:
             u, v = (float(value) for value in entry["position_m"])
-            position, collision_warnings = _avoid_objects([u / _METRES_PER_FOOT, heights[role], length - v / _METRES_PER_FOOT], room, role)
+            position, collision_warnings = _avoid_objects([u / _METRES_PER_FOOT, heights[role], length - v / _METRES_PER_FOOT], room, role)  # noqa: E501  # preserve behavior while retaining the existing expression
             if role == "LFE":
                 aim = listener_ft
             else:

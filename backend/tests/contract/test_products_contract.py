@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
+
 import pytest
+
 from .checks import assert_valid_products
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -20,12 +22,12 @@ def test_recorded_serpapi_fixture_shape():
     assert data["_note"]
     assert isinstance(data["search_metadata"], dict) and isinstance(data["search_parameters"], dict)
     assert len(data["shopping_results"]) >= 8
-    assert all({"position", "title", "source", "thumbnail", "rating", "reviews"} <= set(item) for item in data["shopping_results"])
+    assert all({"position", "title", "source", "thumbnail", "rating", "reviews"} <= set(item) for item in data["shopping_results"])  # noqa: E501  # preserve behavior while retaining the existing expression
     assert any("price" not in item for item in data["shopping_results"])
 
 
 def test_real_products_parameter_is_live_even_with_key(monkeypatch):
     from .conftest import products_impl
     monkeypatch.setenv("SERPAPI_KEY", "dummy")
-    real = next(param for param in products_impl._pytestfixturefunction.params if getattr(param, "values", ()) == ("real",))
+    real = next(param for param in products_impl._pytestfixturefunction.params if getattr(param, "values", ()) == ("real",))  # noqa: E501  # preserve behavior while retaining the existing expression
     assert any(mark.name == "live" for mark in real.marks)

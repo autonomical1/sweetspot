@@ -24,7 +24,7 @@ _VALUES = {
     "unknown": (0.05, 0.06, 0.08, 0.09, 0.09, 0.09),
 }
 ABSORPTION: dict[str, dict[str, float]] = {
-    material: dict(zip(BANDS, values)) for material, values in _VALUES.items()
+    material: dict(zip(BANDS, values, strict=False)) for material, values in _VALUES.items()
 }
 
 PROMPT = (
