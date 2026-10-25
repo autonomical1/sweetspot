@@ -17,6 +17,10 @@
 | ios-ar-frame | iOS app applies backend room frame (yaw+offset) to the AR overlay in shared-scan mode | gpt-6-sol | medium | | 6 | done | owns Sweetspot_iOS_App Models.swift, SweetspotApp.swift, ARLayoutView.swift; no compiler in sandbox |
 | ios-products-ui | iOS: budget control, Shop screen with swap alternatives, product-sized AR boxes (changes land on branch ios-phone_context) | gpt-6-sol | medium | ios-ar-frame | 7 | review | owns Swift Models, BackendClient, SweetspotApp, ARLayoutView, CaptureViews + products.example.json; no compiler in sandbox |
 | lint | ruff for our Python code: ruff.toml (py312, line 120, E F W I B UP, exclude speakerplacer + its tests), fix findings, gate merges with ruff check | gpt-5.6-luna | medium | | 3 | done | owns ruff.toml + lint fixes in backend/, tools/, conftest.py; orchestrator updates config.json test cmd and requirements |
+| roomplan-tv | Pick the largest TV (screen size) for facing instead of first in DTO order; IMPLEMENT + regression tests (several TVs, ties, no TV) | gpt-6-sol | medium | | 8 | todo | design fork resolved 22:00; owns backend/app/roomplan.py + its tests; must pass ruff + full pytest |
+| plot2d-patch-depth | Per-surface plan-view depth for treatment patches in the 2D plot; IMPLEMENT + test | gpt-6-sol | medium | | 8 | todo | design fork resolved 22:00; owns web/plot2d/** + backend/tests/test_plot2d.py |
+| ios-shop-push | Shop screen as a pushed navigation screen instead of a sheet (Results and AR); IMPLEMENT + test/build check | gpt-6-sol | medium | ios-products-ui | 8 | todo | design fork resolved 22:00; lands on branch ios-phone_context per iOS rule |
+| polygon-walls | True polygon wall geometry for curved scans: spec in docs/API.md, roomplan converter, engine/acoustics handling, tests | gpt-6-astra | high | | 8 | blocked | design fork resolved 22:00 but LARGE; needs spec + user OK on scheduling before dispatch |
 
 status: todo | ready | running | review | done | blocked | cut
 
