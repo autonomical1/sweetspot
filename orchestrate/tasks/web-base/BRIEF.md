@@ -33,3 +33,11 @@ Adapter from layout to scene, pairing, 2D view, panels, dragging, Dockerfile/dep
 
 ## Pointers
 `docs/API.md` (contract, wins), `webapp_context/02_api_reference.md`, `03_data_and_coordinates.md`, `05_2d_view_and_toggle.md` (architecture, ignore its React-Three-Fiber/`webapp` stack notes where they conflict with this brief), `web/plot2d/format.js`.
+
+
+## RETRY 1 (review VERDICT: ISSUES) - fix both, keep tests green
+VERDICT: ISSUES
+webapp/src/api/client.ts:81 â€” `alternatives` incorrectly requires full `Product` fields (`role`, `currency`, nested `alternatives`), rejecting the valid API alternative shape.
+webapp/src/store.ts:51 â€” Loading a new room does not clear the previous `room` or `layout`; failed/direct navigation can display stale data for another room.
+Also: on loading a different room clear the previous room, layout, metrics and selection before the request returns (no stale data on failure or direct navigation), and make the lternatives type match docs/API.md section 4 exactly (see webapp_context/sample_payloads for the real shape). Add tests for both.
+
