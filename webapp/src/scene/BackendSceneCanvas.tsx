@@ -239,6 +239,8 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
       if (!role || !speaker) return;
       dragging = { role, height: ftToM(speaker.position[1]), pointerId: e.pointerId };
       orbit.enabled = false;
+      e.stopImmediatePropagation(); // the orbit controls listen on the same element: they must never see this press
+      e.preventDefault();
       renderer.domElement.setPointerCapture(e.pointerId);
       onSelectRef.current(role);
     };
@@ -250,6 +252,7 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
         return;
       }
       if (e.pointerId !== dragging.pointerId) return;
+      e.stopImmediatePropagation();
       const room = useAppStore.getState().room;
       if (!room) return;
       pointerAt(e);
@@ -269,6 +272,7 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
     };
     const dragEnd = (e: PointerEvent) => {
       if (!dragging || e.pointerId !== dragging.pointerId) return;
+      e.stopImmediatePropagation();
       dragging = null; down = null; orbit.enabled = true; tip.hidden = true; renderer.domElement.style.cursor = '';
       useAppStore.getState().finishDrag();
     };
