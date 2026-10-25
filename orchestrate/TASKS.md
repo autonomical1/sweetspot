@@ -29,7 +29,7 @@
 | engine3d-core | Run the new 3D speakerplacer headless (engine3d.run_scene) and map schema-2 output into our layout (to_layout), fixtures + tests | gpt-6-sol | high |  | 10 | done | PASS (patched); merge re-running in background since 00:12 |
 | domain-rename | Replace sslip.io references with sweetspotav.tech in DEPLOY.md, .env.example, webapp_context/README.md (sslip.io stays only as the documented fallback); fix stale deploy notes | gpt-5.6-luna | medium |  | 11 | done | worker PASS + review OK; merge in progress 00:21 |
 | engine3d-wire | Staged quick/refined 3D layouts: refine job + cache + status, widened roles/schema, /score for new roles, stub preset, products loader, contract tests, e2e/smoke, parity + validate slow tests | gpt-6-sol | high | engine3d-core | 11 | ready | RETRY 1 after review ISSUES (00:58), account 2 |
-| docs-demo | Refresh DEMO.md (domain, warm-up, products, Gemini limits, staged 3D marked planned, drills) | gpt-5.6-luna | medium |  | 12 | ready | RESUMED 00:37 on account 2 (in progress; was PAUSED 00:36): worktree keeps DEMO.md edits (was running tests). RESUME: start -Id docs-demo on account 2 |
+| docs-demo | Refresh DEMO.md (domain, warm-up, products, Gemini limits, staged 3D marked planned, drills) | gpt-5.6-luna | medium |  | 12 | ready | RUNNING on account 1 (user request 00:47) |
 | docs-webspec | Update webapp_context 01-04,06 for new roles, stage/status, size, alternatives, Gemini limits (LIVE vs PLANNED) | gpt-5.6-luna | medium |  | 12 | ready | RETRY 1 after review ISSUES (00:55), account 2 |
 
 status: todo | ready | running | review | done | blocked | cut
