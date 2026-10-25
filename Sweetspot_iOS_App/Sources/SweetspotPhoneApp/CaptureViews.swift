@@ -87,11 +87,12 @@ struct ProductsView: View {
                             Text("Total")
                             Spacer()
                             Text(total, format: .currency(code: "USD"))
-                                .foregroundStyle(total <= flow.budget ? .green : .red)
+                                .foregroundStyle(total <= flow.budget ? Theme.success : Theme.error)
                         }
                         Text("Budget: \(flow.budget, format: .currency(code: "USD"))")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.secondaryText)
                     }
+                    .listRowBackground(Theme.card)
                     if !flow.productWarnings.isEmpty {
                         Section {
                             DisclosureGroup("Warnings (\(flow.productWarnings.count))", isExpanded: $showWarnings) {
@@ -100,18 +101,22 @@ struct ProductsView: View {
                                 }
                             }
                         }
+                        .listRowBackground(Theme.card)
                     }
                     Section("Recommended setup") {
                         ForEach(orderedItems) { item in
                             productRow(item)
+                                .listRowBackground(Theme.card)
                         }
                     }
                 }
+                .listStyle(.plain)
             } else {
                 ProgressView("Finding products...")
             }
         }
         .navigationTitle("Shop")
+        .sweetspotScreen()
         .sheet(item: $selectedItem) { item in
             if let current = flow.productItems.first(where: { $0.role == item.role }) {
                 alternativesView(for: current)
@@ -124,7 +129,7 @@ struct ProductsView: View {
         VStack(spacing: 14) {
             Text(text).multilineTextAlignment(.center)
             Button("Retry") { Task { await flow.loadProducts(force: true) } }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(SweetspotPrimaryButtonStyle())
         }
         .padding()
     }
@@ -138,8 +143,9 @@ struct ProductsView: View {
                     HStack(alignment: .top) {
                         Text(item.role)
                             .font(.caption.bold())
+                            .foregroundStyle(Theme.accentLink)
                             .padding(5)
-                            .background(.blue.opacity(0.15), in: Capsule())
+                            .background(Theme.accentDim.opacity(0.3), in: Capsule())
                         Text(item.title).lineLimit(2)
                         Spacer(minLength: 4)
                         if let pairedRole = item.pair_with, item.price == 0 {
@@ -150,12 +156,12 @@ struct ProductsView: View {
                             Text(item.price, format: .currency(code: "USD"))
                         }
                     }
-                    if let seller = item.seller { Text(seller).font(.caption).foregroundStyle(.secondary) }
+                    if let seller = item.seller { Text(seller).font(.caption).foregroundStyle(Theme.secondaryText) }
                     if let dimensions = item.dimensions {
-                        Text(inchesDescription(dimensions)).font(.caption).foregroundStyle(.secondary)
+                        Text(inchesDescription(dimensions)).font(.caption).foregroundStyle(Theme.secondaryText)
                     }
                     if !(item.alternatives ?? []).isEmpty {
-                        Text("View swap options").font(.caption).foregroundStyle(.blue)
+                        Text("View swap options").font(.caption).foregroundStyle(Theme.accentLink)
                     }
                 }
                 .contentShape(Rectangle())
@@ -179,26 +185,29 @@ struct ProductsView: View {
                     VStack(alignment: .leading, spacing: 5) {
                         Text(alternative.title).lineLimit(2)
                         if let seller = alternative.seller {
-                            Text(seller).font(.caption).foregroundStyle(.secondary)
+                            Text(seller).font(.caption).foregroundStyle(Theme.secondaryText)
                         }
                         HStack {
                             Text(alternative.price, format: .currency(code: "USD"))
                             if let delta = alternative.price_delta {
                                 Text("\(delta >= 0 ? "+" : "-")\(abs(delta), format: .currency(code: "USD")) vs recommended")
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Theme.secondaryText)
                             }
                         }
                         if let dimensions = alternative.dimensions {
-                            Text(inchesDescription(dimensions)).font(.caption).foregroundStyle(.secondary)
+                            Text(inchesDescription(dimensions)).font(.caption).foregroundStyle(Theme.secondaryText)
                         }
                         if !allowed {
-                            Text("Over budget").font(.caption).foregroundStyle(.red)
+                            Text("Over budget").font(.caption).foregroundStyle(Theme.error)
                         }
                     }
                 }
                 .disabled(!allowed)
+                .listRowBackground(Theme.card)
             }
+            .listStyle(.plain)
             .navigationTitle("Swap \(item.role)")
+            .sweetspotScreen()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { selectedItem = nil }

@@ -15,12 +15,14 @@ struct RecentScansLinks: View {
             ScanHistoryList(flow: flow, history: history)
         } label: {
             Label(title, systemImage: "clock.arrow.circlepath")
+                .foregroundStyle(Theme.accentLink)
         }
 
         Button("Upload latest scan") {
             Task { await flow.uploadSavedScan() }
         }
         .disabled(history.scans.isEmpty || flow.isWorking)
+        .buttonStyle(SweetspotQuietButtonStyle())
     }
 }
 
@@ -37,6 +39,7 @@ struct ScanHistoryList: View {
                     SavedScanRow(scan: scan)
                 }
             }
+            .listRowBackground(Theme.card)
             .onDelete { offsets in
                 let ids = offsets.map { history.scans[$0].id }
                 ids.forEach { history.delete(scanID: $0) }
@@ -51,7 +54,9 @@ struct ScanHistoryList: View {
                 )
             }
         }
+        .listStyle(.plain)
         .navigationTitle("Recent scans")
+        .sweetspotScreen()
     }
 }
 
@@ -66,23 +71,23 @@ struct SavedScanRow: View {
             if scan.name != nil {
                 Text(scan.createdAt.formatted(date: .abbreviated, time: .shortened))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.secondaryText)
             }
 
             if let summary = scan.summary {
                 Text(summary.text)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.secondaryText)
             }
 
             if let upload = scan.latestUpload {
                 Label("Room \(upload.roomID)", systemImage: "checkmark.icloud")
                     .font(.caption)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Theme.success)
             } else {
                 Label("Not uploaded", systemImage: "icloud.slash")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.secondaryText)
             }
         }
         .padding(.vertical, 2)
@@ -106,6 +111,7 @@ struct SavedScanDetail: View {
                         .submitLabel(.done)
                         .onSubmit { history.rename(scanID: scanID, to: name) }
                 }
+                .listRowBackground(Theme.card)
 
                 Section("Scan") {
                     LabeledContent(
@@ -115,9 +121,10 @@ struct SavedScanDetail: View {
 
                     if !history.fileExists(for: scan) {
                         Text("The scan file is missing on this iPhone, so it can't be uploaded or shared.")
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Theme.error)
                     }
                 }
+                .listRowBackground(Theme.card)
 
                 Section("Backend") {
                     if let upload = scan.latestUpload {
@@ -139,9 +146,10 @@ struct SavedScanDetail: View {
                         }
                     } else {
                         Text("Not uploaded yet.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.secondaryText)
                     }
                 }
+                .listRowBackground(Theme.card)
 
                 if scan.uploads.count > 1 {
                     Section("Earlier uploads") {
@@ -152,10 +160,11 @@ struct SavedScanDetail: View {
                                     .textSelection(.enabled)
                                 Text(upload.uploadedAt.formatted(date: .abbreviated, time: .shortened))
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Theme.secondaryText)
                             }
                         }
                     }
+                    .listRowBackground(Theme.card)
                 }
 
                 Section {
@@ -170,6 +179,7 @@ struct SavedScanDetail: View {
                         Task { await flow.upload(scan) }
                     }
                     .disabled(!history.fileExists(for: scan))
+                    .buttonStyle(SweetspotPrimaryButtonStyle())
 
                     if flow.isWorking {
                         ProgressView("Contacting Sweetspot backend…")
@@ -186,14 +196,19 @@ struct SavedScanDetail: View {
                     }
                 }
                 .disabled(flow.isWorking)
+                .listRowBackground(Theme.card)
 
                 Section {
                     Button("Delete scan", role: .destructive) {
                         confirmingDelete = true
                     }
                 }
+                .listRowBackground(Theme.card)
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
             .navigationTitle(scan.displayName)
+            .sweetspotScreen()
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { name = scan.name ?? "" }
             .onDisappear { history.rename(scanID: scanID, to: name) }
@@ -219,7 +234,7 @@ struct SavedScanDetail: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.secondaryText)
                 Text(value)
                     .font(.body.monospaced())
                     .textSelection(.enabled)

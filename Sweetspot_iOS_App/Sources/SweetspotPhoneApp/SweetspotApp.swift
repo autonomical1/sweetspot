@@ -554,8 +554,15 @@ import UIKit
 
 @main
 struct SweetspotApp: App {
+    init() {
+        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(Theme.accent)
+        UISegmentedControl.appearance().setTitleTextAttributes(
+            [.foregroundColor: UIColor(Theme.accentInk)], for: .selected
+        )
+    }
+
     var body: some SwiftUI.Scene {
-        WindowGroup { HomeView() }
+        WindowGroup { HomeView().preferredColorScheme(.dark).tint(Theme.accent) }
     }
 }
 
@@ -1115,15 +1122,22 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 18) {
-                Text("Sweetspot")
-                    .font(.largeTitle.bold())
+                HStack(spacing: 11) {
+                    SweetspotBrandMark()
+                    Text("Sweetspot")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .tracking(-0.4)
+                }
 
                 Text(
                     RoomCaptureSession.isSupported
                         ? "LiDAR room scan available"
                         : "No LiDAR detected. Use a fallback."
                 )
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.secondaryText)
+
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .sweetspotCard()
 
                 if flow.isWorking {
                     ProgressView("Contacting Sweetspot backend…")
@@ -1133,13 +1147,13 @@ struct HomeView: View {
                     Button("Start room scan") {
                         flow.startScan()
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(SweetspotPrimaryButtonStyle())
                 }
 
                 Button("Use demo room") {
                     Task { await flow.useDemo() }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(SweetspotQuietButtonStyle())
 
                 RecentScansLinks(flow: flow, history: flow.history)
 
@@ -1147,14 +1161,17 @@ struct HomeView: View {
                     "Enter room dimensions",
                     destination: RectangleEntry(flow: flow)
                 )
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(Theme.accentLink)
 
                 if let error = flow.error {
                     Text(error)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Theme.error)
                         .font(.footnote)
                 }
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationDestination(
                 isPresented: Binding(
                     get: { flow.phase != .home },
@@ -1182,14 +1199,17 @@ struct HomeView: View {
                 .safeAreaInset(edge: .top) {
                     if flow.sessionID != nil {
                         Label("Linked to desktop", systemImage: "link")
-                            .font(.footnote)
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .tracking(1.2)
+                            .foregroundStyle(Theme.accent)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 6)
-                            .background(.regularMaterial)
+                            .background(Theme.surface)
                     }
                 }
             }
         }
+        .sweetspotScreen()
         .fullScreenCover(isPresented: $flow.needsPairing) {
             PairScreen(flow: flow)
         }
@@ -1229,15 +1249,15 @@ struct PairScreen: View {
                     }
                     .ignoresSafeArea()
 
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(.green, lineWidth: 3)
+                    RoundedRectangle(cornerRadius: 9)
+                        .stroke(Theme.accent, lineWidth: 1)
                         .frame(width: 290, height: 210)
                         .overlay(alignment: .bottom) {
                             Text("Center the desktop QR code in the box")
                                 .font(.callout)
                                 .padding(8)
-                                .background(.black.opacity(0.7))
-                                .foregroundStyle(.white)
+                                .background(Theme.surface.opacity(0.92))
+                                .foregroundStyle(Theme.primaryText)
                                 .clipShape(Capsule())
                                 .offset(y: 42)
                         }
@@ -1251,10 +1271,12 @@ struct PairScreen: View {
             }
         }
         .navigationTitle("Scan desktop QR")
+        .sweetspotScreen()
         .overlay(alignment: .topTrailing) {
             Button("Close") { flow.needsPairing = false }
+                .buttonStyle(SweetspotQuietButtonStyle())
+                .frame(width: 88)
                 .padding()
-                .background(.regularMaterial)
         }
         .alert(
             "Sweetspot",
@@ -1277,15 +1299,23 @@ struct RectangleEntry: View {
     @State private var height = "9"
 
     var body: some View {
-        Form {
-            Text("Enter measurements in feet")
-
-            TextField("Width (ft)", text: $width)
-                .keyboardType(.decimalPad)
-            TextField("Length (ft)", text: $length)
-                .keyboardType(.decimalPad)
-            TextField("Height (ft)", text: $height)
-                .keyboardType(.decimalPad)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+            EyebrowText(text: "Room size")
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Enter measurements in feet")
+                    .foregroundStyle(Theme.secondaryText)
+                TextField("Width (ft)", text: $width)
+                    .keyboardType(.decimalPad)
+                TextField("Length (ft)", text: $length)
+                    .keyboardType(.decimalPad)
+                TextField("Height (ft)", text: $height)
+                    .keyboardType(.decimalPad)
+            }
+            .textFieldStyle(.plain)
+            .padding(12)
+            .background(Theme.input, in: RoundedRectangle(cornerRadius: 7))
+            .sweetspotCard()
 
             Button("Create room") {
                 Task {
@@ -1296,8 +1326,12 @@ struct RectangleEntry: View {
                     )
                 }
             }
+            .buttonStyle(SweetspotPrimaryButtonStyle())
+            }
+            .padding()
         }
         .navigationTitle("Room size")
+        .sweetspotScreen()
     }
 }
 
@@ -1326,13 +1360,13 @@ struct ScanScreen: View {
                 Button("Finish scan") {
                     shouldFinish = true
                 }
-                .padding()
-                .background(.regularMaterial)
-                .clipShape(Capsule())
+                .buttonStyle(SweetspotPrimaryButtonStyle())
+                .frame(maxWidth: 240)
                 .padding(.bottom, 16)
             }
         }
         .navigationTitle("Room scan")
+        .sweetspotScreen()
         .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }
@@ -1343,21 +1377,24 @@ struct ReviewScreen: View {
     @State private var name = ""
 
     var body: some View {
-        Form {
-            Section {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text("Scan saved on this iPhone. You can find it again under Recent scans.")
 
                 TextField("Name, e.g. Living room (optional)", text: $name)
                     .submitLabel(.done)
                     .onSubmit { flow.nameCurrentScan(name) }
             }
+            .sweetspotCard()
 
-            Section {
+            VStack(spacing: 12) {
                 Button("Upload scan") {
                     flow.nameCurrentScan(name)
                     Task { await flow.uploadScan() }
                 }
                 .disabled(flow.isWorking)
+                .buttonStyle(SweetspotPrimaryButtonStyle())
 
                 if flow.isWorking {
                     ProgressView("Uploading…")
@@ -1367,9 +1404,13 @@ struct ReviewScreen: View {
                     flow.nameCurrentScan(name)
                     Task { await flow.useDemo() }
                 }
+                .buttonStyle(SweetspotQuietButtonStyle())
             }
+            }
+            .padding()
         }
         .navigationTitle("Review scan")
+        .sweetspotScreen()
     }
 }
 
@@ -1378,9 +1419,12 @@ struct PhotosStep: View {
     @State private var showCamera = false
 
     var body: some View {
-        List {
-            Section("Material photos") {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
+                EyebrowText(text: "Material photos")
                 Text("Photos help identify wall and floor materials. They are used for classification.")
+                    .foregroundStyle(Theme.secondaryText)
 
                 if flow.photoIndex < flow.photoTargets.count {
                     let target = flow.photoTargets[flow.photoIndex]
@@ -1390,6 +1434,7 @@ struct PhotosStep: View {
                     Button("Take photo") {
                         showCamera = true
                     }
+                    .buttonStyle(SweetspotPrimaryButtonStyle())
                     .disabled(flow.isClassifying || flow.isUploadingPhoto)
                     .sheet(isPresented: $showCamera) {
                         CameraCapture { image in
@@ -1405,27 +1450,33 @@ struct PhotosStep: View {
                     }
 
                     Text("Photo \(flow.photoIndex + 1) of \(flow.photoTargets.count)")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.secondaryText)
                 } else {
                     Text("All available target photos uploaded.")
                 }
 
                 if let error = flow.error {
-                    Text(error).foregroundStyle(.red)
+                    Text(error).foregroundStyle(Theme.error)
                 }
             }
+            .sweetspotCard()
 
             Button("Finish photos and classify") {
                 flow.leavePhotos()
             }
             .disabled(flow.isUploadingPhoto)
+            .buttonStyle(SweetspotPrimaryButtonStyle())
 
             Button("Skip photos and continue") {
                 flow.leavePhotos()
             }
             .disabled(flow.isUploadingPhoto)
+            .buttonStyle(SweetspotQuietButtonStyle())
+            }
+            .padding()
         }
         .navigationTitle("Surface photos")
+        .sweetspotScreen()
     }
 }
 
@@ -1443,44 +1494,54 @@ struct SetupFormView: View {
     }
 
     var body: some View {
-        Form {
-            Section("Budget") {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
+                EyebrowText(text: "Budget")
                 Stepper(value: $budget, in: 100...20000, step: 100) {
                     Text("Budget: \(budget, format: .currency(code: "USD"))")
                 }
             }
-            Section("Speaker configuration") {
+            .sweetspotCard()
+            VStack(alignment: .leading, spacing: 12) {
+                EyebrowText(text: "Speaker configuration")
                 Picker("Base configuration", selection: $flow.selectedBase) {
                     ForEach(["2.1", "5.1", "7.1"], id: \.self) { Text($0) }
                 }
-                Text(baseDescription).font(.footnote).foregroundStyle(.secondary)
+                .pickerStyle(.segmented)
+                Text(baseDescription).font(.footnote).foregroundStyle(Theme.secondaryText)
                 Picker("Height channels", selection: $flow.selectedHeight) {
                     ForEach(["None", ".2", ".4"], id: \.self) { Text($0) }
                 }
+                .pickerStyle(.segmented)
                 .disabled(flow.selectedBase == "2.1")
                 if flow.selectedHeight != "None" {
                     Text(flow.selectedHeight == ".4"
                          ? "+4 adds 4 ceiling speakers. They make sound come from above, as in Dolby Atmos."
                          : "+2 adds 2 ceiling speakers. They make sound come from above, as in Dolby Atmos.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                        .font(.footnote).foregroundStyle(Theme.secondaryText)
                     Text("\(flow.selectedBase)\(flow.selectedHeight) = \(flow.selectedBase.prefix(1)) speakers at ear level, 1 subwoofer, \(flow.selectedHeight.dropFirst()) ceiling speakers.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                        .font(.footnote).foregroundStyle(Theme.secondaryText)
                 }
                 if flow.selectedBase == "2.1" {
                     Text("Height channels are unavailable for 2.1.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                        .font(.footnote).foregroundStyle(Theme.secondaryText)
                 }
                 Button("What do these numbers mean?") { showsConfigurationHelp = true }
                     .font(.footnote)
             }
+            .sweetspotCard()
             Button("Build my layout") {
                 flow.setBudget(budget)
                 Task { await flow.buildLayout() }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(SweetspotPrimaryButtonStyle())
             .disabled(flow.isComputing)
+            }
+            .padding()
         }
         .navigationTitle("Your setup")
+        .sweetspotScreen()
         .onAppear { budget = flow.budget }
         .onChange(of: budget) { _, value in flow.setBudget(value) }
         .onChange(of: flow.selectedBase) { _, value in
@@ -1492,8 +1553,11 @@ struct SetupFormView: View {
                 Text("The first number is speakers around you at ear level. The second is subwoofers. The third, when shown, is ceiling speakers.")
                 Text("For example, 7.1.4 means 7 speakers at ear level, 1 subwoofer and 4 ceiling speakers.")
                 Button("Done") { showsConfigurationHelp = false }
+                    .buttonStyle(SweetspotPrimaryButtonStyle())
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Theme.surface)
             .presentationDetents([.medium])
         }
     }
@@ -1505,9 +1569,9 @@ struct ProcessingView: View {
     var body: some View {
         VStack(spacing: 20) {
             if let error = flow.processingError {
-                Text(error).foregroundStyle(.red)
+                Text(error).foregroundStyle(Theme.error)
                 Button("Retry") { Task { await flow.retryProcessing() } }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(SweetspotPrimaryButtonStyle())
                 Button("Back to form") { flow.phase = .form }
             } else {
                 ProgressView()
@@ -1520,14 +1584,15 @@ struct ProcessingView: View {
                     Text("Placing your speakers...")
                 }
                 Text("\(flow.computeElapsedSeconds) s elapsed")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.secondaryText)
                 Text("The first layout can take up to a minute.")
-                    .font(.footnote).foregroundStyle(.secondary)
+                    .font(.footnote).foregroundStyle(Theme.secondaryText)
             }
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Building your layout")
+        .sweetspotScreen()
         .navigationBarBackButtonHidden(flow.processingError == nil)
     }
 }
@@ -1560,24 +1625,29 @@ struct ARLayoutScreen: View {
                             Text("Move the phone slowly and look at the floor and walls to re-lock.")
                                 .font(.caption)
                         }
-                        HStack {
+                        VStack(alignment: .leading, spacing: 8) {
                             Button("Align manually") { alignment = "Align manually" }
+                                .foregroundStyle(Theme.accentLink)
                             if flow.roomFrame != nil {
                                 Button("Reset to scan alignment") { alignment = "Reset to scan alignment" }
+                                    .foregroundStyle(Theme.accentLink)
                             }
                         }
                     }
-                    .padding(8)
-                    .background(.regularMaterial)
-                    .clipShape(Capsule())
+                    .sweetspotCard()
                     .padding()
                 }
 
                 Text("If the room outline misses the walls, stand in the room, point at the floor where the FRONT wall (the screen wall) meets the left corner and tap, then tap the right corner of the same wall.")
                 .font(.footnote)
-                .padding(8)
+                .foregroundStyle(Theme.secondaryText)
+                .padding(12)
+                .sweetspotCard()
+                .padding(.horizontal)
                 if flow.roomID != "local-preview" {
                     Button("Shop this setup") { showingShop = true }
+                        .buttonStyle(SweetspotPrimaryButtonStyle())
+                        .padding(.horizontal)
                         .padding(.bottom, 8)
                 }
             } else {
@@ -1585,6 +1655,7 @@ struct ARLayoutScreen: View {
             }
         }
         .navigationTitle("AR layout")
+        .sweetspotScreen()
         .navigationDestination(isPresented: $showingShop) { ProductsView(flow: flow) }
     }
 }
