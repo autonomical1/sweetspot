@@ -85,3 +85,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-25 00:56] products-theater: keep strict 2x per-item projector cap (no 2.05x); at low budgets (e.g. 1500 USD, cheapest projector 479) the projector is omitted and a TV is offered - user confirmed 'that cap is still fine'. - user
 - [2026-10-25 01:13] web app: adopt teammate frontend/ as base (rename webapp/, raw three.js, adapter feet->m); web teammate = tester + assets only; Docker multi-stage npm build into web/ - user
 - [2026-10-25 01:13] all Codex tasks run on account 2 (CODEX_HOME=~/.codex-second) until it is depleted - user
+- [2026-10-25 01:16] web pairing: QR only, the 6-character code is removed from the web UI (backend field and iOS manual entry untouched for now) - user
