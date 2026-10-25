@@ -10,7 +10,7 @@
 - last_checkpoint: 2026-10-24 21:05
 
 ## Next action
-Wave 3 merged (lint, products-adapter, integrate; demo-ok at 54bb9b1); master verified: `python -m ruff check . && python -m pytest -q` = 273 passed; config.json test now includes ruff. Push master, then on the server: `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build` (keys already in /srv/sweetspot/.env), then `bash deploy/smoke.sh https://144-202-27-51.sslip.io` and `python tools/e2e.py https://144-202-27-51.sslip.io`; verify live Gemini model name (gemini-2.5-flash) via materials and live SerpApi expansion. Then GATE 6 prep: integration phase leftovers = web app (webapp/, teammate), real iOS scan, DEMO.md rehearsal.
+Wave 3 merged (lint, products-adapter, integrate; demo-ok at 54bb9b1); master verified: `python -m ruff check . && python -m pytest -q` = 273 passed; config.json test now includes ruff. Push master, then on the server: `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build` (keys already in /srv/sweetspot/.env), then `bash deploy/smoke.sh https://144-202-27-51.sslip.io` and `python tools/e2e.py https://144-202-27-51.sslip.io`; Gemini gemini-3.8-flash verified live (credits added); re-check materials and live SerpApi expansion in e2e. Then GATE 6 prep: integration phase leftovers = web app (webapp/, teammate), real iOS scan, DEMO.md rehearsal.
 
 ## Waiting on user
 Nothing blocking. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` (feet, listing-parsed or default) and `pair_with` for AR; 3D model teammate can read the same room/layout JSON.
@@ -39,6 +39,6 @@ Nothing blocking. Later: tell the SerpApi teammate their files moved to products
 - When webapp/ lands: Node build stage in deploy/Dockerfile (copy webapp/dist into web/), .dockerignore webapp/node_modules + webapp/dist, Caddy root redirect /app/plot2d/ -> /app/, backend/tests/test_web_app.py (skips without a build).
 - When products/ lands: contract tests (real products only under -m live); the adapter loads `products` automatically.
 - When the real iOS scan arrives: replace fixtures/roomplan_sample.json, run tools/validate_dto.py and the roomplan tests.
-- Known gaps: speakerplacer has no center model (adapter places C geometrically); Gemini model is gemini-3.8-flash (2.5 retired); Gemini account credits depleted (402) until the user tops up AI Studio; no .tech domain yet.
+- Known gaps: speakerplacer has no center model (adapter places C geometrically); Gemini model is gemini-3.8-flash (2.5 retired), credits added and verified; no .tech domain yet.
 - Tooling gotchas: dispatcher shell resolves `bash` to the WSL launcher (system32\bash.EXE, exit 127): tests must not require it; first account-2 Codex run triggers ~10 UAC prompts (one-time); Codex sandbox leaves locked `.<task>-run/` dirs (git-excluded); worker timeoutSec 1800; `run-wave` only starts `ready` tasks; commit DECISIONS.md before `dispatch merge`; never force-push; Bash-tool heredocs with long markdown fail: use the Write tool; `MSYS_NO_PATHCONV=1` for `git show rev:path`.
 - Models per user: gpt-6-sol / gpt-5.6-luna default, gpt-5.6-terra when the user asks, gpt-6-astra only for the hardest.

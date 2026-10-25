@@ -6,7 +6,7 @@ Setup:
     pip install requests python-dotenv
     echo "SERPAPI_KEY=your_key" > .env      # see .env.example
     echo "GEMINI_API_KEY=your_key" >> .env  # only used by price.py's auto-expand (optional
-                                            # GEMINI_MODEL, default gemini-2.5-flash)
+                                            # GEMINI_MODEL, default gemini-3.8-flash)
 
 Usage:
     python main.py                       # fetch everything in TRACKED
@@ -417,7 +417,7 @@ def fetch_with_retry(query, api_key, attempts=3):
 #    Search grounding) which real products fit the restrictions, then run each product
 #    through the normal SerpAPI -> save_listings path so it is stored and spec-parsed.
 # ---------------------------------------------------------------------------
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 
