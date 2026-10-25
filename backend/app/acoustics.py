@@ -24,13 +24,17 @@ def _polygon_area(points: list[list[float]]) -> float:
                      for i in range(1, len(points) - 1)))
 
 
-def _contains_polygon(point: np.ndarray, polygon: list[list[float]]) -> bool:
+_PLANE_TOLERANCE_FT = 0.35
+
+
+def _contains_polygon(point: np.ndarray, polygon: list[list[float]], tolerance: float = 1e-4) -> bool:
     """Point-in-convex-planar-polygon check, projected along the dominant normal."""
     if len(polygon) < 3:
         return False
     vertices = [_vector(vertex) for vertex in polygon]
     normal = np.cross(vertices[1] - vertices[0], vertices[2] - vertices[0])
-    if np.linalg.norm(normal) < _EPSILON or abs(float(np.dot(point - vertices[0], normal))) > 1e-4:
+    norm = float(np.linalg.norm(normal))
+    if norm < _EPSILON or abs(float(np.dot(point - vertices[0], normal))) > tolerance * norm:
         return False
     axis = int(np.argmax(np.abs(normal)))
     projected = [np.delete(vertex, axis) for vertex in vertices]
@@ -47,7 +51,10 @@ def _surface_for_hit(room: dict, point: np.ndarray, axis: int, value: float) -> 
     matching: list[dict] = []
     for surface in room.get("surfaces", []):
         polygon = surface.get("polygon", [])
-        if polygon and all(abs(float(vertex[axis]) - value) < 1e-4 for vertex in polygon) and _contains_polygon(point, polygon):  # noqa: E501  # preserve behavior while retaining the existing expression
+        # Scanned walls are rarely exactly axis-aligned (a few tenths of a foot of tilt or offset), so
+        # match them to the bounding plane with a tolerance instead of requiring an exact fit.
+        near_plane = all(abs(float(vertex[axis]) - value) < _PLANE_TOLERANCE_FT for vertex in polygon)
+        if polygon and near_plane and _contains_polygon(point, polygon, _PLANE_TOLERANCE_FT):
             matching.append(surface)
     if not matching:
         return None

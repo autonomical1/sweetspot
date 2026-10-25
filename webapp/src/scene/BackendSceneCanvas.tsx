@@ -186,7 +186,7 @@ function dispose(object: THREE.Object3D) {
   });
 }
 
-export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDescription, walls, ceiling, onSelect, seatView, topView, showReflections = false }: SceneProps) {
+export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDescription, walls, ceiling, onSelect, topView, showReflections = false }: SceneProps) {
   const host = useRef<HTMLDivElement>(null);
   const state = useRef<SceneState | null>(null);
   const onSelectRef = useRef(onSelect); onSelectRef.current = onSelect;
@@ -242,23 +242,15 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
       if (object) { s.root.add(object); s.groups.set(key, { signature, object }); } else s.groups.delete(key);
     }
     for (const [key, value] of s.groups) {
-      value.object.visible = !(key.startsWith('surface:') && ((value.object.userData.kind === 'wall' && !walls) || (value.object.userData.kind === 'ceiling' && !ceiling))) && !(key.startsWith('seat:') && seatView);
+      value.object.visible = !(key.startsWith('surface:') && ((value.object.userData.kind === 'wall' && !walls) || (value.object.userData.kind === 'ceiling' && !ceiling)));
     }
-  }, [model, selectedId, showReflections, walls, ceiling, seatView]);
+  }, [model, selectedId, showReflections, walls, ceiling]);
   useEffect(() => {
     const s = state.current; if (!s) return;
-    if (seatView) {
-      s.orbit.enabled = false;
-      const position = model.seats[0]?.position ?? model.listener.position;
-      s.camera.position.set(...position);
-      const target = v(position).add(new THREE.Vector3(model.listener.facing[0], 0, model.listener.facing[1]));
-      s.camera.lookAt(target);
-    } else {
-      s.orbit.enabled = true; s.camera.up.set(0, 1, 0);
-      if (topView) { s.camera.position.set(0, Math.max(model.room.width, model.room.length) * 1.25, .001); s.orbit.target.set(0, 0, 0); }
-      else if (s.camera.position.distanceToSquared(new THREE.Vector3(0, 0, 0)) < 1) s.camera.position.set(model.room.width, model.room.height * 1.7, model.room.length);
-      s.orbit.update();
-    }
-  }, [model, seatView, topView]);
+    s.orbit.enabled = true; s.camera.up.set(0, 1, 0);
+    if (topView) { s.camera.position.set(0, Math.max(model.room.width, model.room.length) * 1.25, .001); s.orbit.target.set(0, 0, 0); }
+    else if (s.camera.position.distanceToSquared(new THREE.Vector3(0, 0, 0)) < 1) s.camera.position.set(model.room.width, model.room.height * 1.7, model.room.length);
+    s.orbit.update();
+  }, [model, topView]);
   return <div className="viewport" ref={host}><div className="object-callout" style={{ opacity: selectedId ? 1 : 0 }}><b>{selectedName ?? selectedId}</b><span>{selectedDescription}</span></div></div>;
 }

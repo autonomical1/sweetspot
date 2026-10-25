@@ -5,6 +5,7 @@ import { useAppStore } from '../store';
 import { AcousticsPanel } from './panels/AcousticsPanel';
 import { LayoutPanel } from './panels/LayoutPanel';
 import './panels/panels.css';
+import { RecomputeProgress } from './panels/RecomputeProgress';
 import { RoomPanel } from './panels/RoomPanel';
 import { ShopPanel } from './panels/ShopPanel';
 
@@ -41,6 +42,7 @@ export function Sidebar({ room, onSelect }: Props) {
     <div className="panel-tabs" role="tablist" aria-label="Room details">
       {tabs.map((name, index) => <button key={name} id={`panel-tab-${name}`} role="tab" aria-selected={tab === name} aria-controls={`panel-${name}`} tabIndex={tab === name ? 0 : -1} onKeyDown={event => choose(event, index)} onClick={() => setTab(name)}>{name}</button>)}
     </div>
+    <RecomputeProgress />
     <div className="panel-scroll" id={`panel-${tab}`} role="tabpanel" aria-labelledby={`panel-tab-${tab}`}>
       {tab === 'Layout' && <LayoutPanel room={room} layout={layout} metrics={metrics} onSelect={onSelect} onRecompute={preset => void recompute(preset)} busy={stage === 'loading'} />}
       {tab === 'Acoustics' && <AcousticsPanel room={room} metrics={metrics} onSelect={onSelect} />}

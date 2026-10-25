@@ -33,7 +33,6 @@ export function Viewer({ roomId, navigate }: Props) {
   const [walls, setWalls] = useState(true);
   const [ceiling, setCeiling] = useState(config.room.showCeiling);
   const [projection, setProjection] = useState(true);
-  const [seatView, setSeatView] = useState(false);
   const [topView, setTopView] = useState(false);
   const [notice, setNotice] = useState('');
   const { room, selected, stage, error, setSelected, loadRoom, useDemoRoom } = useAppStore();
@@ -66,9 +65,9 @@ export function Viewer({ roomId, navigate }: Props) {
     <div className="workspace">
       <Sidebar config={config} room={room} selected={selected} projection={projection} onSelect={setSelected} onProjection={() => setProjection(value => !value)} />
       <Viewport config={config} selected={selected} walls={walls} ceiling={ceiling} projection={projection}
-        seatView={seatView} topView={topView} notice={notice} onSelect={setSelected} onWalls={() => setWalls(value => !value)}
+        topView={topView} notice={notice} onSelect={setSelected} onWalls={() => setWalls(value => !value)}
         onCeiling={() => { setCeiling(value => !value); setConfig(current => ({ ...current, room: { ...current.room, showCeiling: !current.room.showCeiling } })); }}
-        onSeatView={setSeatView} onTopView={setTopView} onNotice={setNotice} />
+        onTopView={setTopView} onNotice={setNotice} />
     </div>
   </main>;
 }

@@ -7,12 +7,15 @@ import dataclasses
 import functools
 import json
 import math
+import multiprocessing
+import os
 from typing import Any
 
 import numpy as np
 
 import speakerplacer
 from speakerplacer import DEFAULT_SPEAKER_TYPES
+from speakerplacer.speaker_models import DEFAULT_SPEAKER_MODELS, predicted_spl_db
 
 from . import acoustics
 from .stubs import engine_stub
@@ -175,6 +178,21 @@ def _center(room: dict) -> tuple[dict, list[str]]:
     return {"role": "C", "position": position, "aim": [float(item) for item in listener]}, warnings
 
 
+_CENTER_MODEL = "generic_center_onwall"
+
+
+def _center_placement(center: dict, listener_ft: list[float]) -> dict:
+    """Describe C with speakerplacer's wide on-wall center model (the engine only searches L/R, surrounds, bass)."""
+    model = DEFAULT_SPEAKER_MODELS[_CENTER_MODEL]
+    position = center["position"]
+    distance_m = math.hypot(listener_ft[0] - position[0], listener_ft[2] - position[2]) * _METRES_PER_FOOT
+    predicted = predicted_spl_db(model, distance_m)
+    # Same convention as the engine: peak capacity at the listener above the 85 dB target plus 20 dB of headroom.
+    headroom = float(model.max_spl_db) - 20.0 * math.log10(max(distance_m, 0.1)) - (85.0 + 20.0)
+    return {"role": "C", "model_id": _CENTER_MODEL, "toe_in_deg": 0.0,
+            "predicted_spl_db": float(predicted), "headroom_db": float(headroom)}
+
+
 def _screen(room: dict) -> dict | None:
     return copy.deepcopy(engine_stub.optimize(room)["layout"].get("screen"))
 
@@ -281,7 +299,7 @@ def _optimise_cached(room_json: str, absorption: float) -> dict:
     center, center_warnings = _center(room)
     speakers.append(center)
     adapter_warnings.extend(center_warnings)
-    adapter_warnings.append("C placed geometrically (speakerplacer has no center model)")
+    placement_metadata.append(_center_placement(center, listener_ft))
     # Stable role order makes cached and fresh responses byte-for-byte alike.
     role_order = {"L": 0, "R": 1, "C": 2, "LFE": 3, "Ls": 4, "Rs": 5}
     speakers.sort(key=lambda item: role_order[item["role"]])
@@ -310,9 +328,69 @@ def _with_projector(result: dict, room: dict) -> dict:
     return result
 
 
+_ISOLATED_CACHE: dict[str, dict] = {}
+_TOO_SLOW: set[str] = set()
+
+
+def _isolated_worker(connection, room: dict, options: dict | None) -> None:
+    connection.send(_optimize(room, options))
+    connection.close()
+
+
+def _simplified(room: dict, warning: str) -> dict:
+    try:
+        layout = copy.deepcopy(engine_stub.optimize(room)["layout"])
+    except Exception:
+        layout = _safe_fallback_layout(room)
+    metrics = acoustics.evaluate(room, layout)
+    metrics["engine"] = {"name": "speakerplacer", "score_db": None, "placements": []}
+    metrics["warnings"].append(warning)
+    return {"layout": _plain(layout), "metrics": _plain(metrics)}
+
+
+def _optimize_isolated(room: dict, options: dict | None, deadline: float) -> dict:
+    """Run the search in its own process so a slow room cannot starve the API (the GIL) or outlive a client timeout."""
+    key = json.dumps({"room": _canonical_room(room), "options": options}, sort_keys=True, default=str)
+    if key in _ISOLATED_CACHE:
+        return copy.deepcopy(_ISOLATED_CACHE[key])
+    note = "quick layout simplified: the room is too large for the fast search, the 3D refinement will improve it"
+    if key in _TOO_SLOW:
+        return _simplified(room, note)
+    context = multiprocessing.get_context("spawn")
+    receiver, sender = context.Pipe(duplex=False)
+    process = context.Process(target=_isolated_worker, args=(sender, room, options), daemon=True)
+    process.start()
+    sender.close()
+    try:
+        if not receiver.poll(deadline):
+            process.kill()
+            if len(_TOO_SLOW) > 64:
+                _TOO_SLOW.clear()
+            _TOO_SLOW.add(key)
+            return _simplified(room, note)
+        result = receiver.recv()
+    except (EOFError, OSError) as exc:
+        return _simplified(room, f"speakerplacer failed: {type(exc).__name__}: {exc}")
+    finally:
+        receiver.close()
+        process.join(timeout=2)
+        if process.is_alive():
+            process.kill()
+    if len(_ISOLATED_CACHE) > 32:
+        _ISOLATED_CACHE.pop(next(iter(_ISOLATED_CACHE)))
+    _ISOLATED_CACHE[key] = result
+    return copy.deepcopy(result)
+
+
 def optimize(room: dict, options: dict | None = None) -> dict:
-    """Optimise a 5.1 layout, returning a safe fallback if the engine rejects it."""
-    return _with_projector(_optimize(room, options), room)
+    """Optimise a 5.1 layout, returning a safe fallback if the engine rejects it.
+
+    With QUICK_OPTIMIZE_DEADLINE_S > 0 the search runs in a child process and a room that takes longer
+    gets the simplified layout instead of blocking the request.
+    """
+    deadline = float(os.getenv("QUICK_OPTIMIZE_DEADLINE_S", "0") or 0)
+    result = _optimize_isolated(room, options, deadline) if deadline > 0 else _optimize(room, options)
+    return _with_projector(result, room)
 
 
 def _optimize(room: dict, options: dict | None = None) -> dict:

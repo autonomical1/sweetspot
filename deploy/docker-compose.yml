@@ -7,6 +7,8 @@ services:
       - ../.env
     environment:
       DATA_DIR: /data
+      QUICK_OPTIMIZE_DEADLINE_S: "50"
+      ENGINE3D_TIMEOUT_S: "360"
     volumes:
       - sweetspot_data:/data
     expose:

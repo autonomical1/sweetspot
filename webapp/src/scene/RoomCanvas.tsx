@@ -21,7 +21,6 @@ export type Props = {
   ceiling: boolean;
   showProjection: boolean;
   onSelect: (id: string | null) => void;
-  seatView: boolean;
   topView: boolean;
 };
 export function RoomCanvas(props: Props) {
@@ -32,7 +31,8 @@ export function RoomCanvas(props: Props) {
   return <LegacyRoomCanvas {...props} />;
 }
 
-function LegacyRoomCanvas({ config, selectedId, selectedName, selectedDescription, walls, ceiling, showProjection, onSelect, seatView, topView }: Props) {
+function LegacyRoomCanvas({ config, selectedId, selectedName, selectedDescription, walls, ceiling, showProjection, onSelect, topView }: Props) {
+  const seatView = false; // the seat point-of-view camera was removed; the legacy scene code below still reads the flag
   const host = useRef<HTMLDivElement>(null);
   const label = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<string | null>(selectedId);
