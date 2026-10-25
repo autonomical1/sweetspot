@@ -1,0 +1,3 @@
+speakerplacer/parallel.py
+backend/tests/test_speakerplacer_parallel.py
+orchestrate/tasks/mc-pool/HANDOFF.md

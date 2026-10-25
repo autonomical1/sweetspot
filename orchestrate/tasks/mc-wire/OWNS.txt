@@ -1,0 +1,6 @@
+speakerplacer/optimize.py
+speakerplacer/scoring.py
+speakerplacer/room_acoustics.py
+speakerplacer/room.py
+speakerplacer/candidates.py
+orchestrate/tasks/mc-wire/HANDOFF.md
