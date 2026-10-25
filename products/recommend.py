@@ -136,6 +136,9 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
             if role in {"L", "R", "C"}:
                 matches = [row for row in matches if row["specs"].get("form_factor")
                            in {"bookshelf", "floorstanding"}]
+            partner = {"L": "R", "R": "L", "Ls": "Rs", "Rs": "Ls"}.get(role)
+            pair_usable = partner in roles
+            matches = [row for row in matches if pair_usable or not PAIR.search(row["title"])]
             if sum(row["id"] in valid_ids for row in matches) < 3:
                 requests.setdefault(category, (shares[role], constraints))
     warnings = expand(path, requests, serpapi_key or os.getenv("SERPAPI_KEY")) if requests else []

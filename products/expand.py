@@ -25,7 +25,10 @@ def expand(path: Path, requests: dict[str, tuple[float, dict]], serpapi_key: str
                 # The teammate's interface reads this key from the process environment.
                 with _ENV_LOCK:
                     previous_key = os.environ.get("SERPAPI_KEY")
-                    os.environ["SERPAPI_KEY"] = serpapi_key
+                    if previous_key != serpapi_key:
+                        # Only an explicit key that differs from the environment overrides it, and only while
+                        # this thread holds the lock; the normal case (key from the environment) mutates nothing.
+                        os.environ["SERPAPI_KEY"] = serpapi_key
                     try:
                         catalog.expand_catalog(conn, category, price=f"..{share:.2f}", specs=specs,
                                                max_queries=3)

@@ -107,6 +107,35 @@ def test_front_floorstanding_count_does_not_expand_speakers(small_db, monkeypatc
     assert "speaker" not in calls
 
 
+def test_unusable_pair_listings_do_not_suppress_expansion(small_db, monkeypatch):
+    catalog.save_listings(small_db, "pairs only", "speaker", [
+        listing(f"Bookshelf Speakers (Pair) {power}W", price) for power, price in [(80, 90), (100, 110), (120, 130)]
+    ])
+    calls = []
+
+    def fake(conn, category, price=None, specs=None, max_queries=5):
+        calls.append(category)
+        return 0
+
+    monkeypatch.setattr(catalog, "expand_catalog", fake)
+    monkeypatch.setenv("GEMINI_API_KEY", "fake")
+    monkeypatch.setenv("SERPAPI_KEY", "fake")
+    get_products({"speakers": [{"role": "C"}]}, 400)
+    assert "speaker" in calls
+
+
+def test_pair_listings_count_for_a_paired_front_group(small_db, monkeypatch):
+    catalog.save_listings(small_db, "pairs only", "speaker", [
+        listing(f"Bookshelf Speakers (Pair) {power}W", price) for power, price in [(80, 90), (100, 110), (120, 130)]
+    ])
+    calls = []
+    monkeypatch.setattr(catalog, "expand_catalog", lambda conn, category, **kwargs: calls.append(category) or 0)
+    monkeypatch.setenv("GEMINI_API_KEY", "fake")
+    monkeypatch.setenv("SERPAPI_KEY", "fake")
+    get_products({"speakers": [{"role": "L"}, {"role": "R"}]}, 600)
+    assert "speaker" not in calls
+
+
 def test_second_pass_upgrades_pair_using_combined_leftover(small_db):
     catalog.save_listings(small_db, "speaker pairs", "speaker", [
         listing("Basic Bookshelf Speakers (Pair) 20W", 100, rating=3.0, reviews=1000),
