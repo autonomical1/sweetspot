@@ -43,18 +43,6 @@ export function Viewer({ roomId, navigate }: Props) {
     if (roomId && useAppStore.getState().room?.room_id !== roomId) void loadRoom(roomId);
   }, [roomId, loadRoom]);
 
-  const importJson = async (file?: File) => {
-    if (!file) return;
-    try {
-      const next = withBundledModels(parseRoomConfig(JSON.parse(await file.text())));
-      setConfig(next);
-      setCeiling(next.room.showCeiling);
-      setSelected(null);
-      setNotice('Configuration loaded');
-    } catch (cause) {
-      setNotice(cause instanceof Error ? cause.message : 'Invalid configuration');
-    }
-  };
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -73,7 +61,7 @@ export function Viewer({ roomId, navigate }: Props) {
   return <main className="app-shell">
     <Topbar loading={stage === 'loading'} onDemo={() => void demo()} onPair={() => navigate('?pair')}
       onOpenRoom={id => navigate(`?room=${encodeURIComponent(id)}`)}
-      onImport={file => void importJson(file)} onExport={exportJson} />
+      onExport={exportJson} />
     {error && <div className="api-error" role="alert">{error} <button onClick={() => roomId ? void loadRoom(roomId) : void demo()}>Retry</button></div>}
     <div className="workspace">
       <Sidebar config={config} room={room} selected={selected} projection={projection} onSelect={setSelected} onProjection={() => setProjection(value => !value)} />
