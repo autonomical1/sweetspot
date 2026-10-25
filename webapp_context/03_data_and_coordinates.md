@@ -23,8 +23,8 @@ Look at `sample_payloads/room_demo.json`, `room_scanned.json` and `optimize_demo
 
 ## Layout and metrics (optimize/score)
 - **LIVE roles:** `layout.speakers[]` has `{role, position: [x,y,z], aim: [x,y,z]}` for `L R C LFE Ls Rs`. `aim` is a point the speaker points at (draw a short arrow/line toward it).
-- **PLANNED staged 3D roles:** `Lss Rss Lrs Rrs`, overheads `Ltf Rtf Ltr Rtr Ltm Rtm`, and `LFE2`. These may also carry `size: {width,height,depth}` (feet), `yaw_deg`, `pitch_deg`, `mount`, `compliance`, and `receiver_delay_ms` (plus other optional calibration fields); ignore unknown optional fields.
-- **PLANNED layout fields:** `preset`, `standard`, `stage` (`quick`, `refining`, `refined`), `seats`, and `projector`. The quick layout is usable while the refined 3D layout is being computed.
+- **LIVE staged 3D roles:** `Lss Rss Lrs Rrs`, overheads `Ltf Rtf Ltr Rtr Ltm Rtm`, and `LFE2`. These may also carry `size: {width,height,depth}` (feet), `yaw_deg`, `pitch_deg`, `mount`, `compliance`, and `receiver_delay_ms` (plus other optional calibration fields); ignore unknown optional fields.
+- **LIVE layout fields:** `preset`, `standard`, `stage` (`quick`, `refining`, `refined`), `seats`, and `projector`. The quick layout is usable while the refined 3D layout is being computed.
 - Speaker box sizing in the viewer is, in order: speaker `size` when present; chosen product `dimensions` when present; otherwise the existing default box. Heights are real (`y` is up), and overhead speakers sit at ceiling height.
 - `layout.screen`: `{wall_id, center: [x,y,z], width, height}` or null. Draw as a flat rectangle on that wall facing into the room.
 - `metrics.score`: 0..1 heuristic (show as 0-100 with one decimal, colour scale). It is the same number from optimize and score, so drag changes are comparable.
