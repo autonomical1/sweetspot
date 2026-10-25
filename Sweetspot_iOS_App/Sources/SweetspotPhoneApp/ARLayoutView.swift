@@ -225,8 +225,10 @@ struct ARLayoutView: UIViewRepresentable {
                 0
             )
 
+            // A +yaw rotation about +y sends the room's +x axis to (cos, 0, -sin),
+            // so the world z delta is negated (same convention as worldTransform).
             let worldAngle = atan2(
-                secondWorldPoint.z - firstWorldPoint.z,
+                -(secondWorldPoint.z - firstWorldPoint.z),
                 secondWorldPoint.x - firstWorldPoint.x
             )
             let yaw = worldAngle
