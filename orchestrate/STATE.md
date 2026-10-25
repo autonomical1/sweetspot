@@ -1,4 +1,4 @@
-# STATE (orchestrator-only; REWRITE IN FULL at every checkpoint, keep only currently-true facts)
+﻿# STATE (orchestrator-only; REWRITE IN FULL at every checkpoint, keep only currently-true facts)
 
 - project: Sweetspot
 - started: 2026-10-24 13:21
@@ -7,17 +7,10 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 11
-- last_checkpoint: 2026-10-25 00:37
+- last_checkpoint: 2026-10-25 00:38
 
 ## Next action
-*** ALL WORKERS PAUSED at 00:36 (real clock) by the user (this Claude account is near its 5 h limit and the context is degrading). NOTHING IS RUNNING. Nothing is merging; master is clean and pushed. Resume in a fresh session: run `/orchestrate`, read memory/HANDOVER-2026-10-25-0035.md first, then `DISPATCH status` (expect INTERRUPTED for engine3d-wire, docs-demo, docs-webspec).
-RESUME ORDER (all on CODEX ACCOUNT 2, set `$env:CODEX_HOME="$HOME\.codex-second"` in the SAME PowerShell command as start/review; account 1 is at 7% until 1 am; ONE account at a time). Use background jobs (run_in_background) and verify the process is alive:
- 1. engine3d-wire (critical path; worktree ..\sweetspot-wt\engine3d-wire keeps 12 changed files; when stopped its full suite was at 80% with 3 failures it was fixing; ran 14 min): `dispatch.ps1 start -Id engine3d-wire -Model gpt-6-sol -Effort high` then `review -Id engine3d-wire`. On PASS + review OK: commit state files, merge as a background job (one merge at a time), ruff + pytest, push, DEPLOY to the VPS (cold start about 25 s, warm up), smoke + e2e against https://sweetspotav.tech, confirm `stage` quick -> refined live. ISSUES -> one retry on account 2; second ISSUES -> ask the user.
- 2. docs-webspec (worktree keeps 5 changed files; diff clean, ruff passed, was running tests) and docs-demo (1 changed file, DEMO.md; was running tests): `start -Id <id> -Model gpt-5.6-luna -Effort medium` then `review -Id <id>`; docs only; merge when OK.
- 3. products-theater (worker finished earlier; branch has master merged in; check + Codex review were running): `check -Id products-theater` then `review -Id products-theater` (background), merge, then run `python tools/expand_catalog.py --db /data/av_prices.db` ON THE VPS (keys live there), copy the DB back, commit products/av_prices.db, widen PRODUCT_ROLES in backend/tests/contract/checks.py, deploy.
- 4. Still paused by the user: polygon-geometry, polygon-engine, plot2d-patch-depth.
-Follow-ups: docs/ENGINE_INTEGRATION_AUDIT.md rows 16-19 (plot2d, iOS, web specs, docs), root README rewrite, the iOS teammate's first Xcode build + a FULL room scan.
-
+RESUMED 00:37 on CODEX ACCOUNT 2 (account 1 unused). Background jobs running: (a) engine3d-wire start gpt-6-sol high + review; (b) docs-webspec then docs-demo, gpt-5.6-luna medium, each with review; (c) products-theater check + review. When each finishes: PASS + VERDICT OK -> set `review` in TASKS.md, then merge ONE at a time as a background job (engine3d-wire first). After engine3d-wire merges: ruff + pytest, push, deploy to the VPS, smoke + e2e against https://sweetspotav.tech, confirm `stage` quick -> refined live. After products-theater merges: run tools/expand_catalog.py on the VPS, copy the DB back, widen PRODUCT_ROLES, deploy. ISSUES -> one retry on account 2; a second ISSUES -> ask the user. Still paused by the user: polygon-geometry, polygon-engine, plot2d-patch-depth. Handover notes: memory/HANDOVER-2026-10-25-0035.md.
 - iOS team (user, 2026-10-25 00:10): the iOS teammate is ONLY the builder/tester from now on; the user and the orchestrator write all Swift (branch ios-phone_context first, then master). The Swift has never been compiled: expect compile-error fix tasks from pasted Xcode output; ask the teammate to `git pull` before building and to report errors instead of pushing edits.
 
 ## Waiting on user
