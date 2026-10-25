@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import re
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -102,6 +103,8 @@ def run_e2e(client: Any, *, budget: float = 1500.0, wait_refined: float = 0,
     if not step("scan room path", lambda: _scan(client, state)):
         return results
     if not step("rectangle room path", lambda: _rectangle(client, state)):
+        return results
+    if not step("web shell", lambda: _web(client)):
         return results
     step("unknown room error", lambda: _missing_room(client))
     return results
@@ -241,6 +244,21 @@ def _missing_room(client: Any) -> Any:
     payload = _require(response, 404)
     assert "detail" in payload, payload
     return payload
+
+
+def _web(client: Any) -> Any:
+    """Check the built web shell when this deployment includes it."""
+    response = client.get("/app/")
+    if response.status_code == 404:
+        return {"_step_detail": "skipped: web build not present"}
+    payload = response.text
+    assert response.status_code == 200, response.status_code
+    scripts = re.findall(r'<script[^>]+src=["\']([^"\']+)["\']', payload)
+    assert scripts, "web shell has no module script"
+    script = scripts[0]
+    script_response = client.get(script if script.startswith("/") else f"/app/{script}")
+    assert script_response.status_code == 200, script_response.status_code
+    return {"_step_detail": "ok"}
 
 
 def _print_results(results: list[StepResult], *, json_output: bool = False) -> None:
