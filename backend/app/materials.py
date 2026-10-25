@@ -147,7 +147,7 @@ class GeminiClassifier:
                 parts.append(types.Part.from_text(text=f"surface_id: {photo['surface_id']}"))
                 parts.append(types.Part.from_bytes(data=photo["image_bytes"], mime_type=photo["mime"]))
             response = client.models.generate_content(
-                model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+                model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
                 contents=[types.Content(role="user", parts=parts)],
                 config=types.GenerateContentConfig(response_mime_type="application/json"),
             )
