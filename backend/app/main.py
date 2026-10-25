@@ -4,6 +4,7 @@ import importlib.util
 import logging
 import os
 import time
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import rooms, sessions
+from . import refine, rooms, sessions
 
 
 class CodeRequest(BaseModel):
@@ -19,7 +20,15 @@ class CodeRequest(BaseModel):
 
 
 def create_app() -> FastAPI:
-    application = FastAPI()
+    @asynccontextmanager
+    async def lifespan(_application: FastAPI):
+        refine.start()
+        try:
+            yield
+        finally:
+            refine.stop()
+
+    application = FastAPI(lifespan=lifespan)
     request_log = logging.getLogger("sweetspot.request")
 
     @application.middleware("http")

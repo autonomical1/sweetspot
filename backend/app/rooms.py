@@ -8,7 +8,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field, ValidationError
 
-from . import engine, products, sessions, store
+from . import engine, engine3d, products, refine, sessions, store
 from .schemas import Dimensions, Listener, Room, Surface
 
 router = APIRouter()
@@ -36,7 +36,13 @@ class LayoutRequest(BaseModel):
 
 
 class OptimizeRequest(BaseModel):
-    options: dict | None = None
+    options: "OptimizeOptions" = Field(default_factory=lambda: OptimizeOptions())
+
+
+class OptimizeOptions(BaseModel):
+    preset: str = "5.1"
+    standard: str = "dolby"
+    refine: bool = True
 
 
 def _room(room_id: str) -> Room:
@@ -153,6 +159,7 @@ def update_listener(room_id: str, body: ListenerRequest) -> Room:
     position, facing = validate_listener(body.position, body.facing, room.dimensions)
     room.listener = Listener(position=position, facing=facing)
     store.save_room(room)
+    refine.invalidate(room_id)
     return room
 
 
@@ -192,9 +199,16 @@ def photo_targets(room_id: str) -> list[dict]:
 @router.post("/rooms/{room_id}/optimize")
 def optimize(room_id: str, body: OptimizeRequest | None = None) -> dict:
     room = _room(room_id)
-    result = engine.run_optimize(room, body.options if body else None)
-    store.save_layout(room_id, result)
-    return result
+    options = (body.options if body else OptimizeOptions()).model_dump()
+    if options["preset"] not in engine3d.PRESETS or options["standard"] not in {"dolby", "itu", "thx"}:
+        raise HTTPException(422, "invalid preset or standard")
+    return refine.optimize(room, options)
+
+
+@router.get("/rooms/{room_id}/optimize/status")
+def optimize_status(room_id: str) -> dict:
+    _room(room_id)
+    return refine.status(room_id)
 
 
 @router.post("/rooms/{room_id}/score")

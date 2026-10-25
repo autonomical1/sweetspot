@@ -3,6 +3,7 @@ import json
 import os
 import re
 import secrets
+import tempfile
 from pathlib import Path
 
 from .schemas import Room
@@ -51,12 +52,31 @@ def save_layout(room_id: str, result: dict) -> None:
     _safe(room_id)
     p = data_dir() / "rooms" / f"{room_id}.layout.json"
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    write_json_atomic(p, result)
+
+
+def write_json_atomic(path: Path, value: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                                     prefix=f".{path.name}.", suffix=".tmp", delete=False) as handle:
+        json.dump(value, handle, indent=2)
+        temporary = Path(handle.name)
+    temporary.replace(path)
 
 
 def load_layout(room_id: str) -> dict | None:
     p = data_dir() / "rooms" / f"{_safe(room_id)}.layout.json"
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
+def save_optimize_status(room_id: str, status: dict) -> None:
+    path = data_dir() / "rooms" / f"{_safe(room_id)}.optimize.json"
+    write_json_atomic(path, status)
+
+
+def load_optimize_status(room_id: str) -> dict | None:
+    path = data_dir() / "rooms" / f"{_safe(room_id)}.optimize.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
 def save_photo(room_id: str, surface_id: str, data: bytes) -> Path:

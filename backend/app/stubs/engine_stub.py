@@ -39,8 +39,12 @@ def optimize(room: dict, options: dict | None = None) -> dict:
     screen_width = 2 * wall_distance * math.tan(math.radians(18))
     center = [width if fx > 0 else 0.0, 4.5, listener[2]] if horizontal else [listener[0], 4.5, length if fz > 0 else 0.0]  # noqa: E501  # preserve behavior while retaining the existing expression
     speakers = [{"role": role, "position": positions[role], "aim": listener} for role in ("L", "R", "C", "LFE", "Ls", "Rs")]  # noqa: E501  # preserve behavior while retaining the existing expression
-    return {"layout": {"speakers": speakers, "screen": {"wall_id": wall_id, "center": center,
+    result = {"layout": {"speakers": speakers, "screen": {"wall_id": wall_id, "center": center,
             "width": screen_width, "height": screen_width * 9 / 16}}, "metrics": _metrics()}
+    preset = (options or {}).get("preset", "5.1")
+    if preset != "5.1":
+        result["metrics"]["warnings"].append(f"quick preview is 5.1 only; waiting for the 3D {preset} result")
+    return result
 
 
 def score(room: dict, layout: dict) -> dict:
