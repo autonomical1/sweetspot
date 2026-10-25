@@ -18,3 +18,10 @@ The five files updated; HANDOFF.md lists the changes by file and any contradicti
 
 ## Out of scope
 Code, docs/API.md, the web app itself.
+
+
+## RETRY 1 (review VERDICT: ISSUES) - fix both, docs only
+VERDICT: ISSUES
+webapp_context/02_api_reference.md:25 â€” Labels an immediate quick layout and `stage` progression as LIVE, though the staged optimizer is PLANNED; the current optimize call is synchronous.
+webapp_context/02_api_reference.md:25 â€” Says to swap in the refined layout after polling status, but omits the required `GET /rooms/{id}/layout` call; the status response contains no layout.
+

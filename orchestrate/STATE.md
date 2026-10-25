@@ -7,14 +7,13 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 11
-- last_checkpoint: 2026-10-25 00:45
+- last_checkpoint: 2026-10-25 00:59
 
 ## Next action
-RESUMED 00:37 on CODEX ACCOUNT 2 (00:43: docs-webspec worker done, review next; docs-demo queued behind it; engine3d-wire running its full suite; products-theater check running) (account 1 unused). Background jobs running: (a) engine3d-wire start gpt-6-sol high + review; (b) docs-webspec then docs-demo, gpt-5.6-luna medium, each with review; (c) products-theater check + review. When each finishes: PASS + VERDICT OK -> set `review` in TASKS.md, then merge ONE at a time as a background job (engine3d-wire first). After engine3d-wire merges: ruff + pytest, push, deploy to the VPS, smoke + e2e against https://sweetspotav.tech, confirm `stage` quick -> refined live. After products-theater merges: run tools/expand_catalog.py on the VPS, copy the DB back, widen PRODUCT_ROLES, deploy. ISSUES -> one retry on account 2; a second ISSUES -> ask the user. Still paused by the user: polygon-geometry, polygon-engine, plot2d-patch-depth. Handover notes: memory/HANDOVER-2026-10-25-0035.md.
+Running (00:58): engine3d-wire RETRY 1 (account 2, gpt-6-sol high; review found refine.py:249 calling run_scene without fast=False; then check + review), docs-webspec RETRY 1 (account 2, luna; two doc findings; then review), products-theater RETRY 1 (account 2, gpt-6-sol high; 5 review findings; check + review), docs-demo (account 1 by user request, luna; then review). When each finishes: PASS + VERDICT OK -> set `review` in TASKS.md, merge ONE at a time as a background job (engine3d-wire first). A SECOND ISSUES on any task -> ask the user. After engine3d-wire merges: ruff + pytest, push, deploy to the VPS, smoke + e2e against https://sweetspotav.tech, confirm `stage` quick -> refined live. After products-theater merges: run tools/expand_catalog.py on the VPS, copy the DB back, widen PRODUCT_ROLES, deploy. .pytest_* dirs in the engine3d-wire worktree are unreadable (sandbox-owned); .gitignore now ignores them. Still paused by the user: polygon-geometry, polygon-engine, plot2d-patch-depth. Handover: memory/HANDOVER-2026-10-25-0035.md.
 - iOS team (user, 2026-10-25 00:10): the iOS teammate is ONLY the builder/tester from now on; the user and the orchestrator write all Swift (branch ios-phone_context first, then master). The Swift has never been compiled: expect compile-error fix tasks from pasted Xcode output; ask the teammate to `git pull` before building and to report errors instead of pushing edits.
 
-## Waiting on user
-Nothing blocking. The user is switching to a fresh session after the pause above. Later: the iOS teammate builds ios-phone_context in Xcode (needs a FULL room scan); optional decision: Codex sandbox unelevated to end UAC prompts.
+## Waiting on user$([char]10)Nothing blocking. Projector cap decided 00:56 (strict 2x, logged). Later: iOS teammate builds ios-phone_context in Xcode (needs a FULL room scan).
 
 ## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
