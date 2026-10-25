@@ -1,6 +1,6 @@
 # SweetSpot web app
 
-React, Vite and the teammate's raw Three.js viewer. The production build is served at `/app/` by the backend. It writes to `../web/` without clearing `web/plot2d/`.
+React, Vite and the teammate's raw Three.js viewer. The production build is served at `/app/` by the backend. It writes to `../web/`.
 
 ## Commands
 

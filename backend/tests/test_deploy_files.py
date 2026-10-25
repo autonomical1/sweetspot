@@ -44,14 +44,14 @@ def test_caddy_routes_and_limits_requests():
     caddy = read("deploy/Caddyfile")
     assert "{$SITE_ADDRESS}" in caddy
     assert "reverse_proxy api:8000" in caddy
-    assert "redir @root /app/plot2d/ 302" in caddy
+    assert "redir @root /app/ 302" in caddy
     assert "25MB" in caddy
 
 
 def test_smoke_script_is_bash_and_covers_required_routes():
     smoke = read("deploy/smoke.sh")
     assert "set -euo pipefail" in smoke
-    for endpoint in ("/health", "/sessions", "/rooms/demo", "/optimize", "/layout", "/products?budget=1500", "/photo-targets", "/app/plot2d/"):  # noqa: E501  # preserve behavior while retaining the existing expression
+    for endpoint in ("/health", "/sessions", "/rooms/demo", "/optimize", "/layout", "/products?budget=1500", "/photo-targets", "/app/"):  # noqa: E501  # preserve behavior while retaining the existing expression
         assert endpoint in smoke
     assert re.search(r'\[\[ "\$expiry" == notAfter=\* \]\] \|\| return 1', smoke)
     assert "command -v openssl >/dev/null 2>&1 || return 1" in smoke

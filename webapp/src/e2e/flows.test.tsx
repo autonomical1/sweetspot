@@ -7,6 +7,9 @@ import { ShopPanel } from '../components/panels/ShopPanel';
 import { useAppStore } from '../store';
 
 vi.mock('../interaction/webgl', () => ({ hasWebGL: () => false }));
+vi.mock('../scene/RoomCanvas', () => ({
+  RoomCanvas: () => <div>{(useAppStore.getState().layout?.speakers ?? []).map(speaker => <span key={speaker.role} data-testid={`speaker-${speaker.role}`} />)}</div>,
+}));
 vi.mock('qrcode.react', () => ({ QRCodeSVG: ({ value }: { value: string }) => <div data-testid="qr-value" data-value={value} /> }));
 
 const roles = ['L', 'R', 'C', 'LFE', 'Ls', 'Rs'];
@@ -26,7 +29,6 @@ beforeEach(() => {
   vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {}, removeItem: () => {}, clear: () => {} });
   vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   Object.defineProperty(document, 'hidden', { configurable: true, value: false });
-  useAppStore.setState({ viewMode: '2d' });
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); useAppStore.setState({ room: null, layout: null, metrics: null, stage: 'idle', selected: null, error: null, refinedConflict: false, edited: false }); });
 
@@ -54,5 +56,4 @@ describe('web end-to-end flows', () => {
 
   it('shows the Gemini retry countdown', async () => { vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: 'Gemini is busy' }), { status: 429, headers: { 'Retry-After': '12' } }))); render(<ShopPanel room={room} hasLayout />); fireEvent.click(screen.getByRole('button', { name: 'Get products' })); await waitFor(() => expect(screen.getByText(/retry in 12 s/)).toBeTruthy()); });
 
-  it('defaults to 2D when WebGL is unavailable', () => { render(<App />); expect(screen.getByRole('button', { name: '2D' }).className).toContain('active'); expect(screen.getByText('Load a room to see its 2D plan.')).toBeTruthy(); });
 });

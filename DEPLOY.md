@@ -4,7 +4,7 @@ These commands target the Vultr VPS at `144.202.27.51` (Ubuntu 24.04 or newer; *
 
 ## Current deployment (2026-10-25)
 
-- URL: **https://sweetspotav.tech** (root `/` redirects to `/app/plot2d/`). Let's Encrypt certificate issued by Caddy, valid to 2027-01-22, renewed automatically.
+- URL: **https://sweetspotav.tech** (root `/` redirects to `/app/`). Let's Encrypt certificate issued by Caddy, valid to 2027-01-22, renewed automatically.
 - Checkout: `/srv/sweetspot` (owned by root), stack: `deploy/docker-compose.yml` (`deploy-api-1`, `deploy-caddy-1`), Docker 29.9, Compose v5.6.
 - `.env`: `/srv/sweetspot/.env` (mode 600) with `DOMAIN=sweetspotav.tech`, `SITE_ADDRESS="sweetspotav.tech, 144-202-27-51.sslip.io"` and `DATA_DIR=/data` set; the Gemini and SerpApi keys are configured.
 - `deploy/smoke.sh https://sweetspotav.tech`: all checks PASS; the first `optimize` after a restart takes about 25 s, and repeats are instant.
@@ -114,9 +114,9 @@ bash deploy/smoke.sh https://sweetspotav.tech
 ## Web app build
 
 The React/Vite app in `webapp/` is built in the Node stage of
-`deploy/Dockerfile`. Its output is copied into `web/` in the final API image,
-alongside the committed `web/plot2d/` page. The Vite app is served at `/app/`;
-the existing root redirect continues to open `/app/plot2d/`.
+`deploy/Dockerfile`. Its output is copied into `web/` in the final API image.
+The Vite app is served at `/app/`;
+the root redirect opens `/app/`.
 
 Rebuild the production image locally or on the VPS with:
 

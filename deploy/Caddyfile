@@ -17,6 +17,6 @@
         method GET
         path /
     }
-    redir @root /app/plot2d/ 302
+    redir @root /app/ 302
     reverse_proxy api:8000
 }

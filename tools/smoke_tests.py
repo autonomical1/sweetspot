@@ -19,7 +19,6 @@ SMOKE = [
     "backend/tests/test_materials.py",
     "backend/tests/test_web_build_files.py",
     "backend/tests/test_rooms.py",
-    "backend/tests/test_plot2d.py",
     "backend/tests/test_preset_2_1.py",
     "backend/tests/test_adapters.py",
     "backend/tests/products/test_expand_cooldown.py",

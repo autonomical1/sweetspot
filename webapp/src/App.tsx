@@ -3,7 +3,6 @@ import { Pair } from './screens/Pair';
 import { Start } from './screens/Start';
 import { Viewer } from './screens/Viewer';
 import { useAppStore } from './store';
-import { hasWebGL } from './interaction/webgl';
 import { svgPointToFeet } from './interaction/coordinates';
 
 export default function App() {
@@ -39,13 +38,7 @@ export default function App() {
     const key = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target?.matches('input, textarea, select, [contenteditable="true"]')) return;
-      if (event.key.toLowerCase() === 'v') {
-        const state = useAppStore.getState();
-        const view = state.viewMode === '3d' || !hasWebGL() ? '2d' : '3d';
-        state.setViewMode(view);
-        const url = new URL(window.location.href); url.searchParams.set('view', view);
-        window.history.replaceState({}, '', url); setQuery(window.location.search);
-      } else if (event.key.startsWith('Arrow') && useAppStore.getState().room) {
+      if (event.key.startsWith('Arrow') && useAppStore.getState().room) {
         const step = event.shiftKey ? 1 : .25;
         const delta: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
         const [dx, dz] = delta[event.key];
@@ -75,8 +68,7 @@ export default function App() {
   const params = new URLSearchParams(query);
   if (params.has('pair')) return <Pair onBack={() => navigate('')} />;
   const roomId = params.get('room');
-  const initialView = params.get('view') === '2d' || !hasWebGL() ? '2d' : '3d';
-  const page = roomId ? <Viewer roomId={roomId} initialView={initialView} navigate={navigate} /> : <Start navigate={navigate} initialView={initialView} />;
+  const page = roomId ? <Viewer roomId={roomId} navigate={navigate} /> : <Start navigate={navigate} />;
   return <>{page}{refinedConflict && <div className="toast" role="dialog" aria-label="Refined layout available" style={{ position:'fixed', zIndex:20 }}>
     Refined 3D layout is ready. <button onClick={() => chooseRefined(false)}>Keep my edit</button><button onClick={() => chooseRefined(true)}>Use refined layout</button>
   </div>}{notice && <div className="toast" role="status" style={{ position:'fixed', zIndex:20 }} onClick={clearNotice}>{notice}<button aria-label="Dismiss notice">×</button></div>}</>;

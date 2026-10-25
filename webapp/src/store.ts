@@ -16,14 +16,12 @@ interface AppState {
   metrics: Metrics | null;
   stage: 'idle' | 'loading' | 'quick' | 'refining' | 'refined' | 'error';
   selected: string | null;
-  viewMode: '3d' | '2d';
   session: PairSession | null;
   error: string | null;
   notice: string | null;
   refinedConflict: boolean;
   edited: boolean;
   setSelected: (id: string | null) => void;
-  setViewMode: (mode: '3d' | '2d') => void;
   setSession: (session: PairSession | null) => void;
   loadRoom: (roomId: string) => Promise<void>;
   useDemoRoom: () => Promise<void>;
@@ -59,14 +57,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   metrics: null,
   stage: 'idle',
   selected: null,
-  viewMode: '3d',
   session: null,
   error: null,
   notice: null,
   refinedConflict: false,
   edited: false,
   setSelected: selected => set({ selected }),
-  setViewMode: viewMode => set({ viewMode }),
   setSession: session => set({ session }),
   clearNotice: () => set({ notice: null }),
   moveSpeaker: (role, position) => {

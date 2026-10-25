@@ -56,8 +56,6 @@ PY
 run_check "GET /rooms/$ROOM_ID/products?budget=1500" products
 photo_targets() { curl -fsS --max-time 15 "$BASE_URL/rooms/$ROOM_ID/photo-targets" -o "$TMP_DIR/photo-targets" && python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))' "$TMP_DIR/photo-targets"; }
 run_check "GET /rooms/$ROOM_ID/photo-targets" photo_targets
-web_app() { curl -fsS --max-time 15 "$BASE_URL/app/plot2d/" -o "$TMP_DIR/web" && grep -qi '<html' "$TMP_DIR/web"; }
-run_check 'GET /app/plot2d/ (HTML)' web_app
 vite_app() {
     local asset_path
     curl -fsS --max-time 15 "$BASE_URL/app/" -o "$TMP_DIR/vite-index" || return 1
