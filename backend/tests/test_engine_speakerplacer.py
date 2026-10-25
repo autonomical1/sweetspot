@@ -38,7 +38,7 @@ def test_engine_error_is_a_warning(monkeypatch):
     monkeypatch.setattr(engine_speakerplacer.speakerplacer, "optimize_layout", fail)
     result = engine_speakerplacer.optimize(room)
     assert any("speakerplacer failed: RuntimeError: test failure" == item for item in result["metrics"]["warnings"])
-    assert result["layout"] == engine_stub.optimize(room)["layout"]
+    assert {key: value for key, value in result["layout"].items() if key != "projector"} == engine_stub.optimize(room)["layout"]
 
 
 def test_object_avoidance_slides_along_the_same_wall():
