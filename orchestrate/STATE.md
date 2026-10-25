@@ -15,6 +15,10 @@ ios-qr-pairing and web-e2e are MERGED (demo-ok 77feaa0), master pushed, VPS rede
 ## Pending deploy
 Commit 58b2928 (2D view, 2D/3D toggle and /app/plot2d/ removed; root redirects to /app/) is on local master only: NOT pushed or deployed. Deploy it AFTER the user's phone scan finishes (a redeploy would disturb the QR session), then run smoke.sh + tools/e2e.py.
 
+## Backlog (user requests)
+- Link handshake: web app must show that the phone is linked to the session as soon as it scans the QR (session id), before any room upload. Needs API.md change (e.g. session status `linked` or a claim endpoint), backend, web Pair screen, iOS call. See DECISIONS.md. Start after the current browser check.
+- 2D removal + Load room file removal are committed locally, deploy pending (see above). ios-polish running on account 3 (started 04:00 by user go).
+
 ## Waiting on user
 Scan the QR on the web page with the iPhone app (latest build), then do the room scan, and say when it is uploaded.
 
