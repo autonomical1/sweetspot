@@ -1,9 +1,14 @@
+import { useState, type KeyboardEvent } from 'react';
 import type { Room } from '../api/client';
-import type { Equipment, RoomConfig } from '../config/schema';
-import { formatFtIn } from '../lib/format';
-import { calculateProjection } from '../scene/projection';
+import type { RoomConfig } from '../config/schema';
+import { useAppStore } from '../store';
+import { AcousticsPanel } from './panels/AcousticsPanel';
+import { LayoutPanel } from './panels/LayoutPanel';
+import './panels/panels.css';
+import { RoomPanel } from './panels/RoomPanel';
+import { ShopPanel } from './panels/ShopPanel';
 
-export const descriptions: Record<Equipment['type'], string> = {
+export const descriptions = {
   speaker: 'Audio output · Sets the left or right sound channel in your room.',
   projector: 'Image source · Projects toward the configured screen.',
   screen: 'Projection surface · The image is sized against this screen.',
@@ -19,30 +24,28 @@ interface Props {
   onProjection: () => void;
 }
 
-export function Sidebar({ config, room, selected, projection, onSelect, onProjection }: Props) {
-  const selectedItem = config.equipment.find(item => item.id === selected);
-  const projector = config.equipment.find(item => item.type === 'projector');
-  const screen = config.equipment.find(item => item.type === 'screen');
-  const preview = projector && screen ? calculateProjection(projector, screen) : null;
-  return <aside className="sidebar"><div className="side-scroll">
-    <div className="section-heading"><div><span className="eyebrow">YOUR SPACE</span><h1>Room setup</h1></div><span className="live"><i /> SAVED</span></div>
-    <div className="room-card"><div className="room-icon">▱</div><div className="room-meta"><b>Listening room</b>
-      <span>{room
-        ? `${formatFtIn(room.dimensions.width)} × ${formatFtIn(room.dimensions.length)} × ${formatFtIn(room.dimensions.height)}`
-        : `${config.room.width.toFixed(1)} × ${config.room.length.toFixed(1)} × ${config.room.height.toFixed(1)} m`}</span>
-      {room && <small>Backend room · feet</small>}
-    </div></div>
-    <div className="section-label"><span>OBJECTS FROM ROOM FILE</span></div>
-    <div className="device-list">{config.equipment.map(item => <button key={item.id} className={`device-row ${selected === item.id ? 'selected' : ''}`} onClick={() => onSelect(item.id)}>
-      <span className={`device-icon ${item.type}`}>{item.type === 'speaker' ? '◉' : item.type === 'projector' ? '▣' : item.type === 'screen' ? '▤' : '⌂'}</span>
-      <span className="device-copy"><b>{item.name}</b><small>{item.type[0].toUpperCase() + item.type.slice(1)}</small></span><span className="row-arrow">›</span>
-    </button>)}</div>
-    {selectedItem ? <section className="hint-card"><div className="hint-glyph">◉</div><b>{selectedItem.type}</b><p>{selectedItem.description || descriptions[selectedItem.type]}</p></section>
-      : <section className="hint-card"><div className="hint-glyph">↖</div><b>Select an object to identify it</b><p>Click an object in the room or choose one from the list.</p></section>}
-    <section className="preview-card"><div className="card-title"><div><span className="eyebrow">PROJECTION</span><h3>Image preview</h3></div><button className="toggle" aria-label="Toggle projection" onClick={onProjection}><i className={projection ? 'on' : ''} /></button></div>
-      {preview && projector && screen ? <><div className="projection-screen"><div className="screen-glow" /><b>{preview.supported ? `${preview.width.toFixed(2)} × ${preview.height.toFixed(2)} m` : '—'}</b><small>{preview.supported ? 'PROJECTED IMAGE' : 'NO PREVIEW'}</small></div>
-        <div className={`fit-status ${preview.supported && preview.fits ? 'good' : 'bad'}`}><i />{preview.supported ? preview.fits ? 'Fits screen' : 'Image exceeds screen' : preview.reason}</div></>
-        : <p className="muted">Projection information comes from the loaded room file.</p>}
-    </section>
-  </div><footer className="sidebar-footer"><span>ROOM CONFIGURATION <b>v{config.version}</b></span><span>READ ONLY</span></footer></aside>;
+const tabs = ['Layout', 'Acoustics', 'Shop', 'Room'] as const;
+type Tab = typeof tabs[number];
+
+export function Sidebar({ room, onSelect }: Props) {
+  const [tab, setTab] = useState<Tab>('Layout');
+  const { layout, metrics } = useAppStore();
+  const choose = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    setTab(tabs[next]);
+    document.getElementById(`panel-tab-${tabs[next]}`)?.focus();
+  };
+  return <aside className="panel-sidebar">
+    <div className="panel-tabs" role="tablist" aria-label="Room details">
+      {tabs.map((name, index) => <button key={name} id={`panel-tab-${name}`} role="tab" aria-selected={tab === name} aria-controls={`panel-${name}`} tabIndex={tab === name ? 0 : -1} onKeyDown={event => choose(event, index)} onClick={() => setTab(name)}>{name}</button>)}
+    </div>
+    <div className="panel-scroll" id={`panel-${tab}`} role="tabpanel" aria-labelledby={`panel-tab-${tab}`}>
+      {tab === 'Layout' && <LayoutPanel room={room} layout={layout} metrics={metrics} onSelect={onSelect} />}
+      {tab === 'Acoustics' && <AcousticsPanel room={room} metrics={metrics} onSelect={onSelect} />}
+      {tab === 'Shop' && <ShopPanel room={room} hasLayout={Boolean(layout)} />}
+      {tab === 'Room' && <RoomPanel room={room} />}
+    </div>
+  </aside>;
 }
