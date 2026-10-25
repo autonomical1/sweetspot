@@ -44,7 +44,8 @@ Sequence (after the scan is uploaded and `room_id` is known):
 2. For each target show a full-screen prompt with the label ("Photograph the wall behind the TV"), a short hint ("Fill the frame with the surface, avoid people and lights, hold steady"), a Take Photo button, and Skip.
 3. Capture with the system camera: `UIImagePickerController` with `sourceType = .camera` is the fastest route (wrap in `UIViewControllerRepresentable`). Custom `AVCapturePhotoOutput` is not worth it.
 4. Resize to long edge 1024 px, JPEG quality 0.7, upload with `uploadPhoto(...)` (file 02). Show a checkmark per photo; retry on failure; never block on a failed upload (continue and note it).
-5. After the last one, call `POST /rooms/{room_id}/materials`; show results as a small list ("Front wall: drywall (0.9)") and continue to the layout/AR step.
+5. Leaving the photos step starts `POST /rooms/{room_id}/materials` in the background when at least one photo was uploaded. The setup form remains usable during classification. With no photos, the app skips classification.
+6. The setup form asks for budget, base configuration (2.1, 5.1, 7.1), and optional height channels (.2 or .4 for 5.1/7.1). "Build my layout" waits for classification, sends the combined preset to optimize, then opens AR. A processing screen shows the active stage, elapsed time, Gemini retry countdown, and Retry / Back to form on failure.
 
 Constraints:
 - Do not take photos while the RoomPlan session is running. Finish and stop the scan first. (If you share one `ARSession` with the AR overlay, `UIImagePickerController` pauses it; after photos, re-check tracking before AR, see file 04.)
