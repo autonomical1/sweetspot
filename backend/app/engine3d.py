@@ -190,7 +190,10 @@ def to_layout(scene: dict, room: dict) -> dict:
     screen = None
     if screen_source:
         center = _engine_xyz(screen_source["center_ft"], length)
-        facing, _ = _engine_facing(room)
+        # Use the facing the engine actually ran with; fall back to the room's listener only for older scenes.
+        facing = scene.get("facing")
+        if facing not in ("north", "south", "east", "west"):
+            facing, _ = _engine_facing(room)
         wall = {"north": "wall_n", "south": "wall_s", "east": "wall_e", "west": "wall_w"}[facing]
         screen = {"wall_id": wall, "center": center,
                   "width": float(screen_source["geometry"]["width_m"]) / METRES_PER_FOOT,
@@ -199,7 +202,13 @@ def to_layout(scene: dict, room: dict) -> dict:
     projector = None
     if projector_source:
         position = _engine_xyz(projector_source["position_ft"], length)
-        target = screen["center"] if screen else room["listener"]["position"]
+        scene_listener = scene.get("listener_m")
+        if screen:
+            target = screen["center"]
+        elif scene_listener:
+            target = _engine_xyz([float(v) / METRES_PER_FOOT for v in scene_listener], length)
+        else:
+            target = room["listener"]["position"]
         projector = {"position": position, "aim": target}
     seats = [{"row": seat["row"], "seat": seat["seat"],
               "position": _engine_xyz([seat["position_m"][0] / METRES_PER_FOOT,

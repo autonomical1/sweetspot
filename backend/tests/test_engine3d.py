@@ -2,7 +2,9 @@
 
 import json
 import math
+import pathlib
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -115,13 +117,24 @@ def test_run_scene_and_cleanup(room, tmp_path, monkeypatch):
 
 def test_run_scene_timeout_kills_child(room, tmp_path, monkeypatch):
     pid_file = tmp_path / "pid.txt"
-    script = "import os,pathlib,sys,time; pathlib.Path(sys.argv[1]).write_text(str(os.getpid())); time.sleep(30)"
+    # The child rewrites a heartbeat file every 0.1 s; after the timeout the heartbeat must stop (process gone).
+    script = "; ".join([
+        "import os, pathlib, sys, time",
+        "p = pathlib.Path(sys.argv[1])",
+        "p.write_text(str(os.getpid()))",
+        "beat = pathlib.Path(sys.argv[1] + '.beat')",
+        "[(beat.write_text(str(time.time())), time.sleep(0.1)) for _ in range(300)]",
+    ])
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setattr(engine3d, "build_command",
                         lambda *args, **kwargs: [sys.executable, "-c", script, str(pid_file)])
     with pytest.raises(engine3d.EngineError, match="timed out"):
         engine3d.run_scene(room, room["listener"], preset="5.1", standard="dolby", timeout_s=1)
     assert pid_file.exists()
+    beat = pathlib.Path(str(pid_file) + ".beat")
+    first = beat.read_text()
+    time.sleep(0.8)
+    assert beat.read_text() == first, "the engine child process kept running after the timeout"
     assert list((tmp_path / "tmp").iterdir()) == []
 
 
