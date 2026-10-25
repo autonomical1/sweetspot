@@ -7,7 +7,7 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 19
-- last_checkpoint: 2026-10-25 05:35
+- last_checkpoint: 2026-10-25 05:40
 
 ## Next action
 ios-qr-pairing and web-e2e are MERGED (demo-ok 77feaa0), master pushed, VPS redeployed and verified (smoke + e2e pass, `pair_url` uses sweetspotav.tech). Browser check in progress: Chrome tab 865081234 shows the QR at https://sweetspotav.tech/app/?pair (expires about 04:35; do not reload it). A background job tails the VPS API logs into the scratchpad file vps.log (task brn1biuho). When the user says they scanned: grep vps.log for the session/pairing and scan POSTs (POST /sessions/..., /rooms/scan), confirm the web page switches to the scanned room, then report. Later: ios-polish (brief has item 4, remove the "Found" rows) awaits the user's go. Cut by user: polygon-geometry, polygon-engine, plot2d-patch-depth. Remove leftover worktree dirs with `git worktree remove --force` (ios-qr-pairing, web-e2e). docs/API.md may still hold the polygon outline contract: check.
@@ -28,8 +28,8 @@ ios-polish MERGED + deployed (ddaea00; no Codex review, user wanted speed). Web 
 ## Status 06:00
 Deployed b685b16 (see DECISIONS.md: photo timeout fix, treatment patches, center model, progress bar, Seat POV removed). ios-theme RUNNING on account 3 (background job b8ncgrn0m, user auto-approved): when done run `check -Id ios-theme`, set `review`, `merge -Id ios-theme` (no Codex review), push master + master:ios-phone_context. Open: 3D engine timed out at 150 s on the large scan (now 360 s); L/R in the simplified layout sit close to the listener axis (stub geometry).
 
-## Status 05:35
-mc-pool MERGED b202b4f (speakerplacer/parallel.py, unused yet). speakerplacer-speed RUNNING (Codex account 3, background job bncv351zg): last report large scan 22 s, 15x18 14.9 s, golden IDENTICAL, finishing the box-fit cache. When it ends: `check -Id speakerplacer-speed`, set `review`, `merge -Id speakerplacer-speed`, then set mc-wire `ready` (deps met) and `start -Id mc-wire -Model gpt-6-sol -Effort high` with CODEX_HOME=~/.codex-third; after mc-wire merges: ONE deploy (git pull + `docker compose up -d --build` on the VPS; avoid mid-test deploys, they kill running refinements), smoke.sh + e2e. Deploy facts: restart caddy only if the Caddyfile changes; QUICK_OPTIMIZE_DEADLINE_S=50 and ENGINE3D_TIMEOUT_S=360 in deploy/docker-compose.yml. iOS: master == ios-phone_context (54f4e11 at last check); open iOS ideas: keep live AR session after history upload, AR guide colour question.
+## Status 05:40
+Merged: mc-pool b202b4f, speakerplacer-speed cea05ab (golden IDENTICAL). RUNNING on Codex account 3: mc-wire (background job bw29o42d0; needs speedup >= 2.5x on 4 cores, golden IDENTICAL with default workers and SPEAKERPLACER_WORKERS=1) and ios-error-audit (job bcc63i1t2, Swift messages only). When each ends: `check -Id <id>` (if git warns about an untracked junk dir in the worktree, append it to that worktree's info/exclude, see `git rev-parse --git-path info/exclude`), set `review`, `merge -Id <id>`, push master + master:ios-phone_context. After mc-wire merges: ONE deploy (git pull + `docker compose -f deploy/docker-compose.yml up -d --build` on the VPS), smoke.sh + e2e, consider SPEAKERPLACER_WORKERS in deploy/docker-compose.yml (VPS has 4 cores; the quick search child and the 3D engine can overlap, so cap at 2-3 each) and raise QUICK_OPTIMIZE_DEADLINE_S only if timings justify. Deploy facts: restart caddy only if the Caddyfile changes; avoid mid-test deploys (they kill running refinements). Backlog: keep live AR session after history upload (iOS), AR guide colour question.
 
 ## Waiting on user
 Say whether to read the AR session-reuse code now, and when phone tests are finished so the web deploy can go out.
