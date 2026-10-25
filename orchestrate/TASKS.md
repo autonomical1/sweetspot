@@ -35,3 +35,4 @@
 status: todo | ready | running | review | done | blocked | cut
 
 Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as \| ; ids are lowercase-with-dashes; pass tasks to `review` after a wave; mark unwanted tasks `cut`/`blocked` before `merge -All`.
+| web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | todo | Brief written; waiting for user OK at Gate 3 |
