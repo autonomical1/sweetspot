@@ -119,7 +119,9 @@ async function request<T>(path: string, init: RequestInit = {}, timeoutMs = 10_0
       const body: unknown = await response.json().catch(() => null);
       const data = body && typeof body === 'object' ? body as Record<string, unknown> : {};
       const nested = data.error && typeof data.error === 'object' ? data.error as Record<string, unknown> : {};
-      const message = String(data.detail ?? nested.message ?? (response.status === 501 ? 'Not available yet' : `Request failed (${response.status})`));
+      const message = response.status === 501
+        ? 'Not available yet'
+        : String(data.detail ?? nested.message ?? `Request failed (${response.status})`);
       const code = String(nested.code ?? data.code ?? `HTTP_${response.status}`);
       const retry = response.headers.get('Retry-After');
       const retryAfter = retry === null ? null : Number.isFinite(Number(retry))

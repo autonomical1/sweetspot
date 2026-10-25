@@ -18,6 +18,11 @@ describe('API client', () => {
     await expect(api.getRoom('r_missing')).rejects.toMatchObject({ status: 429, message: 'Gemini is busy', retryAfter: 12 });
   });
 
+  it('shows "Not available yet" for HTTP 501 even when the body has a detail', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: 'not implemented' }), { status: 501 })));
+    await expect(api.getRoom('r_x')).rejects.toMatchObject({ status: 501, message: 'Not available yet' });
+  });
+
   it('maps wrapped errors and network failures', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: { code: 'GONE', message: 'Expired' } }), { status: 410 })));
     await expect(api.getSession('s_old')).rejects.toMatchObject({ code: 'GONE', message: 'Expired' });
