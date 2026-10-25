@@ -7,13 +7,13 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 3
-- last_checkpoint: 2026-10-24 20:14
+- last_checkpoint: 2026-10-24 20:22
 
 ## Next action
-Retry 2 for `integrate` (gpt-5.6-luna) and `products-adapter` (gpt-6-sol) was dispatched about 19:51 on the MAIN Codex account (CODEX_HOME unset), background `run-wave -Review`; the 4 remaining review findings are appended to their BRIEFs. `lint` is PASS + OK (`review`, merge-eligible). When it exits: read the summary; if both review OK -> GATE 5 `DISPATCH merge -All` (order lint, products-adapter, integrate) -> config.json test = `python -m ruff check . && python -m pytest -q` -> push -> server pull + `docker compose -f deploy/docker-compose.yml up -d --build` -> smoke.sh and `python tools/e2e.py https://144-202-27-51.sslip.io`. If a review is ISSUES a third time, interrupt the user (do not loop).
+Retry 2 finished 20:20 on the main Codex account: integrate and products-adapter PASS checks, reviews ISSUES a third time (new, smaller findings each round). Do NOT loop: apply the user's decision. Findings: integrate tools/e2e.py:200-201 scan step copies optimize warnings into top-level `warnings` while `metrics.warnings` is kept, so each prints twice; products-adapter products/recommend.py:139 expansion counts pair listings as matches even when `_best` cannot use them for C or an unpaired L/Ls (three unusable pairs suppress needed expansion), and products/expand.py:28 on timeout the daemon thread leaves env `SERPAPI_KEY` overwritten (concurrent requests inherit another caller's key): pass the key explicitly instead of mutating os.environ. Recommended: orchestrator patches all three on the branches (small), `check -Id`, then merge. Then GATE 5: `DISPATCH merge -All` (order lint, products-adapter, integrate; override needed for ISSUES reviews: `merge -Id`) -> config.json test = `python -m ruff check . && python -m pytest -q` -> push -> server pull + `docker compose -f deploy/docker-compose.yml up -d --build` -> smoke.sh and `python tools/e2e.py https://144-202-27-51.sslip.io`.
 
 ## Waiting on user
-Nothing right now (20:11: both retry-2 workers done, exit 0 (integrate 400 s, products-adapter 646 s); integrate check PASS; products-adapter check and both reviews in progress inside the background run-wave). Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` once products-adapter merges.
+Decision on the third ISSUES round for integrate (1 nit) and products-adapter (2 edge cases): orchestrator patches and merges (recommended), or a third Codex retry. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` once products-adapter merges.
 
 ## SerpApi integration (merged on master, adapter not built yet)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
