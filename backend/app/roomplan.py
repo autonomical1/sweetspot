@@ -205,6 +205,10 @@ def convert_dto(
     position[1] = 3.6
     position = [max(0.0, min(v, bound)) for v, bound in zip(position, (width, height, length), strict=False)]
     fx, _, fz = _rotate(world_facing, -yaw)
+    if listener is None:
+        # The front wall is the one the seat faces, and the screen goes on it. An oblique facing
+        # (a TV off to one side of the seat) would put C and L in the corner, so face the wall square-on.
+        fx, fz = 0.0, -1.0
     from .rooms import validate_listener
 
     position, facing = validate_listener(position, [fx, fz], dimensions)

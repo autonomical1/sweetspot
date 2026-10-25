@@ -293,8 +293,29 @@ def _optimise_cached(room_json: str, absorption: float) -> dict:
     return _plain({"layout": layout, "metrics": metrics})
 
 
+def _with_projector(result: dict, room: dict) -> dict:
+    """Quick layouts get a ceiling projector behind the seat, aimed at the screen (3D runs replace it)."""
+    layout = result["layout"]
+    screen = layout.get("screen")
+    if not screen or layout.get("projector"):
+        return result
+    dimensions = room["dimensions"]
+    listener = room["listener"]["position"]
+    fx, fz = _normalised_facing(room)
+    x = float(listener[0]) - fx * 1.5
+    z = float(listener[2]) - fz * 1.5
+    position = _inside_room([x, max(0.5, float(dimensions["height"]) - 0.5), z], room)
+    layout["projector"] = {"position": [float(value) for value in position],
+                           "aim": [float(value) for value in screen["center"]]}
+    return result
+
+
 def optimize(room: dict, options: dict | None = None) -> dict:
     """Optimise a 5.1 layout, returning a safe fallback if the engine rejects it."""
+    return _with_projector(_optimize(room, options), room)
+
+
+def _optimize(room: dict, options: dict | None = None) -> dict:
     try:
         absorption = _mean_absorption(room, options)
         room_json = json.dumps(_canonical_room(room), sort_keys=True, separators=(",", ":"), allow_nan=False)

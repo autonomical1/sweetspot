@@ -293,6 +293,27 @@ struct ARLayoutView: UIViewRepresentable {
                 }
             }
 
+            if let projector = layout.projector, projector.position.count == 3 {
+                // Same footprint as the web model (0.34 x 0.13 x 0.30 m), pointed at its aim point.
+                let body = ModelEntity(
+                    mesh: .generateBox(size: [0.34, 0.13, 0.30]),
+                    materials: [SimpleMaterial(color: .white, roughness: 0.4, isMetallic: false)]
+                )
+                body.position = SIMD3<Float>(
+                    Float(projector.position[0] * 0.3048),
+                    Float(projector.position[1] * 0.3048),
+                    Float(projector.position[2] * 0.3048)
+                )
+                if projector.aim.count == 3 {
+                    let dx = Float(projector.aim[0] - projector.position[0])
+                    let dz = Float(projector.aim[2] - projector.position[2])
+                    if abs(dx) + abs(dz) > 0.0001 {
+                        body.orientation = simd_quatf(angle: atan2(-dx, -dz), axis: SIMD3<Float>(0, 1, 0))
+                    }
+                }
+                anchor.addChild(body)
+            }
+
             for speaker in layout.speakers where speaker.position.count == 3 {
                 let position = SIMD3<Float>(
                     Float(speaker.position[0] * 0.3048),

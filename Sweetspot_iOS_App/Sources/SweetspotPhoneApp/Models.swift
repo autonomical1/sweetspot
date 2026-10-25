@@ -309,6 +309,12 @@ struct LayoutResponse: Decodable {
 struct Layout: Decodable {
     let speakers: [SpeakerPlacement]
     let screen: ScreenPlacement?
+    var projector: ProjectorPlacement? = nil
+}
+
+struct ProjectorPlacement: Decodable {
+    let position: [Double]
+    let aim: [Double]
 }
 
 struct SpeakerPlacement: Decodable, Identifiable {
