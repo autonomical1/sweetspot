@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from . import engine, engine3d, products, refine, sessions, store
 from .schemas import Dimensions, Listener, Room, Surface
+from .walls import wall_groups
 
 router = APIRouter()
 ABSORPTION = {"125": 0.05, "250": 0.06, "500": 0.08, "1000": 0.09, "2000": 0.09, "4000": 0.09}
@@ -177,24 +178,12 @@ def _wall_area(surface: Surface) -> float:
 @router.get("/rooms/{room_id}/photo-targets")
 def photo_targets(room_id: str) -> list[dict]:
     room = _room(room_id)
-    fx, fz = room.listener.facing
-    walls = sorted((s for s in room.surfaces if s.kind == "wall"), key=lambda s: (-_wall_area(s), s.id))[:4]
-    named = []
-    for surface in walls:
-        points = surface.polygon
-        cx = sum(p[0] for p in points) / len(points)
-        cz = sum(p[2] for p in points) / len(points)
-        dx, dz = cx - room.listener.position[0], cz - room.listener.position[2]
-        forward = dx * fx + dz * fz
-        side = dx * fz - dz * fx
-        label = ("Front wall" if forward > 0 else "Back wall") if abs(forward) >= abs(side) else ("Left wall" if side > 0 else "Right wall")  # noqa: E501  # preserve behavior while retaining the existing expression
-        named.append({"surface_id": surface.id, "kind": surface.kind, "label": label})
-    totals = {label: sum(1 for n in named if n["label"] == label) for label in {n["label"] for n in named}}
-    seen: dict[str, int] = {}
-    for item in named:
-        if totals[item["label"]] > 1:
-            seen[item["label"]] = seen.get(item["label"], 0) + 1
-            item["label"] = f"{item['label']} {seen[item['label']]}"
+    # One photo per direction (front, left, back, right): the largest wall represents its group,
+    # and the classified material is applied to every wall of the group (see materials_router).
+    named = [
+        {"surface_id": walls[0].id, "kind": "wall", "label": label}
+        for label, walls in wall_groups(room).items()
+    ]
     for kind in ("floor", "ceiling"):
         surface = next((s for s in room.surfaces if s.kind == kind), None)
         if surface:
