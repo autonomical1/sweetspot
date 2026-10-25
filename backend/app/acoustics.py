@@ -36,7 +36,7 @@ def _contains_polygon(point: np.ndarray, polygon: list[list[float]]) -> bool:
     projected = [np.delete(vertex, axis) for vertex in vertices]
     p = np.delete(point, axis)
     signs: list[float] = []
-    for start, end in zip(projected, projected[1:] + projected[:1]):
+    for start, end in zip(projected, projected[1:] + projected[:1], strict=False):
         edge = end - start
         signs.append(float(edge[0] * (p[1] - start[1]) - edge[1] * (p[0] - start[0])))
     return all(sign >= -1e-5 for sign in signs) or all(sign <= 1e-5 for sign in signs)
@@ -47,7 +47,7 @@ def _surface_for_hit(room: dict, point: np.ndarray, axis: int, value: float) -> 
     matching: list[dict] = []
     for surface in room.get("surfaces", []):
         polygon = surface.get("polygon", [])
-        if polygon and all(abs(float(vertex[axis]) - value) < 1e-4 for vertex in polygon) and _contains_polygon(point, polygon):
+        if polygon and all(abs(float(vertex[axis]) - value) < 1e-4 for vertex in polygon) and _contains_polygon(point, polygon):  # noqa: E501  # preserve behavior while retaining the existing expression
             matching.append(surface)
     if not matching:
         return None
@@ -112,7 +112,7 @@ def _patches(room: dict, reflections: list[dict]) -> list[dict]:
             continue
         center = _vector(reflection["point"])
         for index, patch in enumerate(merged):
-            if patch["surface_id"] == reflection["surface_id"] and np.linalg.norm(center - _vector(patch["center"])) <= 1.0:
+            if patch["surface_id"] == reflection["surface_id"] and np.linalg.norm(center - _vector(patch["center"])) <= 1.0:  # noqa: E501  # preserve behavior while retaining the existing expression
                 counts[index] += 1
                 old = _vector(patch["center"])
                 patch["center"] = [float(value) for value in old + (center - old) / counts[index]]

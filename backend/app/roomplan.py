@@ -42,13 +42,13 @@ def dir_to_world(direction: list[float], frame: Frame | dict) -> list[float]:
 def frame_to_world(point_ft: list[float], frame: Frame | dict) -> list[float]:
     """Map a room-frame point to scan world coordinates, both in feet."""
     frame = Frame.model_validate(frame)
-    return [v + offset for v, offset in zip(_rotate(point_ft, frame.yaw_deg), frame.offset)]
+    return [v + offset for v, offset in zip(_rotate(point_ft, frame.yaw_deg), frame.offset, strict=False)]
 
 
 def world_to_room(point_ft: list[float], frame: Frame | dict) -> list[float]:
     """Invert frame_to_world; input and output are feet."""
     frame = Frame.model_validate(frame)
-    return _rotate([v - offset for v, offset in zip(point_ft, frame.offset)], -frame.yaw_deg)
+    return _rotate([v - offset for v, offset in zip(point_ft, frame.offset, strict=False)], -frame.yaw_deg)
 
 
 def _surface_polygon(item: dict) -> list[list[float]]:
@@ -142,7 +142,7 @@ def convert_dto(
             min(point[2] for point in rotated_endpoints)]
 
     def room_point(point: list[float]) -> list[float]:
-        return [(v - origin) * METRES_TO_FEET for v, origin in zip(_rotate(point, -yaw), base)]
+        return [(v - origin) * METRES_TO_FEET for v, origin in zip(_rotate(point, -yaw), base, strict=False)]
 
     width = (max(point[0] for point in rotated_endpoints) - base[0]) * METRES_TO_FEET
     length = (max(point[2] for point in rotated_endpoints) - base[2]) * METRES_TO_FEET
@@ -176,7 +176,7 @@ def convert_dto(
 
     position = room_point(seat)
     position[1] = 3.6
-    position = [max(0.0, min(v, bound)) for v, bound in zip(position, (width, height, length))]
+    position = [max(0.0, min(v, bound)) for v, bound in zip(position, (width, height, length), strict=False)]
     fx, _, fz = _rotate(world_facing, -yaw)
     from .rooms import validate_listener
 

@@ -1,9 +1,11 @@
-import json
 import copy
+import json
 import subprocess
 import sys
 from pathlib import Path
+
 import pytest
+
 from tools.validate_dto import validate
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -25,12 +27,14 @@ def _bad_category(x): x["captured_room"]["surfaces"][0].update(category="bad")
 
 @pytest.mark.parametrize("mutator", [_missing_format, _bad_surfaces, _short_transform, _bad_is_open, _bad_category])
 def test_dto_error_cases(mutator):
-    value = sample(); mutator(value)
+    value = sample()
+    mutator(value)
     assert validate(value)[0]
 
 
 def test_warning_cases():
-    value = sample(); dto = value["captured_room"]
+    value = sample()
+    dto = value["captured_room"]
     dto["surfaces"] = [dto["surfaces"][0]]
     dto["surfaces"][0]["dimensions"][1] = 9
     errors, warnings = validate(value)
@@ -45,7 +49,7 @@ def test_warning_cases():
     (lambda d: d["surfaces"].__setitem__(slice(None), d["surfaces"][:2]), "walls"),
     (lambda d: d["surfaces"].__setitem__(slice(None), [s for s in d["surfaces"] if s["category"] != "floor"]), "floor"),
     (lambda d: d["objects"].__setitem__(slice(None), [o for o in d["objects"] if o["category"] != "sofa"]), "sofa"),
-    (lambda d: d["objects"].__setitem__(slice(None), [o for o in d["objects"] if o["category"] != "television"]), "television"),
+    (lambda d: d["objects"].__setitem__(slice(None), [o for o in d["objects"] if o["category"] != "television"]), "television"),  # noqa: E501  # preserve behavior while retaining the existing expression
     (lambda d: d["surfaces"][0]["dimensions"].__setitem__(1, 9), "height"),
 ])
 def test_each_dto_warning_rule(mutator, fragment):
@@ -75,7 +79,7 @@ def test_cli_from_any_cwd():
     path.write_text(json.dumps(sample()))
     script = ROOT / "tools/validate_dto.py"
     try:
-        result = subprocess.run([sys.executable, str(script), str(path)], cwd=ROOT.parent, capture_output=True, text=True)
+        result = subprocess.run([sys.executable, str(script), str(path)], cwd=ROOT.parent, capture_output=True, text=True)  # noqa: E501  # preserve behavior while retaining the existing expression
         assert result.returncode == 0 and "findings:" in result.stdout
     finally:
         path.unlink(missing_ok=True)

@@ -2,13 +2,13 @@ import pytest
 
 from .checks import assert_valid_products
 
-ITEM = {"role": "C", "title": "x", "price": 10.0, "currency": "USD", "link": "https://e.invalid", "thumbnail": None, "source": "s"}
+ITEM = {"role": "C", "title": "x", "price": 10.0, "currency": "USD", "link": "https://e.invalid", "thumbnail": None, "source": "s"}  # noqa: E501  # preserve behavior while retaining the existing expression
 LAYOUT = {"speakers": [{"role": "C"}]}
 
 
 def result(**item_overrides):
     item = {**ITEM, **item_overrides}
-    return {"budget": 100.0, "total": item["price"] if isinstance(item.get("price"), (int, float)) else 0.0, "items": [item]}
+    return {"budget": 100.0, "total": item["price"] if isinstance(item.get("price"), (int, float)) else 0.0, "items": [item]}  # noqa: E501  # preserve behavior while retaining the existing expression
 
 
 def test_valid_without_screen_or_projector_item():

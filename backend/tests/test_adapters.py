@@ -22,7 +22,7 @@ def test_runtime_fallback(room_rect, monkeypatch):
 
 def test_invalid_engine_results_fall_back(room_rect, monkeypatch):
     monkeypatch.setenv("ENGINE_BACKEND", "auto")
-    monkeypatch.setitem(sys.modules, "backend.app.engine_speakerplacer", SimpleNamespace(optimize=lambda *args: {"layout": "bad"},
+    monkeypatch.setitem(sys.modules, "backend.app.engine_speakerplacer", SimpleNamespace(optimize=lambda *args: {"layout": "bad"},  # noqa: E501  # preserve behavior while retaining the existing expression
                                                                   score=lambda *args: {"metrics": "bad"}))
     room = Room.model_validate(room_rect)
     optimized = engine.run_optimize(room)

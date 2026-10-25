@@ -6,7 +6,6 @@ from pathlib import Path
 from backend.app import engine_speakerplacer
 from backend.app.stubs import engine_stub
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 

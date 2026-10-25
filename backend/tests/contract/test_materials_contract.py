@@ -1,6 +1,7 @@
-import json
 from pathlib import Path
+
 import pytest
+
 from .checks import assert_valid_classification
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -19,7 +20,7 @@ def test_mock_classification(materials_impl):
     assert_valid_classification(result, ids)
 
 
-@pytest.mark.parametrize("name", ["good.json", "fenced_with_prose.txt", "wrong_enum.json", "missing_fields.json", "empty.json", "not_json.txt", "extra_ids.json"])
+@pytest.mark.parametrize("name", ["good.json", "fenced_with_prose.txt", "wrong_enum.json", "missing_fields.json", "empty.json", "not_json.txt", "extra_ids.json"])  # noqa: E501  # preserve behavior while retaining the existing expression
 def test_recorded_model_outputs(materials_impl, name):
     parse = getattr(materials_impl, "parse_model_output", None)
     if parse is None:
