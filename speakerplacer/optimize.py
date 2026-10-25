@@ -1,5 +1,6 @@
 """Type-aware wall candidate search with exact mirrored pairs and joint modal scoring."""
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Dict, List, Optional, Sequence, Tuple
 from math import log10
 import numpy as np
@@ -11,7 +12,8 @@ from .scoring import (ScoreWeights, angle_to_facing, band_clarity_score, clarity
 from .simulate import simulate_rir
 from .speaker_types import SpeakerType, DEFAULT_LAYOUT, DEFAULT_SPEAKER_TYPES
 from .speaker_models import DEFAULT_SPEAKER_MODELS, DEFAULT_MODEL_BY_ROLE, SpeakerModel, predicted_spl_db, resolve_model
-from .room_acoustics import MaterialSet, room_metrics, level_components, boundary_gain_for_mount
+from .room_acoustics import (MaterialSet, room_metrics, level_components, directivity_q,
+                             _level_components_with_polar, boundary_gain_for_mount)
 
 @dataclass
 class OptimizationResult:
@@ -169,14 +171,20 @@ def _headroom(model, distance_m, reference_spl_db=85., peak_headroom_db=20., rol
     LFE uses a 10 dB peak allowance; other roles use the configured allowance.
     """
     distance=max(float(distance_m),1e-6)
+    cache=room_env.get("_headroom_cache") if room_env is not None else None
+    key=(id(model),distance,reference_spl_db,peak_headroom_db,role,float(off_axis_deg),boundary_gain_db)
+    if cache is not None and key in cache:
+        return cache[key][1]
     predicted=predicted_spl_db(model,distance)
     max_spl=model.max_spl_lf_db if role=="bass" and model.max_spl_lf_db is not None else model.max_spl_db
     if room_env is not None:
         band_indices=(0,1) if role=="bass" else (2,3,4,5)
-        components=[level_components(model,distance,model.effective_power_w,room_env,index,off_axis_deg,boundary_gain_db)
+        q=directivity_q(model,off_axis_deg)
+        gain_db=model.gain_db(off_axis_deg)
+        components=[_level_components_with_polar(model,distance,model.effective_power_w,room_env,index,boundary_gain_db,q,gain_db)
                     for index in band_indices]
-        predicted=float(np.mean([row["total_spl_db"] for row in components]))
-        direct=float(np.mean([row["direct_spl_db"] for row in components]))
+        predicted=sum(row["total_spl_db"] for row in components)/len(components)
+        direct=sum(row["direct_spl_db"] for row in components)/len(components)
         boundary_gain=boundary_gain_for_mount(model.mount_type) if boundary_gain_db is None else float(boundary_gain_db)
         cap=predicted-direct+max_spl-20.*log10(distance)+boundary_gain
     else:
@@ -187,7 +195,10 @@ def _headroom(model, distance_m, reference_spl_db=85., peak_headroom_db=20., rol
     # Report the SPL actually available after the model's max-SPL cap. Keeping
     # the uncapped sensitivity/power extrapolation here overstated output by
     # 5–10 dB for the placeholder bookshelf and in-wall models.
-    return float(available_peak),float(available_peak-required_peak)
+    result=(float(available_peak),float(available_peak-required_peak))
+    if cache is not None:
+        cache[key]=(model,result)
+    return result
 
 
 def _first_order_reflection_gain(polygon,candidate,listener,model,toe_in_deg):
@@ -211,17 +222,28 @@ def _first_order_reflection_gain(polygon,candidate,listener,model,toe_in_deg):
         if not (1e-7<t<1.-1e-7 and -1e-7<=u<=1.+1e-7): continue
         hit=image+t*ray; departure=hit-source; angle=np.degrees(np.arccos(np.clip(np.dot(aim,departure)/max(np.linalg.norm(aim)*np.linalg.norm(departure),1e-12),-1.,1.)))
         path_gains.append(model.gain_linear(angle))
-    return 20.*log10(max(float(np.mean(path_gains)),1e-12)) if path_gains else 0.
+    return 20.*log10(max(sum(path_gains)/len(path_gains),1e-12)) if path_gains else 0.
 
 
-def _imaging_terms(rir,fs,candidate,listener,spec,model,reference_spl_db,peak_headroom_db,toe_in_deg=0.,room_polygon=None,directivity_on_reflections=True,room_env=None,ear_height_m=1.097):
+@lru_cache(maxsize=512)
+def _rir_base_terms(rir_bytes,fs,is_center):
+    """Clarity and early energy depend on the RIR, not on speaker toe angle."""
+    rir=np.frombuffer(rir_bytes,dtype=float)
     direct=direct_arrival(rir,fs)
-    if spec.name=="center":
+    if is_center:
         c50={"c50_1k_db":band_clarity_score(rir,fs,(707.,1414.),direct),
              "c50_2k_db":band_clarity_score(rir,fs,(1414.,2828.),direct),
              "c50_4k_db":band_clarity_score(rir,fs,(2828.,5657.),direct)}
         clarity=float(np.mean(list(c50.values())))
-    else: c50={}; clarity=clarity_score(rir,fs,direct)
+    else:
+        c50={}
+        clarity=clarity_score(rir,fs,direct)
+    return clarity,tuple(c50.items()),early_reflection_score(rir,fs,direct)
+
+
+def _imaging_terms(rir,fs,candidate,listener,spec,model,reference_spl_db,peak_headroom_db,toe_in_deg=0.,room_polygon=None,directivity_on_reflections=True,room_env=None,ear_height_m=1.097):
+    clarity,c50_items,early_reflection=_rir_base_terms(np.asarray(rir,dtype=float).tobytes(),fs,spec.name=="center")
+    c50=dict(c50_items)
     angle=_directivity_angle(candidate,listener,toe_in_deg)
     source_z=float(getattr(candidate,"height_m",ear_height_m))+float(model.acoustic_center_offset_m[0])
     source_xy=np.asarray(candidate.position)+np.asarray(candidate.normal)*float(model.acoustic_center_offset_m[1])
@@ -239,7 +261,7 @@ def _imaging_terms(rir,fs,candidate,listener,spec,model,reference_spl_db,peak_he
         directivity_db=mean_band_gain*spec.directivity
     reflection_gain=_first_order_reflection_gain(room_polygon,candidate,listener,model,toe_in_deg) if directivity_on_reflections else 0.
     terms={"clarity_db":clarity,"off_axis_db":directivity_db,
-           "early_reflection_db":early_reflection_score(rir,fs,direct)-reflection_gain,"headroom_db":headroom,
+           "early_reflection_db":early_reflection-reflection_gain,"headroom_db":headroom,
            "reflection_directivity_gain_db":reflection_gain}
     if room_env is not None:
         distance=acoustic_distance
@@ -287,7 +309,7 @@ def _modal_eval(polygon,sources,listener,absorption,spec,model,step_hz=1.,q_scal
         if np.linalg.norm(point-center)>.05: other_seats.append(point)
     cluster.extend(other_seats)
     freq,pressures=modal_response(polygon,sources,np.asarray(cluster),absorption,band,effective_step,q_scale,source_gains_db=gains,surface_absorption=surface_absorption)
-    response_filter=10.**(np.asarray([model.response_db(float(f)) for f in freq])/20.)
+    response_filter=10.**(model.response_db(freq)/20.)
     pressures=pressures*response_filter[None,:]
     center_index=4
     group_power=[np.mean(np.abs(pressures[:9])**2,axis=0)]
@@ -316,9 +338,9 @@ def _evaluate_group(polygon, sources, terms_by_source, listener, absorption, spe
         freq,pressure,modal_terms=_modal_eval(polygon,acoustic_sources,listener,absorption,spec,model,step_hz,q_scale,seat_cluster_spacing_m,wall_alpha,seat_positions_m)
         individual=[_headroom(model,_acoustic_distance(c,model,listener),reference_spl_db,peak_headroom_db,spec.name,room_env,boundary_gain_db=_candidate_boundary_gain(c,model))[0] for c in sources]
         combine=(20. if coherent else 10.)*np.log10(max(1,len(sources)))
-        combined_spl=float(np.mean(individual)+combine)
+        combined_spl=float(sum(individual)/len(individual)+combine)
         max_spl=model.max_spl_lf_db if spec.name=="bass" and model.max_spl_lf_db is not None else model.max_spl_db
-        cap=float(np.mean([max_spl-20.*log10(max(_acoustic_distance(c,model,listener),1e-6))+_candidate_boundary_gain(c,model) for c in sources])+combine)
+        cap=float(sum(max_spl-20.*log10(max(_acoustic_distance(c,model,listener),1e-6))+_candidate_boundary_gain(c,model) for c in sources)/len(sources)+combine)
         # Headroom is a per-channel placement check; don't let N subwoofers
         # hide an under-capable individual unit by summing their peaks.
         available_peak=float(min(individual))
@@ -334,10 +356,10 @@ def _evaluate_group(polygon, sources, terms_by_source, listener, absorption, spe
         schroeder=float(np.mean(room_env["schroeder_hz"])) if room_env is not None else float("nan")
         return float(value),terms,{"frequencies_hz":freq,"pressure":pressure,"response_db":modal_terms["response_db"],"exact_response_db":modal_terms["exact_response_db"],"seat_response_db":modal_terms["seat_response_db"],"seat_max_min_db":modal_terms["seat_max_min_db"],"spatial_variance_db":modal_terms["spatial_variance_db"],"schroeder_frequency_hz":schroeder,"combined_spl_db":combined_spl,"available_peak_spl_db":available_peak,"required_peak_spl_db":required_peak,"max_spl_db":cap}
     common_keys=set.intersection(*(set(item) for item in terms_by_source))
-    terms={key:float(np.mean([item[key] for item in terms_by_source])) for key in common_keys}
+    terms={key:float(sum(item[key] for item in terms_by_source)/len(terms_by_source)) for key in common_keys}
     spls=[_headroom(model,_acoustic_distance(c,model,listener),reference_spl_db,peak_headroom_db,spec.name,room_env,boundary_gain_db=_candidate_boundary_gain(c,model))[0] for c in sources]
     combine=(20. if coherent else 10.)*np.log10(max(1,len(sources)))
-    combined_spl=float(np.mean(spls)+combine)
+    combined_spl=float(sum(spls)/len(spls)+combine)
     # Report the weakest member's per-channel capability, not the summed
     # peak of a mirrored pair or multi-sub group.
     group_max=float(min(spls))
@@ -436,22 +458,45 @@ def _vertical_response(z, model, distance, ear_height_m):
 def _wall_box_fits(room, candidate, model, listener, room_height_m, ear_height_m, visible_depth_m=None, toe_deg=None):
     """Check the final tilted cabinet against every room wall before scoring."""
     if candidate.surface!="wall": return True
-    from .viewer3d import box_pose,wall_frame
     visible=float((model.depth_m if model.mount_type=="on_wall" else .012)
                   if visible_depth_m is None else visible_depth_m)
-    toe=float(_toe_toward_listener(candidate,listener) if toe_deg is None else toe_deg)
-    theta=np.radians(toe); normal=np.asarray(candidate.normal,dtype=float)
+    polygon=np.asarray(room,dtype=float)
+    return _wall_box_fits_cached(
+        polygon.shape,polygon.tobytes(),candidate.wall_index,
+        tuple(float(x) for x in candidate.position),tuple(float(x) for x in candidate.normal),
+        float(candidate.height_m),tuple(float(x) for x in np.asarray(listener)),
+        float(model.width_m),float(model.height_m),visible,
+        float(model.acoustic_center_offset_m[0]),model.directivity_model,float(model.max_tilt_deg),
+        float(room_height_m),float(ear_height_m),None if toe_deg is None else float(toe_deg))
+
+
+@lru_cache(maxsize=32768)
+def _wall_box_fits_cached(room_shape, room_bytes, wall_index, position, normal, height,
+                          listener, width, box_height, visible, offset_z, directivity_model,
+                          max_tilt, room_height, ear_height, toe_override):
+    from .viewer3d import box_pose,wall_frame
+    room=np.frombuffer(room_bytes,dtype=float).reshape(room_shape)
+    position=np.asarray(position,dtype=float)
+    normal=np.asarray(normal,dtype=float)
+    listener=np.asarray(listener,dtype=float)
+    if toe_override is None:
+        direction=listener-position
+        cross=float(normal[0]*direction[1]-normal[1]*direction[0])
+        toe=float(np.degrees(np.arctan2(cross,float(normal@direction))))
+    else:
+        toe=toe_override
+    theta=np.radians(toe)
     aim=np.array([normal[0]*np.cos(theta)-normal[1]*np.sin(theta),
                   normal[0]*np.sin(theta)+normal[1]*np.cos(theta)])
-    distance=max(float(np.linalg.norm(candidate.position-np.asarray(listener))),.01)
-    _,pitch=_vertical_response(float(candidate.height_m),model,distance,ear_height_m)
+    distance=max(float(np.linalg.norm(position-listener)),.01)
+    target_pitch=float(np.degrees(np.arctan2(ear_height-(height+offset_z),distance)))
+    pitch=0. if directivity_model=="omni" else float(np.clip(target_pitch,-max_tilt,max_tilt))
     try:
-        pose=box_pose(room,float(room_height_m),candidate.wall_index,candidate.position,float(candidate.height_m),
-                      float(model.width_m),float(model.height_m),visible,aim,pitch)
+        pose=box_pose(room,room_height,wall_index,position,height,width,box_height,visible,aim,pitch)
     except ValueError:
         return False
-    start,tangent,_=wall_frame(room,candidate.wall_index)
-    expected=start+float((candidate.position-start)@tangent)*tangent
+    start,tangent,_=wall_frame(room,wall_index)
+    expected=start+float((position-start)@tangent)*tangent
     shift=float((pose.mount_position_m[:2]-expected)@tangent)
     return abs(shift)<=.01
 
@@ -546,6 +591,7 @@ def optimize_layout(room_polygon, listener, layout=None, facing="north", absorpt
     if not seats: seats=[(listener.copy(),float(ear_height_m))]
     seats.sort(key=lambda item:float(np.linalg.norm(item[0]-listener)))
     environment=room_metrics(p,float(room_height_m),materials if materials is not None else MaterialSet())
+    environment["_headroom_cache"]={}
     mount_heights_m=dict(mount_heights_m or {})
     keepouts=list(keepouts or [])
 
@@ -557,8 +603,14 @@ def optimize_layout(room_polygon, listener, layout=None, facing="north", absorpt
         if key not in rir_cache: rir_cache[key]=simulator(p,source_xy,point,absorption=absorption)
         return rir_cache[key]
 
+    imaging_cache={}
+
     def imaging_for(c, toe):
         """Score every seat, weighting the MLP most heavily."""
+        key=(id(c),float(c.height_m),float(toe))
+        cached=imaging_cache.get(key)
+        if cached is not None:
+            return cached[1]
         rows=[]
         for index,(point,seat_ear) in enumerate(seats):
             h,fs=rir_for(c,point,model)
@@ -571,10 +623,12 @@ def optimize_layout(room_polygon, listener, layout=None, facing="north", absorpt
         aggregate={key:float(sum(w*row[key] for w,row in zip(weights,rows))) for key in rows[0]}
         aggregate["worst_seat_clarity_db"]=float(min(row["clarity_db"] for row in rows))
         aggregate["worst_seat_headroom_db"]=float(min(row["headroom_db"] for row in rows))
+        imaging_cache[key]=(c,aggregate)
         return aggregate
 
     for spec in specs:
         if spec.count==0: continue
+        imaging_cache.clear()
         if spec.symmetric and spec.count%2:
             raise ValueError("speaker type '{}' is symmetric and requires an even count".format(spec.name))
         model_id=spec.model_id or DEFAULT_MODEL_BY_ROLE.get(spec.name) or (DEFAULT_MODEL_BY_ROLE["front"] if spec.name in ("regular","wide") else None)
@@ -704,7 +758,10 @@ def optimize_layout(room_polygon, listener, layout=None, facing="north", absorpt
                 response_data={"frequencies_hz":f,"response_db":mt["response_db"]}
             else:
                 toe_options=np.asarray(c._legal_toes,dtype=float)
-                scored=[(_weighted_imaging(imaging_for(c,toe),spec),float(toe),imaging_for(c,toe)) for toe in toe_options]
+                scored=[]
+                for toe in toe_options:
+                    terms=imaging_for(c,toe)
+                    scored.append((_weighted_imaging(terms,spec),float(toe),terms))
                 score,toe,terms=max(scored,key=lambda item:item[0])
                 vertical_gain,_=_vertical_response(float(c.height_m),model,
                     max(float(np.linalg.norm(c.position-listener)),.01),ear_height_m)

@@ -1,5 +1,6 @@
 """Acoustic and stereo geometry score terms, each expressed in dB-like units."""
 from dataclasses import dataclass, asdict
+from functools import lru_cache
 import numpy as np
 from scipy.signal import butter, sosfiltfilt
 @dataclass
@@ -139,34 +140,53 @@ def modal_response(room_polygon, sources, listener, absorption=.2, band_hz=(30.,
 
     Q = q_scale / sqrt(absorption) is a configurable approximate damping map.
     """
-    origin,ux,uy,lx,ly=rectangular_room_frame(room_polygon)
     if step_hz<=0 or absorption<0: raise ValueError("step_hz must be positive and absorption nonnegative")
+    listener_array=np.asarray(listener,dtype=float); was_single=listener_array.ndim==1
+    if was_single: listener_array=listener_array[None,:]
+    room_array=np.asarray(room_polygon,dtype=float)
+    wall_alpha=np.full(4,float(absorption)) if surface_absorption is None else np.asarray(surface_absorption,dtype=float)
+    if wall_alpha.shape!=(4,) or np.any((wall_alpha<0)|(wall_alpha>1)): raise ValueError("surface_absorption must contain four wall coefficients in [0,1]")
+    origin,ux,uy,lx,ly,frequencies,basis=_modal_basis(
+        room_array.shape,room_array.tobytes(),listener_array.shape,listener_array.tobytes(),
+        float(absorption),tuple(band_hz),float(step_hz),float(q_scale),float(c),
+        tuple(float(value) for value in wall_alpha),surface_absorption is not None)
     def local(point):
         delta=np.asarray(point,dtype=float)-origin
         return float(delta@ux),float(delta@uy)
-    listener_array=np.asarray(listener,dtype=float); was_single=listener_array.ndim==1
-    if was_single: listener_array=listener_array[None,:]
-    listener_points=np.asarray([local(point) for point in listener_array])
     source_points=[local(source) for source in sources]
     gains=np.ones(len(source_points)) if source_gains_db is None else 10.**(np.asarray(source_gains_db,dtype=float)/20.)
-    modes=room_modes(room_polygon,band_hz,c)
+    pressure=np.zeros((len(listener_array),len(frequencies)),dtype=complex)
+    for n,m,psi_l,denominator in basis:
+        psi_s=sum(gain*np.cos(n*np.pi*x/lx)*np.cos(m*np.pi*y/ly) for (x,y),gain in zip(source_points,gains))
+        numerator=psi_l[:,None]*psi_s
+        pressure += numerator/denominator
+    return frequencies.copy(),(pressure[0] if was_single else pressure)
+
+
+@lru_cache(maxsize=128)
+def _modal_basis(room_shape, room_bytes, listener_shape, listener_bytes, absorption,
+                 band_hz, step_hz, q_scale, c, wall_alpha_values, has_surface_absorption):
+    """Reuse room modes, seat shapes, and frequency denominators across candidates."""
+    room=np.frombuffer(room_bytes,dtype=float).reshape(room_shape)
+    listener_array=np.frombuffer(listener_bytes,dtype=float).reshape(listener_shape)
+    origin,ux,uy,lx,ly=rectangular_room_frame(room)
+    listener_points=np.asarray([(float((point-origin)@ux),float((point-origin)@uy)) for point in listener_array])
+    modes=room_modes(room,band_hz,c)
     frequencies=np.arange(float(band_hz[0]),float(band_hz[1])+step_hz*.5,step_hz)
-    pressure=np.zeros((len(listener_points),len(frequencies)),dtype=complex)
     q=q_scale/np.sqrt(max(float(absorption),.01))
-    wall_alpha=np.full(4,float(absorption)) if surface_absorption is None else np.asarray(surface_absorption,dtype=float)
-    if wall_alpha.shape!=(4,) or np.any((wall_alpha<0)|(wall_alpha>1)): raise ValueError("surface_absorption must contain four wall coefficients in [0,1]")
+    wall_alpha=np.asarray(wall_alpha_values,dtype=float)
     alpha_x=float(np.mean(wall_alpha[[1,3]])); alpha_y=float(np.mean(wall_alpha[[0,2]]))
+    basis=[]
     for f_nm,n,m in modes:
         psi_l=np.cos(n*np.pi*listener_points[:,0]/lx)*np.cos(m*np.pi*listener_points[:,1]/ly)
-        psi_s=sum(gain*np.cos(n*np.pi*x/lx)*np.cos(m*np.pi*y/ly) for (x,y),gain in zip(source_points,gains))
         weights=[]; participating=[]
         if n: weights.append((n/lx)**2); participating.append((n/lx)**2*alpha_x)
         if m: weights.append((m/ly)**2); participating.append((m/ly)**2*alpha_y)
         alpha_mode=(sum(participating)/sum(weights)) if participating else absorption
-        mode_q=q_scale/np.sqrt(max(float(alpha_mode),.01)) if surface_absorption is not None else q
-        numerator=psi_l[:,None]*psi_s
-        pressure += numerator/(f_nm**2-frequencies[None,:]**2+1j*frequencies[None,:]*f_nm/mode_q)
-    return frequencies,(pressure[0] if was_single else pressure)
+        mode_q=q_scale/np.sqrt(max(float(alpha_mode),.01)) if has_surface_absorption else q
+        denominator=f_nm**2-frequencies[None,:]**2+1j*frequencies[None,:]*f_nm/mode_q
+        basis.append((n,m,psi_l,denominator))
+    return origin,ux,uy,lx,ly,frequencies,basis
 
 
 def modal_score(frequencies, pressure, null_db=10.):
