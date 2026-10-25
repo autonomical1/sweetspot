@@ -39,11 +39,11 @@ struct ScanHistoryList: View {
                     SavedScanRow(scan: scan)
                 }
             }
-            .listRowBackground(Theme.card)
             .onDelete { offsets in
                 let ids = offsets.map { history.scans[$0].id }
                 ids.forEach { history.delete(scanID: $0) }
             }
+            .listRowBackground(Theme.card)
         }
         .overlay {
             if history.scans.isEmpty {

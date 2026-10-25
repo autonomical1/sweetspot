@@ -340,7 +340,7 @@ struct ARLayoutView: UIViewRepresentable {
                     mesh: markerMesh,
                     materials: [
                         SimpleMaterial(
-                            color: UIColor(Theme.accent),
+                            color: ARTint.accent,
                             roughness: 0.35,
                             isMetallic: false
                         )
@@ -364,7 +364,7 @@ struct ARLayoutView: UIViewRepresentable {
                         size: [0.025, max(0.05, position.y), 0.025]
                     ),
                     materials: [
-                        SimpleMaterial(color: UIColor(Theme.accentDim), isMetallic: false)
+                        SimpleMaterial(color: ARTint.accentDim, isMetallic: false)
                     ]
                 )
                 stem.position = SIMD3(
@@ -400,7 +400,7 @@ struct ARLayoutView: UIViewRepresentable {
                     ),
                     materials: [
                         SimpleMaterial(
-                            color: UIColor(Theme.accentLink).withAlphaComponent(0.45),
+                            color: ARTint.accentLink.withAlphaComponent(0.45),
                             isMetallic: false
                         )
                     ]
@@ -416,4 +416,11 @@ struct ARLayoutView: UIViewRepresentable {
             view.scene.addAnchor(anchor)
         }
     }
+}
+
+/// Marker colors for the AR scene, same values as the web theme (kept here so this file builds on its own).
+private enum ARTint {
+    static let accent = UIColor(red: 0x5c / 255, green: 0xdd / 255, blue: 0xc5 / 255, alpha: 1)
+    static let accentLink = UIColor(red: 0x6c / 255, green: 0xdd / 255, blue: 0xc8 / 255, alpha: 1)
+    static let accentDim = UIColor(red: 0x4b / 255, green: 0x74 / 255, blue: 0x6e / 255, alpha: 1)
 }
