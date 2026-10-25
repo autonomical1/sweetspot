@@ -280,6 +280,14 @@ struct PhotoTarget: Decodable, Identifiable {
 
 struct MaterialsResponse: Decodable {
     let surfaces: [MaterialResult]
+    let status: String?
+}
+
+struct MaterialsStatus: Decodable {
+    let state: String?
+    let started_at: String?
+    let elapsed_s: Double?
+    let photos: Int?
 }
 
 struct MaterialResult: Decodable, Identifiable {
