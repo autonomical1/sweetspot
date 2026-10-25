@@ -203,7 +203,62 @@ struct RoomResponse: Decodable {
     let room_id: String
     let session_id: String?
     let dimensions: Dimensions?
+    let frame: RoomFrame?
 }
+
+struct RoomFrame: Decodable {
+    let yaw_deg: Double
+    let offset: [Double]
+}
+
+/// Maps room-frame metres into the scan session's ARKit world metres.
+func worldTransform(for frame: RoomFrame) -> simd_float4x4 {
+    let yaw = Float(frame.yaw_deg * .pi / 180)
+    var transform = simd_float4x4(
+        simd_quatf(angle: yaw, axis: SIMD3<Float>(0, 1, 0))
+    )
+    transform.columns.3 = SIMD4<Float>(
+        Float(frame.offset[0] * 0.3048),
+        Float(frame.offset[1] * 0.3048),
+        Float(frame.offset[2] * 0.3048),
+        1
+    )
+    return transform
+}
+
+#if DEBUG
+/// Values from phoneapp_context/sample_payloads/frame_test_vectors.json.
+func checkRoomFrameVectors() -> Bool {
+    let points: [(Double, [Double], SIMD3<Float>, SIMD3<Float>)] = [
+        (0, [0, 0, 0], SIMD3(2, 3, 5), SIMD3(0.6096, 0.9144, 1.524)),
+        (30, [10, 0, -4], SIMD3(2, 3, 5), SIMD3(4.337929, 0.9144, -0.204177)),
+        (-90, [1.5, 0, 2.5], SIMD3(4, 3.6, 1), SIMD3(0.1524, 1.09728, 1.9812)),
+        (180, [20, 0, 15], SIMD3(6, 1, 2), SIMD3(4.2672, 0.3048, 3.9624)),
+        (37.5, [-3.2, 0.4, 8.8], SIMD3(11.25, 5, 0.5), SIMD3(1.837824, 1.64592, 0.715704))
+    ]
+    for (yaw, offset, roomFeet, expected) in points {
+        let transform = worldTransform(for: RoomFrame(yaw_deg: yaw, offset: offset))
+        let actual = transform * SIMD4<Float>(roomFeet * 0.3048, 1)
+        if simd_length(SIMD3<Float>(actual.x, actual.y, actual.z) - expected) >= 1e-4 {
+            return false
+        }
+    }
+
+    let directions: [(Double, SIMD3<Float>, SIMD3<Float>)] = [
+        (30, SIMD3(0, 0, -1), SIMD3(-0.5, 0, -0.866025)),
+        (90, SIMD3(1, 0, 0), SIMD3(0, 0, -1)),
+        (-45, SIMD3(0, 0, -1), SIMD3(0.707107, 0, -0.707107))
+    ]
+    for (yaw, roomDirection, expected) in directions {
+        let transform = worldTransform(for: RoomFrame(yaw_deg: yaw, offset: [0, 0, 0]))
+        let actual = transform * SIMD4<Float>(roomDirection, 0)
+        if simd_length(SIMD3<Float>(actual.x, actual.y, actual.z) - expected) >= 1e-4 {
+            return false
+        }
+    }
+    return true
+}
+#endif
 
 struct Dimensions: Decodable {
     let width: Double
