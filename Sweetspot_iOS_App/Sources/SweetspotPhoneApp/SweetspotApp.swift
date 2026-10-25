@@ -1440,7 +1440,7 @@ struct ResultsScreen: View {
         .navigationTitle("Results")
         .onAppear { flow.setBudget(budget) }
         .onChange(of: budget) { _, value in flow.setBudget(value) }
-        .sheet(isPresented: $showingShop) { ProductsView(flow: flow) }
+        .navigationDestination(isPresented: $showingShop) { ProductsView(flow: flow) }
     }
 }
 
@@ -1492,6 +1492,6 @@ struct ARLayoutScreen: View {
             }
         }
         .navigationTitle("AR layout")
-        .sheet(isPresented: $showingShop) { ProductsView(flow: flow) }
+        .navigationDestination(isPresented: $showingShop) { ProductsView(flow: flow) }
     }
 }
