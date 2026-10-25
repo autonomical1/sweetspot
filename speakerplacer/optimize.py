@@ -1,6 +1,7 @@
 """Type-aware wall candidate search with exact mirrored pairs and joint modal scoring."""
 from dataclasses import dataclass, field
 from functools import lru_cache
+from math import ceil
 from typing import Dict, List, Optional, Sequence, Tuple
 from math import log10
 import numpy as np
@@ -14,6 +15,7 @@ from .speaker_types import SpeakerType, DEFAULT_LAYOUT, DEFAULT_SPEAKER_TYPES
 from .speaker_models import DEFAULT_SPEAKER_MODELS, DEFAULT_MODEL_BY_ROLE, SpeakerModel, predicted_spl_db, resolve_model
 from .room_acoustics import (MaterialSet, room_metrics, level_components, directivity_q,
                              _level_components_with_polar, boundary_gain_for_mount)
+from .parallel import ordered_map, worker_count
 
 @dataclass
 class OptimizationResult:
@@ -377,6 +379,32 @@ def _evaluate_group(polygon, sources, terms_by_source, listener, absorption, spe
     terms["geometry_db"]=float(geom)
     value=_weighted_imaging(terms,spec)+spec.score_weights.get("geometry",1.)*geom
     return float(value),terms,{"combined_spl_db":combined_spl,"available_peak_spl_db":available_peak,"required_peak_spl_db":required_peak,"max_spl_db":group_max}
+
+
+def _expand_beam_chunk(task):
+    """Evaluate consecutive beam rows, retaining their serial tie positions."""
+    (start, selected_rows, options, polygon, listener, absorption, spec, facing,
+     model, reference_spl_db, peak_headroom_db, step_hz, q_scale, coherent,
+     room_env, seat_cluster_spacing_m, seat_positions_m,
+     min_speaker_spacing_m) = task
+    expanded=[]
+    for row_index, selected_groups in enumerate(selected_rows, start):
+        existing=[point for group in selected_groups for point in group[:2] if point is not None]
+        for option_index, option in enumerate(options):
+            new_points=[option[0]]+([option[1]] if option[1] is not None else [])
+            spacing=max(min_speaker_spacing_m,model.min_spacing_to_other_speakers_m)
+            if any(np.linalg.norm(a.position-b.position)<spacing for a in new_points for b in existing): continue
+            if len(new_points)==2 and np.linalg.norm(new_points[0].position-new_points[1].position)<max(spacing,model.width_m): continue
+            group=selected_groups+[option]; points=[point for pair in group for point in pair[:2] if point is not None]
+            terms_by_source=[]
+            if spec.scorer=="imaging":
+                for pair in group: terms_by_source.extend(pair[2])
+            value,terms,modal_data=_evaluate_group(polygon,points,terms_by_source,listener,absorption,spec,facing,model,
+                reference_spl_db,peak_headroom_db,step_hz,q_scale,coherent,room_env,seat_cluster_spacing_m,seat_positions_m)
+            expanded.append((row_index*len(options)+option_index,(value,group,terms,modal_data)))
+    # Anything below the best 150 in a chunk cannot enter the global beam.
+    expanded.sort(key=lambda item:item[1][0],reverse=True)
+    return expanded[:150]
 
 
 def _candidate_key(candidate):
@@ -835,18 +863,31 @@ def optimize_layout(room_polygon, listener, layout=None, facing="north", absorpt
         beam=[(0.,[],{},None)]
         for _ in range(needed):
             expanded=[]
-            for _,selected_groups,_,_ in beam:
-                for option in options:
-                    new_points=[option[0]]+([option[1]] if option[1] is not None else [])
-                    existing=[point for group in selected_groups for point in group[:2] if point is not None]
-                    if any(np.linalg.norm(a.position-b.position)<max(min_speaker_spacing_m,model.min_spacing_to_other_speakers_m) for a in new_points for b in existing): continue
-                    if len(new_points)==2 and np.linalg.norm(new_points[0].position-new_points[1].position)<max(min_speaker_spacing_m,model.min_spacing_to_other_speakers_m,model.width_m): continue
-                    group=selected_groups+[option]; points=[point for pair in group for point in pair[:2] if point is not None]
-                    score_terms_list=[]
-                    if spec.scorer=="imaging":
-                        for opt in group: score_terms_list.extend(opt[2])
-                    value,terms,modal_data=_evaluate_group(p,points,score_terms_list,listener,absorption,spec,facing,model,reference_spl_db,peak_headroom_db,modal_step_hz,modal_q_scale,coherent,environment,seat_cluster_spacing_m,[point for point,_ in seats])
-                    expanded.append((value,group,terms,modal_data))
+            workers=worker_count()
+            if spec.scorer=="modal" and workers>1 and len(beam)>=2*workers:
+                chunk_size=ceil(len(beam)/(workers*4))
+                tasks=[(start,[row[1] for row in beam[start:start+chunk_size]],options,p,listener,
+                        absorption,spec,facing,model,reference_spl_db,peak_headroom_db,modal_step_hz,
+                        modal_q_scale,coherent,{**environment,"_headroom_cache":{}},seat_cluster_spacing_m,
+                        [point for point,_ in seats],min_speaker_spacing_m)
+                       for start in range(0,len(beam),chunk_size)]
+                ranked=[entry for chunk in ordered_map(_expand_beam_chunk,tasks,workers=workers,chunksize=1)
+                        for entry in chunk]
+                ranked.sort(key=lambda item:item[0])
+                expanded=[entry[1] for entry in ranked]
+            else:
+                for _,selected_groups,_,_ in beam:
+                    for option in options:
+                        new_points=[option[0]]+([option[1]] if option[1] is not None else [])
+                        existing=[point for group in selected_groups for point in group[:2] if point is not None]
+                        if any(np.linalg.norm(a.position-b.position)<max(min_speaker_spacing_m,model.min_spacing_to_other_speakers_m) for a in new_points for b in existing): continue
+                        if len(new_points)==2 and np.linalg.norm(new_points[0].position-new_points[1].position)<max(min_speaker_spacing_m,model.min_spacing_to_other_speakers_m,model.width_m): continue
+                        group=selected_groups+[option]; points=[point for pair in group for point in pair[:2] if point is not None]
+                        score_terms_list=[]
+                        if spec.scorer=="imaging":
+                            for opt in group: score_terms_list.extend(opt[2])
+                        value,terms,modal_data=_evaluate_group(p,points,score_terms_list,listener,absorption,spec,facing,model,reference_spl_db,peak_headroom_db,modal_step_hz,modal_q_scale,coherent,environment,seat_cluster_spacing_m,[point for point,_ in seats])
+                        expanded.append((value,group,terms,modal_data))
             expanded.sort(key=lambda x:x[0],reverse=True); beam=expanded[:150]
             if not beam: raise ValueError("Room invalid for selected layout: could not place all {} speakers of type '{}' while maintaining component separation. Edit the room/layout and retry".format(spec.count,spec.name))
 
