@@ -98,7 +98,7 @@ def _valid_variety(picks: dict, catalog: dict, shares: dict, screen: dict | None
     if not front:
         return True
     center = selected.get("C")
-    if center and center not in _center_rows(catalog["speaker"], front, center["price"]):
+    if center and center not in _center_rows(catalog["speaker"], front, 2 * shares["C"]):
         return False
     for role in ("Ls", "Rs"):
         row = selected.get(role)
@@ -147,26 +147,20 @@ def _upgrades(choice: dict, group: tuple[str, ...], rows: list[dict], shares: di
               leftover: float, screen: dict | None) -> Iterator[tuple[str, dict]]:
     """Yield affordable choices without dropping a filled role."""
     old_cost = _cost(choice)
-    paired = (len(group) == 2 and len(choice) == 2 and choice[group[0]] is choice[group[1]]
-              and PAIR.search(choice[group[0]]["title"]))
-    for role in group:
-        if paired:
-            continue
+    for role in group if len(group) == 1 or len(choice) < 2 else ():
         for row in rows:
             if PAIR.search(row["title"]) or row["price"] > 2 * shares[role] + 0.001:
                 continue
             candidate = {**choice, role: row}
             if _cost(candidate) <= old_cost + leftover + 1e-8:
                 yield role, candidate
-    if paired:
+    if len(group) == 2 and len(choice) == 2:
         first, second = group
-        first_rows = _single_frontier(rows, first, 2 * shares[first], screen)
-        second_rows = _single_frontier(rows, second, 2 * shares[second], screen)
-        for left in first_rows:
-            for right in second_rows:
-                candidate = {first: left, second: right.copy() if left is right else right}
-                if _cost(candidate) <= old_cost + leftover + 1e-8:
-                    yield first, candidate
+        cap = min(2 * shares[first], 2 * shares[second])
+        for row in _single_frontier(rows, first, cap, screen):
+            candidate = {first: row, second: row.copy()}
+            if _cost(candidate) <= old_cost + leftover + 1e-8:
+                yield first, candidate
     if len(group) == 2:
         cap = 2 * sum(shares[role] for role in group)
         for row in rows:
@@ -205,12 +199,6 @@ def _alternatives(role: str, row: dict, rows: list[dict], cap: float, total: flo
                   and total - row["price"] + other["price"] <= budget + 0.001
                   and bool(PAIR.search(other["title"])) == paired
                   and model_key(other) != model_key(row)]
-    unique = {}
-    for other in candidates:
-        key = model_key(other)
-        if key not in unique or value(other, role, cap, screen) > value(unique[key], role, cap, screen):
-            unique[key] = other
-    candidates = list(unique.values())
     cheaper = [other for other in candidates if other["price"] < row["price"]]
     pricier = [other for other in candidates if other["price"] > row["price"]]
     result = []
@@ -221,9 +209,14 @@ def _alternatives(role: str, row: dict, rows: list[dict], cap: float, total: flo
     remaining = [other for other in candidates if other not in result]
     if remaining:
         result.append(max(remaining, key=lambda other: value(other, role, cap, screen)))
+    unique = {}
+    for other in result:
+        key = model_key(other)
+        if key not in unique or value(other, role, cap, screen) > value(unique[key], role, cap, screen):
+            unique[key] = other
     return [{key: value_ for key, value_ in _item(role, other, screen, None).items()
              if key not in {"role", "pair_with"}} | {"price_delta": round(other["price"] - row["price"], 2)}
-            for other in sorted(result, key=lambda other: other["price"])]
+            for other in sorted(unique.values(), key=lambda other: other["price"])]
 
 
 def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None) -> dict:
@@ -297,30 +290,43 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
             by_role = {}
             for role, candidate in _upgrades(old, group, catalog[_category(group[0])], shares,
                                              budget - total, screen):
+                proposed = {**picks, group: candidate}
+                center_group = next((key for key in groups if key[0] == "C"), None)
+                if group[0] == "L" and center_group and picks[center_group]:
+                    front = candidate.get("L") or candidate.get("R")
+                    if front:
+                        center_cap = 2 * shares["C"]
+                        center_rows = _center_rows(catalog["speaker"], front, center_cap)
+                        center = _best(center_rows, "C", center_cap, screen)
+                        if center:
+                            proposed[center_group] = {"C": center}
+                extra = sum(_cost(choice) - _cost(picks[key]) for key, choice in proposed.items())
+                if extra > budget - total + 1e-8:
+                    continue
                 if (group[0] in {"L", "C", "Ls"}
-                        and not _valid_variety({**picks, group: candidate}, catalog, shares,
-                                               screen, surround_scores)):
+                        and not _valid_variety(proposed, catalog, shares, screen, surround_scores)):
                     continue
                 gain = _choice_quality(candidate, screen) - old_quality
+                if center_group and center_group in proposed and center_group != group:
+                    gain += (_choice_quality(proposed[center_group], screen)
+                             - _choice_quality(picks[center_group], screen))
                 if gain <= 0.000001:
                     continue
                 if (role not in by_role or gain > by_role[role][0] + 1e-8
                         or (abs(gain - by_role[role][0]) <= 1e-8
-                            and _cost(candidate) < _cost(by_role[role][1]))):
-                    by_role[role] = (gain, candidate)
+                            and extra < by_role[role][2])):
+                    by_role[role] = (gain, proposed, extra)
             for role in group:
                 if role not in by_role:
                     continue
-                gain, candidate = by_role[role]
-                extra = _cost(candidate) - _cost(old)
+                gain, proposed, extra = by_role[role]
                 ratio = gain / extra if extra > 0.000001 else float("inf")
                 if ratio > best_ratio:
                     best_ratio = ratio
-                    best_upgrade = (group, candidate, extra)
+                    best_upgrade = (proposed, extra)
         if best_upgrade is None:
             break
-        group, candidate, extra = best_upgrade
-        picks[group] = candidate
+        picks, extra = best_upgrade
         total += extra
     selected = {role: row for choice in picks.values() for role, row in choice.items()}
     items = []

@@ -9,7 +9,8 @@ import pytest
 from backend.app.engine import run_optimize
 from backend.app.schemas import Room
 from backend.tests.contract.checks import assert_valid_products
-from products import catalog, get_products
+from products import catalog, get_products, recommend
+from products.recommend import _upgrades, _valid_variety
 from products.variety import family_key, model_key
 
 from .test_recommend import listing
@@ -34,6 +35,71 @@ def test_model_key_ignores_seller_wording_and_pair_terms():
     assert model_key(first) == model_key(second)
     assert model_key(first) != model_key(other)
     assert family_key(first) == ("edifier", "r1280")
+
+
+def test_model_key_joins_punctuation_and_split_suffixes():
+    def row(title):
+        return {"title": title, "specs": {"brand": "Edifier"}}
+
+    assert model_key(row("Edifier R1280-DB Speakers")) == model_key(row("Edifier R1280DB Speakers"))
+    assert model_key(row("Edifier R1280.DB Speakers")) == model_key(row("Edifier R1280 DB Speakers"))
+    assert model_key(row("Edifier R1280/DB Speakers")) == model_key(row("Edifier R1280_DB Speakers"))
+    assert model_key(row("Edifier R-41M Speakers")) == model_key(row("Edifier R41M Speakers"))
+    assert model_key(row("Edifier R980T Speakers")) != model_key(row("Edifier R1280DB Speakers"))
+
+
+def test_center_validation_uses_upgrade_cap():
+    front = {"title": "Acme A100 Speaker", "price": 100, "specs": {"brand": "Acme"}}
+    matching = {"title": "Acme A100C Speaker", "price": 130, "specs": {"brand": "Acme"}}
+    other = {"title": "Other B200 Speaker", "price": 80, "specs": {"brand": "Other"}}
+    picks = {("L", "R"): {"L": front, "R": front}, ("C",): {"C": other}}
+    assert not _valid_variety(picks, {"speaker": [front, matching, other]},
+                              {"C": 70}, None, {})
+
+
+def test_joint_single_front_upgrade_reselects_center(small_db):
+    catalog.save_listings(small_db, "speaker upgrades", "speaker", [
+        listing("Acme A100 Bookshelf Speaker 100W", 60, rating=4.0, reviews=500),
+        listing("Acme B200C Bookshelf Speaker 20W", 100, rating=3.0, reviews=500),
+        listing("Acme B200F Bookshelf Speaker 300W", 140, rating=5.0, reviews=500),
+    ])
+    result = get_products({"speakers": [{"role": role} for role in ("L", "R", "C")]}, 450)
+    by_role = {item["role"]: item for item in result["items"]}
+    assert all("B200" in by_role[role]["title"] for role in ("L", "R", "C"))
+    assert model_key(by_role["L"]) == model_key(by_role["R"])
+    assert result["total"] <= 450
+
+
+def test_alternatives_select_before_model_deduplication(monkeypatch):
+    def row(model, suffix, price, value_score, quality_score):
+        return {"title": f"Acme {model} Speaker {suffix}", "price": price,
+                "link": f"https://example.test/{model}/{suffix}", "seller": "Shop",
+                "specs": {"brand": "Acme"}, "v": value_score, "q": quality_score}
+
+    pick = row("P100", "pick", 100, 0, 0)
+    alternatives = [
+        row("A200", "cheap", 80, 0.9, 0.5),
+        row("A200", "pricey", 120, 1.0, 0.9),
+        row("B300", "cheap", 75, 0.8, 0.5),
+        row("B300", "pricey", 130, 0.7, 0.95),
+    ]
+    monkeypatch.setattr(recommend, "value", lambda item, *_: item["v"])
+    monkeypatch.setattr(recommend, "quality", lambda item, *_: item["q"])
+    result = recommend._alternatives("C", pick, alternatives, 200, 100, 200, None, False)
+    assert {item["title"] for item in result} == {"Acme A200 Speaker pricey", "Acme B300 Speaker pricey"}
+    assert [item["price"] for item in result] == [120, 130]
+
+
+def test_surround_single_upgrade_changes_both_roles():
+    old = {"title": "Acme A100 Bookshelf Speaker", "price": 60,
+           "specs": {"power_w": "20W", "form_factor": "bookshelf"}}
+    new = {"title": "Acme B200 Bookshelf Speaker", "price": 100,
+           "specs": {"power_w": "300W", "form_factor": "bookshelf"}}
+    upgrades = list(_upgrades({"Ls": old, "Rs": old.copy()}, ("Ls", "Rs"), [old, new],
+                              {"Ls": 60, "Rs": 60}, 80, None))
+    assert any(choice["Ls"]["title"] == new["title"] and choice["Rs"]["title"] == new["title"]
+               for _, choice in upgrades)
+    assert all(model_key(choice["Ls"]) == model_key(choice["Rs"]) for _, choice in upgrades)
 
 
 def test_alternatives_are_sorted_distinct_and_budget_safe(small_db):

@@ -13,7 +13,10 @@ def _parts_cached(raw_title: str, raw_brand: str) -> tuple[str, tuple[str, ...]]
     """Remove generic title words and extract the listing brand."""
     title = re.sub(r"\b\d+(?:\.\d+)?\s*w(?:atts)?\b", " ", raw_title.lower())
     title = title.replace("2.0", " ")
-    title = re.sub(r"(?<=[a-z])-(?=\d)", "", title)
+    # Model codes can be split by sellers with punctuation or a space before
+    # their final letters (R1280-DB, R1280 DB, R1280DB).
+    title = re.sub(r"(?<=[a-z0-9])[-./_](?=[a-z0-9])", "", title)
+    title = re.sub(r"\b([a-z]+\d+)\s+([a-z]{1,2})\b", r"\1\2", title)
     words = [word for word in re.findall(r"[a-z]+\d*[a-z\d]*|\d+[a-z]+[a-z\d]*", title)
              if word not in DROP]
     brand = (raw_brand or (words[0] if words else "")).lower()
