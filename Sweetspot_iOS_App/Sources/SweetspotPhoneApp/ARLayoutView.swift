@@ -340,7 +340,7 @@ struct ARLayoutView: UIViewRepresentable {
                     mesh: markerMesh,
                     materials: [
                         SimpleMaterial(
-                            color: .orange,
+                            color: UIColor(Theme.accent),
                             roughness: 0.35,
                             isMetallic: false
                         )
@@ -364,7 +364,7 @@ struct ARLayoutView: UIViewRepresentable {
                         size: [0.025, max(0.05, position.y), 0.025]
                     ),
                     materials: [
-                        SimpleMaterial(color: .yellow, isMetallic: false)
+                        SimpleMaterial(color: UIColor(Theme.accentDim), isMetallic: false)
                     ]
                 )
                 stem.position = SIMD3(
@@ -400,7 +400,7 @@ struct ARLayoutView: UIViewRepresentable {
                     ),
                     materials: [
                         SimpleMaterial(
-                            color: UIColor.systemBlue.withAlphaComponent(0.45),
+                            color: UIColor(Theme.accentLink).withAlphaComponent(0.45),
                             isMetallic: false
                         )
                     ]
