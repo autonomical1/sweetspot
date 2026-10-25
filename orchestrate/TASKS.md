@@ -50,5 +50,5 @@ Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as
 | ios-theme | iOS minimalist UI matching the web theme (tokens, Theme.swift, restyle all screens) | gpt-6-sol | medium |  | 17 | review | check PASS; no Codex review (user auto-approved) |
 | speakerplacer-speed | Speed up speakerplacer search several times with identical output (golden check) | gpt-6-sol | high |  | 18 | ready | user asked 2026-10-25; baseline 31 s/28 s/75 s on this machine |
 | speakerplacer-multicore | Run the speakerplacer search on all CPU cores (process pool, deterministic, SPEAKERPLACER_WORKERS) | gpt-6-sol | high | speakerplacer-speed | 19 | cut | split into mc-pool (new file, starts now) and mc-wire (needs mc-pool + speakerplacer-speed) for speed - user 2026-10-25 |
-| mc-pool | speakerplacer/parallel.py: deterministic process-pool helper + tests (new file only) | gpt-6-sol | medium |  | 18 | ready | parallel with speakerplacer-speed (disjoint files) |
+| mc-pool | speakerplacer/parallel.py: deterministic process-pool helper + tests (new file only) | gpt-6-sol | medium |  | 18 | review | check PASS; no Codex review (speed) |
 | mc-wire | Call the pool helper from the speakerplacer search loops, identical results, 2.5x on 4 cores | gpt-6-sol | high | speakerplacer-speed,mc-pool | 19 | blocked | starts after both merge |
