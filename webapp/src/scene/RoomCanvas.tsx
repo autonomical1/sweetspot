@@ -8,8 +8,11 @@ import { fitModel, loadModel } from './modelLoader';
 import { createRoomShell } from './roomShell';
 import { addProjectionLines } from './projectionLines';
 import { updateCameraView } from './seatPov';
+import { useAppStore } from '../store';
+import { layoutToScene } from './adapter/layoutToScene';
+import { BackendSceneCanvas } from './BackendSceneCanvas';
 
-type Props = {
+export type Props = {
   config: RoomConfig;
   selectedId: string | null;
   selectedName?: string;
@@ -21,7 +24,15 @@ type Props = {
   seatView: boolean;
   topView: boolean;
 };
-export function RoomCanvas({ config, selectedId, selectedName, selectedDescription, walls, ceiling, showProjection, onSelect, seatView, topView }: Props) {
+export function RoomCanvas(props: Props) {
+  const room = useAppStore(state => state.room);
+  const layout = useAppStore(state => state.layout);
+  const metrics = useAppStore(state => state.metrics);
+  if (room && layout) return <BackendSceneCanvas {...props} model={layoutToScene(room, layout, metrics)} />;
+  return <LegacyRoomCanvas {...props} />;
+}
+
+function LegacyRoomCanvas({ config, selectedId, selectedName, selectedDescription, walls, ceiling, showProjection, onSelect, seatView, topView }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const label = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<string | null>(selectedId);
