@@ -653,19 +653,8 @@ final class Flow: ObservableObject {
     @Published var materials: [MaterialResult] = []
     @Published var layout: Layout?
     @Published var roomDimensions: Dimensions?
-    @Published var roomFrame: RoomFrame?
     @Published var photoTargets: [PhotoTarget] = []
     @Published var photoIndex = 0
-    @Published var productItems: [ProductItem] = []
-    @Published var productWarnings: [String] = []
-    @Published var productsLoading = false
-    @Published var productsError: String?
-    @Published var productsLoaded = false
-    @Published private(set) var productsGeneration = 0
-    @Published var budget: Double = 1500
-    private var productsRoomID: String?
-    private var productsBudget: Double?
-    private var productsRequestToken = 0
 
     let backend = BackendClient()
 
@@ -688,81 +677,6 @@ final class Flow: ObservableObject {
     init() {
         sessionID = UserDefaults.standard.string(forKey: "sweetspot.session_id")
         roomID = UserDefaults.standard.string(forKey: "sweetspot.room_id")
-        let savedBudget = UserDefaults.standard.double(forKey: "sweetspot.budget")
-        if (100...20000).contains(savedBudget) { budget = savedBudget }
-    }
-
-    func setBudget(_ value: Double) {
-        guard budget != value else { return }
-        budget = value
-        resetProducts()
-    }
-
-    private func resetProducts() {
-        productsGeneration += 1
-        productsRequestToken += 1
-        productItems = []
-        productWarnings = []
-        productsLoading = false
-        productsError = nil
-        productsLoaded = false
-        productsRoomID = nil
-        productsBudget = nil
-    }
-
-    func loadProducts(force: Bool = false) async {
-        guard let roomID, roomID != "local-preview", layout != nil else {
-            productsError = "Compute a server layout to shop this setup."
-            return
-        }
-        if !force && productsLoaded && productsRoomID == roomID && productsBudget == budget { return }
-        let requestedBudget = budget
-        let requestedGeneration = productsGeneration
-        productsRequestToken += 1
-        let requestToken = productsRequestToken
-        productsLoading = true
-        productsError = nil
-        defer {
-            if productsRequestToken == requestToken { productsLoading = false }
-        }
-        do {
-            let response = try await backend.products(roomID: roomID, budget: requestedBudget)
-            guard productsRequestToken == requestToken,
-                  productsGeneration == requestedGeneration,
-                  self.roomID == roomID,
-                  budget == requestedBudget else { return }
-            productItems = response.items
-            productWarnings = response.warnings ?? []
-            productsRoomID = roomID
-            productsBudget = requestedBudget
-            productsLoaded = true
-        } catch {
-            guard productsRequestToken == requestToken else { return }
-            productsError = error.localizedDescription
-        }
-    }
-
-    func choose(_ alternative: ProductAlternative, for role: String) {
-        guard let index = productItems.firstIndex(where: { $0.role == role }) else { return }
-        let current = productItems[index]
-        let updatedTotal = chosenTotal(items: productItems) - current.price + alternative.price
-        guard updatedTotal <= budget else { return }
-        productItems[index].title = alternative.title
-        productItems[index].price = alternative.price
-        productItems[index].link = alternative.link
-        productItems[index].seller = alternative.seller
-        productItems[index].specs = alternative.specs
-        productItems[index].dimensions = alternative.dimensions
-        productItems[index].source = alternative.source ?? current.source
-        if let pairedRole = current.pair_with,
-           let pairedIndex = productItems.firstIndex(where: { $0.role == pairedRole }) {
-            productItems[pairedIndex].title = alternative.title
-            productItems[pairedIndex].link = alternative.link
-            productItems[pairedIndex].seller = alternative.seller
-            productItems[pairedIndex].specs = alternative.specs
-            productItems[pairedIndex].dimensions = alternative.dimensions
-            productItems[pairedIndex].source = alternative.source ?? current.source
-        }
     }
 
     func accept(_ room: CapturedRoom, session: ARSession) {
@@ -792,7 +706,6 @@ final class Flow: ObservableObject {
         scanSession = nil
         captured = nil
         currentScanID = nil
-        roomFrame = nil
     }
 
     func uploadScan() async {
@@ -851,14 +764,12 @@ final class Flow: ObservableObject {
             if saved.id != currentScanID { forgetScan() }
 
             roomID = room.room_id
-            roomFrame = room.frame
             UserDefaults.standard.set(room.room_id, forKey: "sweetspot.room_id")
             roomDimensions = room.dimensions ?? upload.size.map {
                 Dimensions(width: $0.width, length: $0.length, height: $0.height)
             }
             materials = []
             layout = nil
-            resetProducts()
             photoIndex = 0
             showingOfflinePreview = false
             phase = .results
@@ -876,14 +787,14 @@ final class Flow: ObservableObject {
     /// (sessions last 30 minutes), clears it and uploads unpaired.
     private func uploadDTO(_ data: Data) async throws -> RoomResponse {
         do {
-            return try await backend.upload(dto: data, sessionID: sessionID, budget: budget)
+            return try await backend.upload(dto: data, sessionID: sessionID)
         } catch BackendError.http(let status, let detail)
             where sessionID != nil && (status == 410 || detail.contains("session")) {
 
             sessionID = nil
             UserDefaults.standard.removeObject(forKey: "sweetspot.session_id")
 
-            let response = try await backend.upload(dto: data, sessionID: nil, budget: budget)
+            let response = try await backend.upload(dto: data, sessionID: nil)
             error = """
             The desktop pairing had expired, so the scan was uploaded without it. \
             Pair again to see this room on the desktop.
@@ -894,12 +805,10 @@ final class Flow: ObservableObject {
 
     private func adoptUploadedRoom(_ response: RoomResponse, scanID: UUID?) {
         roomID = response.room_id
-        roomFrame = response.frame
         UserDefaults.standard.set(response.room_id, forKey: "sweetspot.room_id")
         roomDimensions = response.dimensions
         materials = []
         layout = nil
-        resetProducts()
         photoIndex = 0
         showingOfflinePreview = false
 
@@ -926,12 +835,9 @@ final class Flow: ObservableObject {
         do {
             let response = try await backend.demo(sessionID: sessionID)
             roomID = response.room_id
-            roomFrame = response.frame
             UserDefaults.standard.set(response.room_id, forKey: "sweetspot.room_id")
             roomDimensions = response.dimensions
                 ?? Dimensions(width: 12, length: 15, height: 9)
-            layout = nil
-            resetProducts()
             showingOfflinePreview = false
             phase = .results
         } catch {
@@ -965,9 +871,7 @@ final class Flow: ObservableObject {
         }
 
         do {
-            let newLayout = try await backend.optimize(roomID: roomID).layout
-            layout = newLayout
-            resetProducts()
+            layout = try await backend.optimize(roomID: roomID).layout
             phase = .ar
         } catch {
             self.error = error.localizedDescription
@@ -984,16 +888,12 @@ final class Flow: ObservableObject {
                 width: width,
                 length: length,
                 height: height,
-                sessionID: sessionID,
-                budget: budget
+                sessionID: sessionID
             )
 
             roomID = response.room_id
-            roomFrame = response.frame
             roomDimensions = response.dimensions
                 ?? Dimensions(width: width, length: length, height: height)
-            layout = nil
-            resetProducts()
             showingOfflinePreview = false
             phase = .results
         } catch {
@@ -1007,9 +907,7 @@ final class Flow: ObservableObject {
 
     private func startPreview(width: Double, length: Double, height: Double) {
         roomID = "local-preview"
-        roomFrame = nil
         roomDimensions = Dimensions(width: width, length: length, height: height)
-        resetProducts()
 
         layout = Layout(
             speakers: [
@@ -1097,7 +995,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 18) {
-                Text("Sweetspot")
+                Text("SweetSpot")
                     .font(.largeTitle.bold())
 
                 Text(
@@ -1402,8 +1300,6 @@ struct PhotosStep: View {
 
 struct ResultsScreen: View {
     @ObservedObject var flow: Flow
-    @AppStorage("sweetspot.budget") private var budget = 1500.0
-    @State private var showingShop = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -1422,32 +1318,19 @@ struct ResultsScreen: View {
                 Text("\(material.material) · \(Int(material.confidence * 100))%")
             }
 
-            Stepper(value: $budget, in: 100...20000, step: 100) {
-                Text("Budget: \(budget, format: .currency(code: "USD"))")
-            }
-
             Button("Compute speaker layout") {
-                flow.setBudget(budget)
                 Task { await flow.compute() }
             }
             .buttonStyle(.borderedProminent)
-
-            if flow.layout != nil && flow.roomID != "local-preview" {
-                Button("Shop this setup") { showingShop = true }
-            }
         }
         .padding()
         .navigationTitle("Results")
-        .onAppear { flow.setBudget(budget) }
-        .onChange(of: budget) { _, value in flow.setBudget(value) }
-        .sheet(isPresented: $showingShop) { ProductsView(flow: flow) }
     }
 }
 
 struct ARLayoutScreen: View {
     @ObservedObject var flow: Flow
     @State private var alignment = "Preparing AR"
-    @State private var showingShop = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -1455,9 +1338,7 @@ struct ARLayoutScreen: View {
                 ARLayoutView(
                     scanSession: flow.scanSession,
                     layout: layout,
-                    products: flow.productItems,
                     roomWidthFeet: flow.roomDimensions?.width,
-                    roomFrame: flow.roomFrame,
                     sharedScanFrame: flow.scanSession != nil,
                     alignmentState: $alignment
                 )
@@ -1483,15 +1364,10 @@ struct ARLayoutScreen: View {
                 )
                 .font(.footnote)
                 .padding(8)
-                if flow.roomID != "local-preview" {
-                    Button("Shop this setup") { showingShop = true }
-                        .padding(.bottom, 8)
-                }
             } else {
                 Text("No layout is available yet.")
             }
         }
         .navigationTitle("AR layout")
-        .sheet(isPresented: $showingShop) { ProductsView(flow: flow) }
     }
 }
