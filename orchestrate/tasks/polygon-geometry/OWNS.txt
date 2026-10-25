@@ -1,0 +1,12 @@
+backend/app/schemas.py
+backend/app/rooms.py
+backend/app/roomplan.py
+backend/app/main.py
+web/plot2d/**
+backend/tests/test_polygon_geometry.py
+backend/tests/test_rooms.py
+backend/tests/test_roomplan.py
+backend/tests/test_roomplan_real_scan.py
+backend/tests/test_schemas_store.py
+backend/tests/test_plot2d.py
+orchestrate/tasks/polygon-geometry/HANDOFF.md

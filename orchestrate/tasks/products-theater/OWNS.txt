@@ -1,0 +1,8 @@
+products/theater.py
+products/recommend.py
+products/value.py
+products/variety.py
+products/dimensions.py
+tools/expand_catalog.py
+backend/tests/products/**
+orchestrate/tasks/products-theater/HANDOFF.md

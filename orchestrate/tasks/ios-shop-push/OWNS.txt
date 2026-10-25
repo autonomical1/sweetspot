@@ -1,0 +1,3 @@
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/SweetspotApp.swift
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/CaptureViews.swift
+orchestrate/tasks/ios-shop-push/HANDOFF.md
