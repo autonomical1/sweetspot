@@ -322,3 +322,58 @@ enum AppPhase {
     case results
     case ar
 }
+
+struct ProductDimensions: Decodable {
+    let width: Double
+    let height: Double
+    let depth: Double
+    let source: String?
+}
+
+struct ProductAlternative: Decodable, Identifiable {
+    let title: String
+    let price: Double
+    let link: String
+    let seller: String?
+    let thumbnail: String?
+    let source: String?
+    let specs: [String: String]?
+    let dimensions: ProductDimensions?
+    let price_delta: Double?
+
+    var id: String { "\(title)|\(link)" }
+}
+
+struct ProductItem: Decodable, Identifiable {
+    let role: String
+    var title: String
+    var price: Double
+    let currency: String
+    var link: String
+    let thumbnail: String?
+    var source: String
+    var seller: String?
+    var specs: [String: String]?
+    var dimensions: ProductDimensions?
+    let pair_with: String?
+    var alternatives: [ProductAlternative]?
+
+    var id: String { role }
+}
+
+struct ProductsResponse: Decodable {
+    let budget: Double
+    let total: Double
+    let items: [ProductItem]
+    let warnings: [String]?
+}
+
+func chosenTotal(items: [ProductItem]) -> Double {
+    items.reduce(0) { $0 + $1.price }
+}
+
+func inchesDescription(_ dimensions: ProductDimensions) -> String {
+    let values = [dimensions.width, dimensions.height, dimensions.depth]
+        .map { String(Int(($0 * 12).rounded())) }
+    return "\(values.joined(separator: " x ")) in"
+}

@@ -53,3 +53,170 @@ extension UIImage {
         return renderer.jpegData(withCompressionQuality: 0.7) { _ in draw(in: CGRect(origin: .zero, size: target)) }
     }
 }
+
+struct ProductsView: View {
+    @ObservedObject var flow: Flow
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedItem: ProductItem?
+    @State private var showWarnings = false
+
+    private let roles = ["C", "L", "R", "LFE", "Ls", "Rs", "screen", "projector"]
+
+    private var orderedItems: [ProductItem] {
+        flow.productItems.sorted {
+            (roles.firstIndex(of: $0.role) ?? roles.count) <
+            (roles.firstIndex(of: $1.role) ?? roles.count)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if flow.productsLoading && !flow.productsLoaded {
+                    VStack(spacing: 12) {
+                        ProgressView()
+                        Text("Finding products...")
+                    }
+                } else if let error = flow.productsError {
+                    message(error)
+                } else if flow.productsLoaded && flow.productItems.isEmpty {
+                    message("No products fit this budget. Try another budget and retry.")
+                } else if flow.productsLoaded {
+                    List {
+                        Section {
+                            let total = chosenTotal(items: flow.productItems)
+                            HStack {
+                                Text("Total")
+                                Spacer()
+                                Text(total, format: .currency(code: "USD"))
+                                    .foregroundStyle(total <= flow.budget ? .green : .red)
+                            }
+                            Text("Budget: \(flow.budget, format: .currency(code: "USD"))")
+                                .foregroundStyle(.secondary)
+                        }
+                        if !flow.productWarnings.isEmpty {
+                            Section {
+                                DisclosureGroup("Warnings (\(flow.productWarnings.count))", isExpanded: $showWarnings) {
+                                    ForEach(flow.productWarnings, id: \.self) { warning in
+                                        Text(warning).font(.footnote)
+                                    }
+                                }
+                            }
+                        }
+                        Section("Recommended setup") {
+                            ForEach(orderedItems) { item in
+                                productRow(item)
+                            }
+                        }
+                    }
+                } else {
+                    ProgressView("Finding products...")
+                }
+            }
+            .navigationTitle("Shop this setup")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .sheet(item: $selectedItem) { item in
+                if let current = flow.productItems.first(where: { $0.role == item.role }) {
+                    alternativesView(for: current)
+                }
+            }
+        }
+        .task { await flow.loadProducts() }
+    }
+
+    private func message(_ text: String) -> some View {
+        VStack(spacing: 14) {
+            Text(text).multilineTextAlignment(.center)
+            Button("Retry") { Task { await flow.loadProducts(force: true) } }
+                .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+
+    private func productRow(_ item: ProductItem) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                if !(item.alternatives ?? []).isEmpty { selectedItem = item }
+            } label: {
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(alignment: .top) {
+                        Text(item.role)
+                            .font(.caption.bold())
+                            .padding(5)
+                            .background(.blue.opacity(0.15), in: Capsule())
+                        Text(item.title).lineLimit(2)
+                        Spacer(minLength: 4)
+                        if let pairedRole = item.pair_with, item.price == 0 {
+                            Text("Included in pair with \(pairedRole)")
+                                .font(.caption)
+                                .multilineTextAlignment(.trailing)
+                        } else {
+                            Text(item.price, format: .currency(code: "USD"))
+                        }
+                    }
+                    if let seller = item.seller { Text(seller).font(.caption).foregroundStyle(.secondary) }
+                    if let dimensions = item.dimensions {
+                        Text(inchesDescription(dimensions)).font(.caption).foregroundStyle(.secondary)
+                    }
+                    if !(item.alternatives ?? []).isEmpty {
+                        Text("View swap options").font(.caption).foregroundStyle(.blue)
+                    }
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if let url = httpsURL(item.link) {
+                Link("Open product", destination: url).font(.caption)
+            }
+        }
+    }
+
+    private func alternativesView(for item: ProductItem) -> some View {
+        NavigationStack {
+            List(item.alternatives ?? []) { alternative in
+                let delta = alternative.price - item.price
+                let allowed = chosenTotal(items: flow.productItems) + delta <= flow.budget
+                Button {
+                    flow.choose(alternative, for: item.role)
+                    selectedItem = nil
+                } label: {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(alternative.title).lineLimit(2)
+                        if let seller = alternative.seller {
+                            Text(seller).font(.caption).foregroundStyle(.secondary)
+                        }
+                        HStack {
+                            Text(alternative.price, format: .currency(code: "USD"))
+                            Text(String(format: "%+.0f", delta) + " USD")
+                                .foregroundStyle(.secondary)
+                        }
+                        if let dimensions = alternative.dimensions {
+                            Text(inchesDescription(dimensions)).font(.caption).foregroundStyle(.secondary)
+                        }
+                        if !allowed {
+                            Text("Over budget").font(.caption).foregroundStyle(.red)
+                        }
+                    }
+                }
+                .disabled(!allowed)
+            }
+            .navigationTitle("Swap \(item.role)")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { selectedItem = nil }
+                }
+            }
+        }
+    }
+}
+
+private func httpsURL(_ text: String) -> URL? {
+    guard let url = URL(string: text),
+          url.scheme?.lowercased() == "https",
+          url.host != nil else { return nil }
+    return url
+}

@@ -119,9 +119,16 @@ struct BackendClient {
         _ path: String,
         method: String = "GET",
         body: Data? = nil,
-        timeout: TimeInterval = 30
+        timeout: TimeInterval = 30,
+        query: [URLQueryItem] = []
     ) async throws -> T {
-        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent(path),
+            resolvingAgainstBaseURL: false
+        )
+        components?.queryItems = query.isEmpty ? nil : query
+        guard let url = components?.url else { throw BackendError.invalidResponse }
+        var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = timeout
         request.httpBody = body
@@ -160,7 +167,7 @@ struct BackendClient {
         )
     }
 
-    func upload(dto: Data, sessionID: String?) async throws -> RoomResponse {
+    func upload(dto: Data, sessionID: String?, budget: Double? = nil) async throws -> RoomResponse {
         var envelope: [String: Any] = [
             "captured_room": try JSONSerialization.jsonObject(with: dto)
         ]
@@ -168,6 +175,7 @@ struct BackendClient {
         if let sessionID {
             envelope["session_id"] = sessionID
         }
+        if let budget { envelope["budget"] = budget }
 
         return try await request(
             "rooms",
@@ -194,7 +202,8 @@ struct BackendClient {
         width: Double,
         length: Double,
         height: Double,
-        sessionID: String?
+        sessionID: String?,
+        budget: Double? = nil
     ) async throws -> RoomResponse {
         var body: [String: Any] = [
             "width": width,
@@ -205,6 +214,7 @@ struct BackendClient {
         if let sessionID {
             body["session_id"] = sessionID
         }
+        if let budget { body["budget"] = budget }
 
         return try await request(
             "rooms/rect",
@@ -279,6 +289,14 @@ struct BackendClient {
 
     func layout(roomID: String) async throws -> LayoutResponse {
         try await request("rooms/\(roomID)/layout")
+    }
+
+    func products(roomID: String, budget: Double) async throws -> ProductsResponse {
+        try await request(
+            "rooms/\(roomID)/products",
+            timeout: 90,
+            query: [URLQueryItem(name: "budget", value: String(Int(budget)))]
+        )
     }
 }
 
