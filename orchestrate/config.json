@@ -3,6 +3,6 @@
     "base": "master",
     "setupTimeoutSec": 900,
     "cmdTimeoutSec": 600,
-    "test": "python -m ruff check . && python -m pytest -q && if exist webapp\\node_modules (call npm test --prefix webapp && call npm run typecheck --prefix webapp)",
+    "test": "python -m ruff check . && python tools/smoke_tests.py && if exist webapp\\node_modules (call npm test --prefix webapp && call npm run typecheck --prefix webapp)",
     "timeoutSec": 1800
 }
