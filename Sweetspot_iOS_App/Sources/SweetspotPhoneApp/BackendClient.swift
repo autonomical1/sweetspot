@@ -3,7 +3,7 @@
 //enum AppConfig {
 //    // Replace with the deployed HTTPS origin. Debug-only local development may use a LAN URL
 //    // together with an NSAppTransportSecurity local networking exception in the Xcode target.
-//    static let baseURL = URL(string: "https://144-202-27-51.sslip.io")!
+//    static let baseURL = URL(string: "https://sweetspotav.tech")!
 //}
 //
 //enum BackendError: LocalizedError {
@@ -88,7 +88,7 @@ import Foundation
 
 enum AppConfig {
     // Replace this with the actual Vultr HTTPS origin when it is ready.
-    static let baseURL = URL(string: "https://144-202-27-51.sslip.io")!
+    static let baseURL = URL(string: "https://sweetspotav.tech")!
 }
 
 enum BackendError: LocalizedError {
