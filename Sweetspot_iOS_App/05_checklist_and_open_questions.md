@@ -1,13 +1,13 @@
 # 05: Checklist, screens, risks, open questions
 
 ## App state machine
-`launch -> (supported?) -> home -> [pair] -> scan -> review -> upload -> photos -> materials -> layout/AR`
+`launch -> (supported?) -> home -> Start room scan -> QR -> scan -> review -> upload -> photos -> materials -> layout/AR`
 
-Home screen buttons: **Connect to desktop** (QR), **Start scan**, **Use demo room**, **Load saved scan**, **Enter room size** (no-LiDAR fallback). Persist `session_id`, `room_id` and the last scan file path so a relaunch can resume (relaunch breaks AR option A, see file 04).
+Home screen buttons: **Start room scan** (QR first), **Use demo room**, **Recent scans**, **Enter room dimensions** (no-LiDAR fallback). Keep `session_id` only in memory for the current scan; persist `room_id` and scan history for recovery (relaunch breaks AR option A, see file 04). Demo and entered dimensions work without pairing.
 
 ## Screens
 1. Home / device check.
-2. QR scanner + code entry.
+2. QR scanner before each room scan.
 3. Scan (RoomCaptureView, Done button, live counts).
 4. Review (summary, Rescan, Save/Share, Upload).
 5. Photo steps (prompt, camera, upload tick).
@@ -21,7 +21,7 @@ Home screen buttons: **Connect to desktop** (QR), **Start scan**, **Use demo roo
 - [ ] Upload succeeds against the deployed HTTPS backend; `room_id` stored.
 - [ ] Demo room button works with no scan.
 - [ ] QR scan yields the `session_id`; the laptop page switches to the viewer after upload.
-- [ ] Typed code works.
+- [ ] Starting another room scan opens the QR scanner again; an expired session returns to the scanner with a clear message.
 - [ ] Each photo uploads (<300 KB); `materials` returns.
 - [ ] Layout fetch returns and parses.
 - [ ] AR: marker at a known wall corner lands on the corner (shared session). If not, option C works.

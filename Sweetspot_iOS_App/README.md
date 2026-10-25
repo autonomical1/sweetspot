@@ -5,11 +5,11 @@ This folder contains an iOS app project and implementation. Open `SweetspotPhone
 ## What is included
 
 - `Sources/SweetspotPhoneApp/Models.swift`: RoomPlan DTO serialization and backend response types.
-- `Sources/SweetspotPhoneApp/BackendClient.swift`: typed REST client for pairing by code, scan/demo/rectangle room creation, photo-target lookup, material classification and layout optimization.
+- `Sources/SweetspotPhoneApp/BackendClient.swift`: typed REST client for scan/demo/rectangle room creation, photo-target lookup, material classification and layout optimization.
 - `Sources/SweetspotPhoneApp/ScanCapture.swift`: RoomPlan capture view using a retained ARSession.
 - `Sources/SweetspotPhoneApp/CaptureViews.swift`: VisionKit QR scanner and system camera with 1024 px / quality 0.7 JPEG resizing.
 - `Sources/SweetspotPhoneApp/ARLayoutView.swift`: RealityKit speaker and screen markers with two-point floor alignment for demo/manual rooms.
-- `Sources/SweetspotPhoneApp/SweetspotApp.swift`: SwiftUI flow for device check, scan/review/upload, demo room, typed pairing, room dimensions, photo target review, materials and layout results.
+- `Sources/SweetspotPhoneApp/SweetspotApp.swift`: SwiftUI flow for device check, QR pairing before each scan, scan/review/upload, demo room, room dimensions, photo target review, materials and layout results.
 - `SweetspotPhoneApp.xcodeproj`: iOS app target, iOS 17 deployment target, and camera purpose string.
 - `Resources/`: request and response examples from the project contract.
 - `01`–`05` markdown files: original detailed design and acceptance checklist, retained as source context.
@@ -18,7 +18,7 @@ This folder contains an iOS app project and implementation. Open `SweetspotPhone
 
 1. Replace `https://YOUR_DOMAIN.tech` in `BackendClient.swift` with the deployed HTTPS origin. Do not add an ATS exception for production.
 2. Open the project, select the app target, choose the team's signing team, then run on a LiDAR iPhone. Enable Developer Mode if Xcode requests it. RoomPlan is unavailable in Simulator.
-3. Pair by scanning the desktop QR or entering its six-character code. The phone carries the `session_id` through room creation; session and room IDs persist across relaunch.
+3. Open the web pairing page, tap "Start room scan," and scan its QR before scanning the room. The phone keeps the `session_id` only until that scan uploads; each new room scan requires a new QR.
 4. Scan slowly around the room, finish, review and upload. The raw-meter DTO is saved to Documents as `latest-roomplan.json`; the home screen can upload it again.
 5. Photograph each returned surface target, or skip photos; the app resizes JPEGs before multipart upload and calls materials classification.
 6. Compute layout. A live RoomPlan scan reuses its ARSession; demo/manual rooms prompt for two floor-corner taps to align. Verify the markers against the real room.
@@ -27,8 +27,8 @@ For a local backend, set the URL only in a Debug configuration and use a local-n
 
 ## Flow and data rules
 
-`home → scan → review → upload → photos → results → AR layout`.
-Demo room and manually entered rectangle rooms skip scanning. Pairing can be skipped. Session and room ids are held in memory for this app run. The scan file is the local recovery copy.
+`home → QR → scan → review → upload → photos → results → AR layout`.
+Demo room and manually entered rectangle rooms skip scanning and pairing. The scan session id stays in memory until upload; the room id and scan history remain available for recovery.
 
 The RoomPlan DTO uses `sweetspot.roomplan.v1`, raw meter dimensions/transforms, column-major transforms, UUID surface identifiers, and the categories required by the backend. Do not convert the uploaded scan to feet. The backend response is decimal feet; the AR scene must multiply returned positions and sizes by `0.3048` before placing anchors. Keep y-up and do not flip axes.
 

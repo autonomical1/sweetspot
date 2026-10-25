@@ -37,9 +37,6 @@
 //    }
 //
 //    private func json(_ object: [String: Any]) throws -> Data { try JSONSerialization.data(withJSONObject: object) }
-//    func pair(code: String) async throws -> SessionResponse {
-//        try await request("sessions/by-code", method: "POST", body: json(["code": code.uppercased()]))
-//    }
 //    func upload(dto: Data, sessionID: String?) async throws -> RoomResponse {
 //        var envelope: [String: Any] = ["captured_room": try JSONSerialization.jsonObject(with: dto)]
 //        if let sessionID { envelope["session_id"] = sessionID }
@@ -96,6 +93,7 @@ enum BackendError: LocalizedError {
     case http(Int, String)
     case busy(String, Int)
     case invalidQR
+    case expiredPairing
 
     var errorDescription: String? {
         switch self {
@@ -107,6 +105,8 @@ enum BackendError: LocalizedError {
             return detail
         case .invalidQR:
             return "That QR code is not a Sweetspot pairing link."
+        case .expiredPairing:
+            return "That pairing code expired. Scan the new QR code on the web page."
         }
     }
 }
@@ -167,14 +167,6 @@ struct BackendClient {
 
     private func json(_ object: [String: Any]) throws -> Data {
         try JSONSerialization.data(withJSONObject: object)
-    }
-
-    func pair(code: String) async throws -> SessionResponse {
-        try await request(
-            "sessions/by-code",
-            method: "POST",
-            body: json(["code": code.uppercased()])
-        )
     }
 
     func upload(dto: Data, sessionID: String?, budget: Double? = nil) async throws -> RoomResponse {
@@ -318,8 +310,10 @@ func sessionID(from qrText: String) throws -> String {
     guard
         let url = URL(string: qrText),
         url.scheme == "https",
-        url.pathComponents.count >= 2,
-        url.pathComponents.contains("pair")
+        url.host != nil,
+        url.pathComponents.count == 3,
+        url.pathComponents[1] == "pair",
+        url.pathComponents[2].hasPrefix("s_")
     else {
         throw BackendError.invalidQR
     }
