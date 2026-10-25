@@ -1,0 +1,5 @@
+webapp/src/components/panels/**
+webapp/src/components/Sidebar.tsx
+webapp/src/api/extra.ts
+webapp/src/api/extra.test.ts
+orchestrate/tasks/web-panels/HANDOFF.md

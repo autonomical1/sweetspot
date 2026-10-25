@@ -1,0 +1,6 @@
+Dockerfile
+.dockerignore
+deploy/**
+DEPLOY.md
+backend/tests/test_web_build_files.py
+orchestrate/tasks/web-deploy/HANDOFF.md

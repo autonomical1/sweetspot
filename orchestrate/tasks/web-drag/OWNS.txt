@@ -1,0 +1,8 @@
+webapp/src/interaction/**
+webapp/src/App.tsx
+webapp/src/components/Topbar.tsx
+webapp/src/store.ts
+webapp/src/store.test.ts
+webapp/src/api/client.ts
+webapp/src/api/client.test.ts
+orchestrate/tasks/web-drag/HANDOFF.md

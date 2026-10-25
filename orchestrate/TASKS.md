@@ -38,3 +38,9 @@ Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as
 | web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | running | Gate 3 OK by user 01:35, account 2 |
 | web-pairing | QR-only pairing screen (POST /sessions, QR via qrcode.react, poll, flip to viewer) | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written; QR only, no typed code |
 | ios-qr-pairing | iOS: remove typed code, QR scan first and per scan, clear session after upload | gpt-6-sol | medium |  | 13 | running | Gate 3 OK by user 01:35, account 2 |
+| web-adapter | Draw backend layout in the 3D scene (feet->m adapter, all roles, screen, projector, patches, reflections) | gpt-6-sol | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
+| web-view2d | 2D plan view ported from web/plot2d into webapp | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
+| web-panels | Layout/Acoustics/Shop/Room panels + extra API calls | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
+| web-deploy | Docker multi-stage build of webapp into web/, smoke checks, DEPLOY.md | gpt-5.6-terra | medium |  | 14 | todo | Brief written, batch Gate 3 |
+| web-drag | Drag-to-rescore, 2D/3D toggle, refine polling | gpt-6-sol | medium | web-adapter,web-view2d | 15 | todo | Brief written, batch Gate 3 |
+| web-e2e | jsdom flow tests, backend contract test, tools/e2e web checks | gpt-5.6-luna | medium | web-drag,web-panels,web-pairing,web-deploy | 16 | todo | Brief written, batch Gate 3 |
