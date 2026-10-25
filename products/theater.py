@@ -26,7 +26,7 @@ def bundle_roles(title: str, pair: tuple[str, str] = ("L", "R")) -> tuple[str, .
     """Return only roles that the title clearly says are included."""
     lower = title.lower()
     if (re.search(r"\b5\.1(?:\.\d+)?\b", lower)
-            and re.search(r"home theater|speaker system|speaker package", lower)):
+            and re.search(r"home theater|\bsystem\b|\bpackage\b", lower)):
         roles = ("C", "L", "R", "Ls", "Rs")
         return roles + ("LFE",) if re.search(r"sub-?woofer|\bsub\b", lower) else roles
     if re.search(r"\bpairs?\b|\(2\)|set of 2", lower):

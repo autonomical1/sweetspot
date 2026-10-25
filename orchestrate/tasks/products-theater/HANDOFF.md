@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Retry review fixes: TV selection recalculates shares after removing projector, screen, and mount; TV pools filter on at least 90% of layout screen diagonal; projectors use the strict 2× share cap; a missing or incompatible projector no longer leaves an orphan screen or mount; and generic `5.1 System`/`5.1 Package` titles are recognized as bundles. Focused regression tests cover all five.
+- At 1500 USD the seed has no mount under its doubled share. The recommender omits that unavailable role and redistributes its share before selecting the projector, so the 479 USD seed projector fits the strict 2× cap. The picks and totals below remain current.
 - Added passive speaker, bundle, receiver, and TV rules in `products/theater.py`. The recommender now returns receiver, six speaker roles, projector and screen or TV, HDMI cable, projector mount when one fits its cap, and optional speaker wire. Pair, front-stage, and 5.1 bundle listings pay once with `included_in` on covered roles.
 - Added receiver, mount, cable, and 16:9 TV dimensions; normalized punctuation within model keys; filtered alternatives using the same family, variety, eligibility, bundle, and budget context as the pick. Alternatives refill after model deduplication.
 - Added `tools/expand_catalog.py` with the 20 requested queries, dry-run, query selection, explicit DB path, and a mandatory key for fetching.
@@ -79,11 +81,11 @@ The mount is omitted with a warning: the cheapest seed projector ceiling mount i
 
 ## Verification
 
-- `python -m ruff check .`: passed.
-- `python -m pytest backend/tests/products -q --basetemp backend/tests/products/.tmp_test`: 39 passed.
-- Full pytest run: 298 passed, 9 deselected, 1 failed in `test_smoke_script_has_valid_bash_syntax`. This unrelated deploy test invokes Windows `bash.exe`, which returned WSL `E_ACCESSDENIED` in this sandbox. The deploy files and test are outside this task's ownership.
-- Excluding only that deploy syntax test: 298 passed, 10 deselected.
+- `python -m ruff check .`: passed after retry fixes.
+- `python -m pytest backend/tests/products/test_theater.py -q --basetemp backend/tests/products/.tmp_test`: 14 passed after retry fixes.
+- `python -m pytest backend/tests/products -q --basetemp backend/tests/products/.tmp_test`: 43 passed after retry fixes.
+- The full suite had one failure in `test_smoke_script_has_valid_bash_syntax`; running `backend/tests/test_deploy_files.py` alone confirmed that Windows `bash.exe` returns WSL `E_ACCESSDENIED` in this sandbox (6 passed, 1 failed). Deploy files and tests are outside this task's ownership. The full run and a second run excluding that deploy test were interrupted while later CPU-heavy engine tests were still running, so there is no new complete full-suite result after this retry.
 
 ## Design questions
 
-- The seed's cheapest projector is 479 USD, just above the strict 2 × projector share (473.68 USD) at a 1500 USD budget. I used a 2.05 × cap for projector selection so that budget can include a display. Alternatives are to keep the strict cap and omit the projector at 1500 USD, adjust the share weights, or fetch a cheaper projector.
+- Whether an unavailable mount should keep its share: I redistributed its share among the purchasable roles, which keeps the 1500 USD demo's projector within the strict 2× cap. Alternatives are to reserve the unused mount share and omit the projector, or fetch a cheaper projector and mount.

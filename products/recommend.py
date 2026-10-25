@@ -158,7 +158,7 @@ def _upgrades(choice: dict, group: tuple[str, ...], rows: list[dict], shares: di
     old_cost = _cost(choice)
     for role in group if len(group) == 1 or len(choice) < 2 else ():
         for row in rows:
-            limit = 2.05 * shares[role] if role == "projector" else 2 * shares[role]
+            limit = 2 * shares[role]
             if PAIR.search(row["title"]) or row["price"] > limit + 0.001:
                 continue
             candidate = {**choice, role: row}
@@ -254,6 +254,9 @@ def _role_rows(catalog: dict, role: str, screen: dict | None, needed: int,
     elif role == "projector":
         rows = [row for row in rows if not row["specs"].get("resolution")
                 or (number(row["specs"]["resolution"]) or 0) >= 1080]
+    elif role == "tv" and screen:
+        target = math.hypot(screen["width"], screen["height"]) * 12
+        rows = [row for row in rows if (number(row["specs"].get("diagonal_in")) or 0) >= 0.9 * target]
     return rows
 
 
@@ -359,10 +362,19 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
     if requests and not any("skipped" in warning for warning in warnings):
         with connect(path) as conn:
             catalog = {category: _candidates(conn, category) for category in catalog}
-    tv = choose_tv(catalog["display"], screen, shares.get("projector", 0) + shares.get("screen", 0))
+    # An unavailable mount does not consume a share of the purchasable setup.
+    if "mount" in roles and not any(row["price"] <= 2 * shares["mount"]
+                                    for row in _role_rows(catalog, "mount", screen, needed)):
+        roles.remove("mount")
+        unit = budget / sum(WEIGHTS[role] for role in roles)
+        shares = {role: WEIGHTS[role] * unit for role in roles}
+        warnings.append("no product within budget for mount")
+    tv = choose_tv(_role_rows(catalog, "tv", screen, needed), screen,
+                   shares.get("projector", 0) + shares.get("screen", 0))
     if tv:
         roles = [role for role in roles if role not in {"projector", "screen", "mount"}] + ["tv"]
-        shares["tv"] = shares["projector"] + shares["screen"]
+        unit = budget / sum(WEIGHTS[role] for role in roles)
+        shares = {role: WEIGHTS[role] * unit for role in roles}
     groups = []
     for role in roles:
         if role in {"R", "Rs"} and ("L" if role == "R" else "Ls") in roles:
@@ -400,7 +412,7 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
         else:
             cap = sum(shares[key] for key in group)
             if role == "projector":
-                cap *= 2.05
+                cap *= 2
             picks[group] = _choice(rows, group, cap, screen)
     picks = _bundle_upgrade(picks, groups, pools.get("C", []), shares, budget, screen,
                             pools, surround_good)
@@ -459,18 +471,27 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
                 for replacement in sorted(compatible, key=lambda row: value(row, "projector", shares["projector"],
                                                                                 screen), reverse=True):
                     proposed = {**picks, projector_group: {"projector": replacement}}
-                    if replacement["price"] <= 2.05 * shares["projector"] and _total(proposed) <= budget:
+                    if replacement["price"] <= 2 * shares["projector"] and _total(proposed) <= budget:
                         picks = proposed
                         break
             selected = {role: row for choice in picks.values() for role, row in choice.items()}
             if not receiver_eligible(selected["receiver"], needed, selected["projector"]):
                 projector_group = next(group for group in groups if group[0] == "projector")
                 picks[projector_group] = {}
+                screen_group = next((group for group in groups if group[0] == "screen"), None)
+                if screen_group:
+                    picks[screen_group] = {}
                 mount_group = next((group for group in groups if group[0] == "mount"), None)
                 if mount_group:
                     picks[mount_group] = {}
                 selected = {role: row for choice in picks.values() for role, row in choice.items()}
                 warnings.append("no compatible receiver and projector within budget")
+    if "projector" in roles and "projector" not in selected:
+        for display_role in ("screen", "mount"):
+            group = next((group for group in groups if group[0] == display_role), None)
+            if group:
+                picks[group] = {}
+                selected.pop(display_role, None)
     # Speaker wire is optional and is funded only from actual leftover.
     wire_rows = _role_rows(catalog, "speaker_wire", screen, needed)
     wire = _best(wire_rows, "speaker_wire", min(2 * unit * 0.5, budget - _total(picks)), screen)
@@ -525,8 +546,6 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
             elif role in {"L", "R", "C", "Ls", "Rs"}:
                 context = [other for other in context if not bundle_roles(other["title"]) ]
             cap = 2 * sum(shares[key] for key in covered if key in shares) if covered else 2 * shares[role]
-            if role == "projector":
-                cap *= 1.02
             item["alternatives"] = _alternatives(role, row, context, cap, total, budget, screen,
                                                   bool(covered and PAIR.search(row["title"])))
         items.append(item)

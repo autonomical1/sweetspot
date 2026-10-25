@@ -9,6 +9,8 @@ import pytest
 from backend.app.engine import run_optimize
 from backend.app.schemas import Room
 from products import catalog, get_products
+from products import recommend
+from products.recommend import _role_rows, _upgrades
 from products.theater import bundle_roles, choose_tv, passive_speaker, receiver_channels, receiver_eligible
 from products.variety import model_key
 from tools import expand_catalog
@@ -27,6 +29,8 @@ def test_passive_speakers_and_bundles():
     assert bundle_roles("Acme 5.1 Home Theater System") == ("C", "L", "R", "Ls", "Rs")
     assert bundle_roles("Acme 5.1.2 Home Theater System with subwoofer") == (
         "C", "L", "R", "Ls", "Rs", "LFE")
+    assert bundle_roles("Acme 5.1 System with subwoofer") == ("C", "L", "R", "Ls", "Rs", "LFE")
+    assert bundle_roles("Acme 5.1 Package") == ("C", "L", "R", "Ls", "Rs")
     assert bundle_roles("Acme surround speakers") == ()
 
 
@@ -53,6 +57,20 @@ def test_tv_requires_size_and_combined_share():
     assert choose_tv([large], screen, 1000) is None
 
 
+def test_tv_pool_excludes_undersized_alternatives():
+    screen = {"width": 8, "height": 4.5}
+    small = {"title": "75 inch TV", "price": 300, "specs": {"diagonal_in": "75in"}}
+    large = {"title": "100 inch TV", "price": 2500, "specs": {"diagonal_in": "100in"}}
+    assert _role_rows({"display": [small, large]}, "tv", screen, 5) == [large]
+
+
+def test_projector_upgrade_obeys_strict_double_share():
+    current = {"title": "Projector A", "price": 100}
+    over_cap = {"title": "Projector B", "price": 205}
+    assert not list(_upgrades({"projector": current}, ("projector",), [over_cap],
+                              {"projector": 100}, 500, None))
+
+
 @pytest.fixture
 def theater_db(tmp_path, monkeypatch):
     path = tmp_path / "theater.db"
@@ -62,6 +80,40 @@ def theater_db(tmp_path, monkeypatch):
     monkeypatch.delenv("SERPAPI_KEY", raising=False)
     with catalog.init_db(str(path)) as conn:
         yield conn
+
+
+def test_tv_reallocates_removed_mount_share(theater_db, monkeypatch):
+    tv = {"title": "100 inch TV", "price": 100, "specs": {"diagonal_in": "100in"},
+          "link": "https://example.test/tv", "seller": "Shop"}
+    monkeypatch.setattr(recommend, "choose_tv", lambda *_: tv)
+    original_choice = recommend._choice
+    caps = {}
+
+    def track_choice(rows, roles, cap, screen):
+        caps[roles] = cap
+        return original_choice(rows, roles, cap, screen)
+
+    monkeypatch.setattr(recommend, "_choice", track_choice)
+    layout = {"speakers": [{"role": role} for role in ("L", "R", "C")],
+              "screen": {"width": 8, "height": 4.5}}
+    result = get_products(layout, 1000)
+    assert "tv" in {item["role"] for item in result["items"]}
+    # C 3 + L/R 4 + receiver 3 + TV 4 + HDMI 0.5 = 14.5 shares.
+    assert caps[("C",)] == pytest.approx(1000 * 3 / 14.5)
+
+
+def test_incompatible_projector_does_not_leave_orphan_screen(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.delenv("AV_DB", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("SERPAPI_KEY", raising=False)
+    room = Room.model_validate(json.loads(Path("fixtures/room_demo.json").read_text()))
+    layout = run_optimize(room)["layout"]
+    monkeypatch.setattr(recommend, "receiver_eligible", lambda row, needed, projector=None: projector is None)
+    result = get_products(layout, 3000)
+    roles = {item["role"] for item in result["items"]}
+    assert "projector" not in roles and "screen" not in roles and "mount" not in roles
+    assert "no compatible receiver and projector within budget" in result["warnings"]
 
 
 def test_bundle_pricing_and_included_roles(theater_db):
