@@ -1,3 +1,4 @@
+import os
 import time
 
 import pytest
@@ -8,6 +9,7 @@ from backend.tests.contract.checks import assert_valid_products
 from products import catalog, get_products
 from products.db import SEED
 from products.dimensions import dimensions
+from products.value import quality
 
 ROLES = ("L", "R", "C", "LFE", "Ls", "Rs")
 
@@ -74,6 +76,27 @@ def test_value_pick_and_second_pass(small_db):
     assert "Premium" in result["items"][0]["title"]
 
 
+def test_second_pass_keeps_higher_value_pick(small_db):
+    catalog.save_listings(small_db, "speaker value", "speaker", [
+        listing("Good Bookshelf Speaker 100W", 70, rating=4.0, reviews=100),
+        listing("Slightly Better Bookshelf Speaker 100W", 105, rating=4.5, reviews=100),
+    ])
+    catalog.save_listings(small_db, "bass value", "subwoofer", [
+        listing("Bass Subwoofer 12 inch 300W", 75),
+    ])
+    result = get_products({"speakers": [{"role": "C"}, {"role": "LFE"}]}, 200)
+    by_role = {item["role"]: item for item in result["items"]}
+    assert by_role["C"]["title"] == "Good Bookshelf Speaker 100W"
+
+
+def test_screen_alr_catalog_spec_increases_quality():
+    row = {"rating": 4.0, "reviews": 20, "specs": {"diagonal_in": "100in"}}
+    screen = {"width": 100 / 12, "height": 0}
+    baseline = quality(row, "screen", screen)
+    row["specs"]["ambient_light_rejecting"] = "yes"
+    assert quality(row, "screen", screen) > baseline
+
+
 def test_dimensions_parsed_and_default():
     parsed = dimensions({"title": 'Cabinet 12" x 24" x 8"', "snippet": "", "extensions": "[]"}, "L", None)
     assert parsed == {"width": 1.0, "height": 2.0, "depth": 8 / 12, "source": "listing"}
@@ -85,10 +108,12 @@ def test_dimensions_parsed_and_default():
 
 def test_expansion_deadline_and_once_per_category(small_db, monkeypatch):
     calls = []
+    finished = []
 
     def slow(conn, category, price=None, specs=None, max_queries=5):
         calls.append((category, price, specs, max_queries))
         time.sleep(0.4)
+        finished.append(category)
         return 0
 
     monkeypatch.setattr(catalog, "expand_catalog", slow)
@@ -99,6 +124,9 @@ def test_expansion_deadline_and_once_per_category(small_db, monkeypatch):
     result = get_products(layout(), 1000)
     assert time.monotonic() - start < 0.35
     assert "timed out" in " ".join(result["warnings"])
+    until = time.monotonic() + 2
+    while len(finished) < 3 and time.monotonic() < until:
+        time.sleep(0.01)
     assert sorted(category for category, *_ in calls) == ["projector", "speaker", "subwoofer"]
     assert all(max_queries == 3 for *_, max_queries in calls)
     monkeypatch.delenv("SERPAPI_KEY")
@@ -118,8 +146,10 @@ def test_explicit_serpapi_key_reaches_catalog(small_db, monkeypatch):
 
     monkeypatch.setattr(catalog, "expand_catalog", fake)
     monkeypatch.setenv("GEMINI_API_KEY", "fake")
+    monkeypatch.setenv("SERPAPI_KEY", "environment")
     get_products({"speakers": [{"role": "C"}]}, 100, serpapi_key="explicit")
     assert seen == ["explicit", "explicit"]
+    assert os.environ["SERPAPI_KEY"] == "environment"
 
 
 @pytest.mark.parametrize("budget", [1500, 5000])

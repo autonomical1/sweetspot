@@ -75,6 +75,16 @@ def _cost(choice: dict) -> float:
     return total
 
 
+def _choice_value(choice: dict, roles: tuple[str, ...], cap: float, screen: dict | None) -> float:
+    if not choice:
+        return float("-inf")
+    if len(roles) == 2 and len(choice) == 2 and choice[roles[0]] is choice[roles[1]]:
+        row = choice[roles[0]]
+        return (sum(quality(row, role, screen) for role in roles) / 2
+                - 0.35 * row["price"] / cap)
+    return sum(value(row, role, cap / len(roles), screen) for role, row in choice.items()) / len(roles)
+
+
 def _constraints(role: str, screen: dict | None) -> dict:
     if role in {"Ls", "Rs"}:
         return {"form_factor": "bookshelf"}
@@ -134,12 +144,13 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
     total = sum(_cost(choice) for choice in picks.values())
     for group in groups:
         old = picks[group]
-        cap = min(budget - total + _cost(old), sum(shares[role] for role in group) + budget - total)
+        base_share = sum(shares[role] for role in group)
+        cap = min(budget - total + _cost(old), base_share + budget - total)
         candidate = _choice(catalog[_category(group[0])], group, cap, screen)
         if not candidate or _cost(candidate) > budget - total + _cost(old) + 0.001:
             continue
-        old_value = sum(quality(row, role, screen) for role, row in old.items())
-        new_value = sum(quality(row, role, screen) for role, row in candidate.items())
+        old_value = _choice_value(old, group, base_share, screen)
+        new_value = _choice_value(candidate, group, base_share, screen)
         if new_value > old_value + 0.001:
             total += _cost(candidate) - _cost(old)
             picks[group] = candidate

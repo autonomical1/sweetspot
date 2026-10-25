@@ -18,22 +18,22 @@ def expand(path: Path, requests: dict[str, tuple[float, dict]], serpapi_key: str
     warnings: list[str] = []
     errors: list[str] = []
     threads = []
-    override_key = not os.getenv("SERPAPI_KEY")
 
     def run(category: str, share: float, specs: dict) -> None:
         try:
             with connect(path) as conn:
-                if not override_key:
-                    catalog.expand_catalog(conn, category, price=f"..{share:.2f}", specs=specs, max_queries=3)
-                else:
-                    # The teammate's interface reads this key from the process environment.
-                    with _ENV_LOCK:
-                        os.environ["SERPAPI_KEY"] = serpapi_key
-                        try:
-                            catalog.expand_catalog(conn, category, price=f"..{share:.2f}", specs=specs,
-                                                   max_queries=3)
-                        finally:
+                # The teammate's interface reads this key from the process environment.
+                with _ENV_LOCK:
+                    previous_key = os.environ.get("SERPAPI_KEY")
+                    os.environ["SERPAPI_KEY"] = serpapi_key
+                    try:
+                        catalog.expand_catalog(conn, category, price=f"..{share:.2f}", specs=specs,
+                                               max_queries=3)
+                    finally:
+                        if previous_key is None:
                             os.environ.pop("SERPAPI_KEY", None)
+                        else:
+                            os.environ["SERPAPI_KEY"] = previous_key
         except Exception as exc:
             errors.append(f"catalog expansion failed for {category}: {type(exc).__name__}")
 

@@ -50,7 +50,7 @@ def quality(row: dict, role: str, screen: dict | None) -> float:
         diagonal = number(specs.get("diagonal_in"))
         target = math.hypot(screen["width"], screen["height"]) * 12 if screen else None
         closeness = NEUTRAL_SPEC if diagonal is None or not target else clamp(1 - abs(diagonal - target) / target)
-        alr = specs.get("alr")
+        alr = specs.get("ambient_light_rejecting")
         terms = [closeness, NEUTRAL_SPEC if alr is None else float(str(alr).lower() in {"yes", "true", "1"})]
     return clamp(0.5 * rating_part + 0.5 * sum(terms) / len(terms))
 
