@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/config/example.ts","./src/config/schema.ts","./src/scene/roomcanvas.tsx","./src/scene/coordinates.ts","./src/scene/factories.ts","./src/scene/modelloader.ts","./src/scene/projection.ts"],"version":"5.9.3"}

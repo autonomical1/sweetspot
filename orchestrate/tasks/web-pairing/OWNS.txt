@@ -1,0 +1,6 @@
+webapp/src/screens/Pair.tsx
+webapp/src/screens/Pair.css
+webapp/src/api/sessions.ts
+webapp/src/api/sessions.test.ts
+webapp/src/screens/Pair.test.tsx
+orchestrate/tasks/web-pairing/HANDOFF.md

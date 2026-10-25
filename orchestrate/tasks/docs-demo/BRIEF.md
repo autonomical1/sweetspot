@@ -20,3 +20,10 @@ DEMO.md updated; HANDOFF.md lists what changed and anything you could not verify
 
 ## Out of scope
 Everything else.
+
+
+## RETRY 1 (review VERDICT: ISSUES) - fix, docs only
+VERDICT: ISSUES
+DEMO.md:25 â€” A Gemini 429 returns `Retry-After` and no `surfaces`; materials do not fall back to `unknown`. The drillâ€™s instruction to continue is incorrect for this case.
+Check backend/app for the real 429 behaviour (Retry-After header, no surfaces, no fallback to unknown) and rewrite the drill so it tells the presenter to wait and retry, not to continue.
+

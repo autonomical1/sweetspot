@@ -1,0 +1,12 @@
+import type { RoomConfig } from './schema';
+export const exampleConfig: RoomConfig = {
+  version:1, units:'m', coordinateSystem:'Y-up',
+  room:{width:5.6,length:7.2,height:2.8,floorColor:'#303740',wallColor:'#d9dddc',ceilingColor:'#eef0eb',showCeiling:true},
+  equipment:[
+    {id:'screen-main',name:'Projection screen',type:'screen',dimensions:[3.1,1.75,0.08],position:[0,1.45,-3.48],rotation:[0,0,0],color:'#f7f6ef',modelUrl:'/models/fixed_frame_screen_16_9.glb'},
+    {id:'projector-1',name:'Ceiling projector',type:'projector',dimensions:[0.34,0.13,0.3],position:[0,2.48,0.6],rotation:[0,0,0],lensOffset:-1.03,throwRatio:1.35,aspectRatio:16/9,targetScreenId:'screen-main',modelUrl:'/models/projector.glb'},
+    {id:'speaker-l',name:'Left speaker',type:'speaker',dimensions:[0.28,0.95,0.32],position:[-1.85,0.48,-3.05],rotation:[0,-12,0],modelUrl:'/models/bookshelf_speaker.glb'},
+    {id:'speaker-r',name:'Right speaker',type:'speaker',dimensions:[0.28,0.95,0.32],position:[1.85,0.48,-3.05],rotation:[0,12,0],modelUrl:'/models/bookshelf_speaker.glb'},
+    {id:'seat-main',name:'Listening seat',type:'seat',dimensions:[0.88,1.05,0.85],position:[0,0.53,1.1],rotation:[0,0,0]}
+  ], seats:[{id:'view-main',name:'Main seat',position:[0,1.1,1.1],target:[0,1.5,-3.48]}]
+};
