@@ -7,19 +7,19 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 4
-- last_checkpoint: 2026-10-24 21:20
+- last_checkpoint: 2026-10-24 21:08
 
 ## Next action
-Wave 3 is merged, pushed and deployed (master verified 273 tests + ruff; live smoke and e2e PASS; Gemini gemini-3.8-flash verified with credits). Wave 4 = `products-spend` (gpt-6-sol medium, MAIN Codex account, dispatched about 21:20 via background `run-wave -Review`): demo room at 1500 USD totals only 521 USD, so the task lowers the price penalty to 0.15, adds a greedy upgrade loop and a 2x share cap (targets in its BRIEF). When it exits: read the summary and review; PASS + OK -> `DISPATCH merge -All`, then `python -m ruff check . && python -m pytest -q`, push, server `git pull && docker compose -f deploy/docker-compose.yml up -d --build`, check `GET /rooms/{id}/products?budget=1500` totals on the live server (first products request after a deploy takes ~20 s while expansion fills the working DB; warm it before demos). ISSUES -> one retry, then ask the user. Remaining project work: web app (teammate), 3D model (teammate), real iOS scan, DEMO.md rehearsal, .tech domain.
+Wave 4 (products-spend) merged and deployed (demo-ok fb09764; master 274 tests + ruff; live demo room totals 465 / 1393 / 2185 USD at budgets 500 / 1500 / 4000; first products request after a deploy takes ~20 s while expansion fills the working DB, then 0.3 s). Nothing is running. Remaining project work: web app (teammate, webapp/ React + Vite), 3D model (teammate), real iOS scan (replace fixtures/roomplan_sample.json), DEMO.md rehearsal with failure drills, .tech domain, products catalog quality (non-English or odd listing titles such as a French "Videoprojecteur" projector pick; consider an English-title filter). Ask the user what to do next.
 
 ## Waiting on user
-Nothing right now. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py and that catalog.py now defaults to gemini-3.8-flash; tell the web and 3D teammates product items carry `dimensions` (feet) and `pair_with`.
+Nothing blocking. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py and that catalog.py now defaults to gemini-3.8-flash; tell the web and 3D teammates product items carry `dimensions` (feet) and `pair_with`.
 
 ## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
 - docs/API.md section 4 rewritten with the user's decisions (DB first, expansion if fewer than 3 matches, filters, role mapping, front-weighted value pick, pairs with pair_with, specs + dimensions in feet). Tell the teammate their files moved (1a, user approved).
 
-## Wave 3 (done 21:00: lint, integrate, products-adapter merged)
+## Waves 3-4 (done: lint, integrate, products-adapter, products-spend)
 - products-adapter: brief encodes the value formula (q = rating + spec parts; maximise q - 0.35 price/share), dimension parsing + defaults, deadline-bound expansion thread (PRODUCTS_EXPAND_DEADLINE_S=20).
 - lint: ruff.toml + ruff==0.17.2 already committed on master by the orchestrator (about 150 findings, mostly tools/validate_dto.py and backend/tests/contract/). Worker fixes findings behaviour-preserving.
 - integrate: tools/e2e.py (run_e2e(client) + CLI), backend/tests/e2e (in-process + live-marked), DEMO.md with failure drills. Must itself pass ruff.
