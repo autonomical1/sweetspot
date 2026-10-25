@@ -7,13 +7,13 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 3
-- last_checkpoint: 2026-10-24 19:42
+- last_checkpoint: 2026-10-24 19:46
 
 ## Next action
-Wave 3 retry 1 is running (dispatched about 19:55, Codex account 2, background `run-wave -Review`) for `integrate` and `products-adapter` (3 valid review findings each, appended to their BRIEFs). `lint` is PASS + VERDICT OK and set to `review` (merge-eligible). When the retry exits: read summary lines; any master-vs-branch drift needs `merge master` into the worktrees and `check -Id`. Then GATE 4/5: `DISPATCH merge -All` (order lint, products-adapter, integrate) -> config.json test = `python -m ruff check . && python -m pytest -q` -> push -> server pull + `docker compose -f deploy/docker-compose.yml up -d --build` (keys are now in the server .env) -> smoke.sh and `python tools/e2e.py https://144-202-27-51.sslip.io`. A second failure of either task interrupts the user.
+Wave 3 retry 1 finished 19:43: integrate and products-adapter PASS checks but review VERDICT: ISSUES again (second failure -> user interrupted); lint PASS + review OK. Apply the user's choice (options: 1 orchestrator patches both, 2 one more Codex retry on account 1, 3 recommended: orchestrator patches integrate, products-adapter back to Codex gpt-6-sol medium). Findings: integrate: scan step drops room `warnings` (no WARN lines) and products step does not print `source`; products-adapter: front-role expansion/count requires form_factor=bookshelf (excludes floorstanding), second pass splits pair caps equally instead of upgrading roles individually in order C,L,R,LFE,Ls,Rs. Then GATE 5: `DISPATCH merge -All` (order lint, products-adapter, integrate) -> config.json test = `python -m ruff check . && python -m pytest -q` -> push -> server pull + `docker compose -f deploy/docker-compose.yml up -d --build` -> smoke.sh and `python tools/e2e.py https://144-202-27-51.sslip.io`. Any patch to a branch needs `merge master` if master moved, then `check -Id`.
 
 ## Waiting on user
-Nothing right now (19:39: integrate retry worker done exit 0 in 183 s, its check/review pending; products-adapter retry worker still running; codex account 1 is back at 100%, user may want it for later waves). Pending for later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items now carry `dimensions` for AR once products-adapter merges.
+Which option (1/2/3) for the four remaining review findings. Codex account 1 is back at 100% (account 2 was used for wave 3). Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` once products-adapter merges.
 
 ## SerpApi integration (merged on master, adapter not built yet)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
