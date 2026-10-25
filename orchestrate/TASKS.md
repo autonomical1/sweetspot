@@ -52,3 +52,4 @@ Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as
 | speakerplacer-multicore | Run the speakerplacer search on all CPU cores (process pool, deterministic, SPEAKERPLACER_WORKERS) | gpt-6-sol | high | speakerplacer-speed | 19 | cut | split into mc-pool (new file, starts now) and mc-wire (needs mc-pool + speakerplacer-speed) for speed - user 2026-10-25 |
 | mc-pool | speakerplacer/parallel.py: deterministic process-pool helper + tests (new file only) | gpt-6-sol | medium |  | 18 | done | merged b202b4f; helper not imported yet |
 | mc-wire | Call the pool helper from the speakerplacer search loops, identical results, 2.5x on 4 cores | gpt-6-sol | high | speakerplacer-speed,mc-pool | 19 | blocked | starts after both merge |
+| ios-error-audit | Audit all Swift error/status messages: friendly text only, no internals (central userMessage mapper + private logging) | gpt-5.6-luna | medium |  | 18 | ready | user asked 2026-10-25 (light agent) |
