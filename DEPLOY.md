@@ -1,12 +1,12 @@
 # Sweet Spot deployment
 
-These commands target the Vultr VPS at `144.202.27.51` (Ubuntu 24.04 or newer; **the live server runs Ubuntu 26.04 `resolute`**, which Docker's official repository supports). Run them as a user with `sudo` access; on the live server they were run as `root`, which also works (drop `sudo`).
+These commands target the Vultr VPS at `155.138.175.232` (Ubuntu 24.04 or newer; **the live server runs Ubuntu 26.04 `resolute`**, which Docker's official repository supports). Run them as a user with `sudo` access; on the live server they were run as `root`, which also works (drop `sudo`).
 
 ## Current deployment (2026-10-25)
 
-- URL: **https://sweetspotav.tech** (root `/` redirects to `/app/`). Let's Encrypt certificate issued by Caddy, valid to 2027-01-22, renewed automatically.
+- (Server replaced, see "Rebuild after instance loss" below.) URL: **https://sweetspotav.tech** (root `/` redirects to `/app/`). Let's Encrypt certificate issued by Caddy, valid to 2027-01-22, renewed automatically.
 - Checkout: `/srv/sweetspot` (owned by root), stack: `deploy/docker-compose.yml` (`deploy-api-1`, `deploy-caddy-1`), Docker 29.9, Compose v5.6.
-- `.env`: `/srv/sweetspot/.env` (mode 600) with `DOMAIN=sweetspotav.tech`, `SITE_ADDRESS="sweetspotav.tech, 144-202-27-51.sslip.io"` and `DATA_DIR=/data` set; the Gemini and SerpApi keys are configured.
+- `.env`: `/srv/sweetspot/.env` (mode 600) with `DOMAIN=sweetspotav.tech`, `SITE_ADDRESS="sweetspotav.tech, 155-138-175-232.sslip.io"` and `DATA_DIR=/data` set; the Gemini and SerpApi keys are NOT yet set on the rebuilt server.
 - `deploy/smoke.sh https://sweetspotav.tech`: all checks PASS; the first `optimize` after a restart takes about 25 s, and repeats are instant.
 
 ## Rotating API keys
@@ -60,7 +60,7 @@ git clone https://github.com/autonomical1/sweetspot.git /srv/sweetspot
 cp /srv/sweetspot/.env.example /srv/sweetspot/.env
 chmod 600 /srv/sweetspot/.env
 sed -i 's/^DOMAIN=.*/DOMAIN=sweetspotav.tech/' /srv/sweetspot/.env
-sed -i 's/^SITE_ADDRESS=.*/SITE_ADDRESS="sweetspotav.tech, 144-202-27-51.sslip.io"/' /srv/sweetspot/.env
+sed -i 's/^SITE_ADDRESS=.*/SITE_ADDRESS="sweetspotav.tech, 155-138-175-232.sslip.io"/' /srv/sweetspot/.env
 cd /srv/sweetspot
 docker compose -f deploy/docker-compose.yml up -d --build
 ```
@@ -83,11 +83,11 @@ docker compose -f deploy/docker-compose.yml up -d --build
 
 ## Domain, logs, and data
 
-Create a DNS A record for the new `.tech` hostname pointing to `144.202.27.51`, then update the environment and restart:
+Create a DNS A record for the new `.tech` hostname pointing to `155.138.175.232`, then update the environment and restart:
 
 ```bash
 cd /srv/sweetspot
-sed -i 's/^SITE_ADDRESS=.*/SITE_ADDRESS="yourname.tech, 144-202-27-51.sslip.io"/' .env
+sed -i 's/^SITE_ADDRESS=.*/SITE_ADDRESS="yourname.tech, 155-138-175-232.sslip.io"/' .env
 sed -i 's/^DOMAIN=.*/DOMAIN=yourname.tech/' .env
 docker compose -f deploy/docker-compose.yml up -d
 ```
@@ -139,4 +139,8 @@ hashed JavaScript asset and verifies its JavaScript content type, and fetches
 
 ## Live domain (2026-10-25)
 
-`https://sweetspotav.tech` is live: DNS `@ A 144.202.27.51` (registrar nameservers `tech-domains.venus.orderbox-dns.com`), `/srv/sweetspot/.env` has `DOMAIN=sweetspotav.tech` and `SITE_ADDRESS="sweetspotav.tech, 144-202-27-51.sslip.io"` (the sslip.io host stays as a fallback; the previous file is `.env.bak-pre-domain`). Caddy obtained the Let's Encrypt certificate itself; the first attempt failed because Let's Encrypt's secondary check still saw the old empty DNS answer, and Caddy's automatic retry about a minute later succeeded. Do not restart Caddy repeatedly while a certificate is pending (rate limits). The API keys (`GEMINI_API_KEY`, `SERPAPI_KEY`) and `GEMINI_MODEL=gemini-3.8-flash` are set in the server `.env`, so older notes above saying the keys are empty are out of date.
+`https://sweetspotav.tech` is live: DNS `@ A 155.138.175.232` (registrar nameservers `tech-domains.venus.orderbox-dns.com`), `/srv/sweetspot/.env` has `DOMAIN=sweetspotav.tech` and `SITE_ADDRESS="sweetspotav.tech, 155-138-175-232.sslip.io"` (the sslip.io host stays as a fallback; the previous file is `.env.bak-pre-domain`). Caddy obtained the Let's Encrypt certificate itself; the first attempt failed because Let's Encrypt's secondary check still saw the old empty DNS answer, and Caddy's automatic retry about a minute later succeeded. Do not restart Caddy repeatedly while a certificate is pending (rate limits). The API keys (`GEMINI_API_KEY`, `SERPAPI_KEY`) and `GEMINI_MODEL=gemini-3.8-flash` are set in the server `.env`, so older notes above saying the keys are empty are out of date.
+
+## Rebuild after instance loss (2026-10-25)
+
+The old Vultr instance (`144.202.27.51`) was lost and replaced by a new one at `155.138.175.232` (sslip host `155-138-175-232.sslip.io`). The setup was redone by running the One-time setup steps above as `root`. State now: the stack is up and the sslip.io host works; the `sweetspotav.tech` A record is being corrected to `155.138.175.232`, so its certificate stays pending until DNS propagates (do not restart Caddy repeatedly meanwhile). `GEMINI_API_KEY` and `SERPAPI_KEY` are NOT yet set on the new server (see "Rotating API keys"). All old rooms and photo data were lost with the old instance. Notes above describing the old IP, issued certificate, or configured keys describe the previous server.
