@@ -7,11 +7,10 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 16
-- last_checkpoint: 2026-10-25 03:45
+- last_checkpoint: 2026-10-25 03:58
 
 ## Next action
-User plan (03:36): (1) web-e2e resumed on Codex account 3 (`CODEX_HOME=~/.codex-third`, gpt-5.6-luna medium; background job started 03:40, `DISPATCH start -Id web-e2e`); when it finishes run `check -Id web-e2e`, then review/merge. (2) ios-qr-pairing: its branch predated the fast check, so master was merged into the worktree and `check -Id ios-qr-pairing` re-run in the background (read orchestrate/logs/ios-qr-pairing/test.log); on PASS set the task `review` in TASKS.md (it was `blocked`; the hold is lifted by the user) and `DISPATCH merge -All`. (3) Deploy: `git push origin master`, ssh VPS `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build`, then deploy/smoke.sh + tools/e2e.py on https://144-202-27-51.sslip.io and confirm `pair_url` uses sweetspotav.tech. (4) Only after all of that: browser check of the web app; STOP and wait for the user to scan the QR with their phone and do the scan, while monitoring VPS logs (`docker compose logs -f`) for the pairing/scan POST requests.
-Done this checkpoint: polygon-geometry, polygon-engine, plot2d-patch-depth CUT (user); ios-polish brief gained item 4 (remove the "Found" LabeledContent rows in ScanHistoryView.swift and SweetspotApp.swift); docs-demo/docs-webspec were already merged 02:55 (nothing to run). ios-polish is NOT started (awaits user go). docs/API.md may still contain the polygon outline contract: check and remove if unused.
+ios-qr-pairing MERGED 03:58 (tag demo-ok fe8b2f9; I resolved the Swift conflicts with master's setup-form flow; worktree dir left behind, remove with `git worktree remove --force`). web-e2e RUNNING (background job blxr1zocf, Codex account 3): when it ends run `check -Id web-e2e`, set `review`, `merge -Id web-e2e`. Then DEPLOY: `git push origin master`; ssh root@144.202.27.51 `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build`; deploy/smoke.sh + tools/e2e.py on https://144-202-27-51.sslip.io; confirm `pair_url` uses sweetspotav.tech. Then browser check of the web app and STOP for the user to scan the QR on their phone and do the scan, watching VPS logs (`docker compose logs -f`) for pairing/scan POSTs. Cut by user: polygon-geometry, polygon-engine, plot2d-patch-depth. ios-polish brief has item 4 (remove the "Found" rows) and awaits the user's go. docs/API.md may still hold the polygon outline contract: check.
 
 ## Waiting on user
 Nothing now. Later: the phone QR scan during the browser check.
