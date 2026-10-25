@@ -15,6 +15,8 @@ import httpx
 ROOT = Path(__file__).resolve().parents[1]
 DEMO_ROOM = ROOT / "fixtures" / "room_demo.json"
 ROOMPLAN = ROOT / "fixtures" / "roomplan_sample.json"
+
+
 def _jpeg_bytes() -> bytes:
     """Create a tiny valid image; Pillow is already a backend dependency."""
     from PIL import Image
@@ -50,7 +52,13 @@ def _require(response: Any, status: int = 200) -> Any:
 
 
 def _warnings(payload: Any) -> list[str]:
-    return [str(item) for item in payload.get("warnings", [])] if isinstance(payload, dict) else []
+    if not isinstance(payload, dict):
+        return []
+    warnings = [str(item) for item in payload.get("warnings", [])]
+    metrics = payload.get("metrics")
+    if isinstance(metrics, dict):
+        warnings.extend(str(item) for item in metrics.get("warnings", []))
+    return warnings
 
 
 def run_e2e(client: Any, *, budget: float = 1500.0) -> list[StepResult]:
@@ -136,7 +144,9 @@ def _materials(client: Any, state: dict[str, Any]) -> Any:
 def _optimize(client: Any, state: dict[str, Any]) -> Any:
     room_id = state["room_id"]
     result = _require(client.post(f"/rooms/{room_id}/optimize", json={}))
-    roles = {speaker["role"] for speaker in result["layout"]["speakers"]}
+    speakers = result["layout"]["speakers"]
+    roles = {speaker["role"] for speaker in speakers}
+    assert len(speakers) == 6, speakers
     assert roles == {"L", "R", "C", "LFE", "Ls", "Rs"}, roles
     assert "metrics" in result
     saved = _require(client.get(f"/rooms/{room_id}/layout"))
@@ -149,7 +159,9 @@ def _score(client: Any, state: dict[str, Any]) -> Any:
     room_id = state["room_id"]
     first = _require(client.post(f"/rooms/{room_id}/score", json={"layout": state["layout"]}))
     moved = json.loads(json.dumps(state["layout"]))
-    moved["speakers"][0]["position"][0] += 1.0
+    left = next((speaker for speaker in moved["speakers"] if speaker.get("role") == "L"), None)
+    assert left is not None, "optimized layout has no L speaker"
+    left["position"][0] += 1.0
     second = _require(client.post(f"/rooms/{room_id}/score", json={"layout": moved}))
     assert isinstance(first.get("metrics"), dict) and isinstance(second.get("metrics"), dict)
     return second
