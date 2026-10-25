@@ -656,6 +656,12 @@ final class Flow: ObservableObject {
     @Published var roomFrame: RoomFrame?
     @Published var photoTargets: [PhotoTarget] = []
     @Published var photoIndex = 0
+    @Published private(set) var isClassifying = false
+    @Published private(set) var isUploadingPhoto = false
+    @Published private(set) var classifyElapsedSeconds = 0
+    @Published private(set) var retryCountdown: Int?
+    @Published var classificationError: String?
+    @Published private(set) var materialsCaption: String?
     @Published var productItems: [ProductItem] = []
     @Published var productWarnings: [String] = []
     @Published var productsLoading = false
@@ -1033,22 +1039,87 @@ final class Flow: ObservableObject {
     }
 
     func classify() async {
-        guard let roomID else { return }
+        await runClassification(checkStatus: false)
+    }
+
+    func checkMaterialsStatus() async {
+        await runClassification(checkStatus: true)
+    }
+
+    private func runClassification(checkStatus: Bool) async {
+        guard let roomID, !isClassifying, !isUploadingPhoto else { return }
+        isClassifying = true
+        classifyElapsedSeconds = 0
+        retryCountdown = nil
+        classificationError = nil
+        var elapsedTask: Task<Void, Never>?
+        defer {
+            elapsedTask?.cancel()
+            retryCountdown = nil
+            isClassifying = false
+        }
+
+        if checkStatus {
+            do {
+                let status = try await backend.materialsStatus(roomID: roomID)
+                guard status.state == "running" else { return }
+                classifyElapsedSeconds = max(0, Int(status.elapsed_s ?? 0))
+            } catch {
+                if !Task.isCancelled { self.error = error.localizedDescription }
+                return
+            }
+        }
+
+        elapsedTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                if !Task.isCancelled { classifyElapsedSeconds += 1 }
+            }
+        }
 
         do {
-            materials = try await backend.classify(roomID: roomID).surfaces
+            if checkStatus {
+                var state = "running"
+                while state == "running" {
+                    try await Task.sleep(nanoseconds: 2_000_000_000)
+                    state = try await backend.materialsStatus(roomID: roomID).state ?? "idle"
+                }
+            }
+            let response: MaterialsResponse
+            do {
+                response = try await backend.classify(roomID: roomID)
+            } catch BackendError.busy(_, let seconds) {
+                for remaining in stride(from: seconds, through: 1, by: -1) {
+                    retryCountdown = remaining
+                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                }
+                retryCountdown = nil
+                do {
+                    response = try await backend.classify(roomID: roomID)
+                } catch {
+                    if !Task.isCancelled { classificationError = error.localizedDescription }
+                    return
+                }
+            }
+            try Task.checkCancellation()
+            materials = response.surfaces
+            materialsCaption = response.status == "cached" ? "Used saved results" : nil
             phase = .results
         } catch {
+            guard !Task.isCancelled else { return }
             self.error = error.localizedDescription
             phase = .results
         }
     }
 
     func uploadPhoto(surfaceID: String, image: UIImage) async {
+        guard !isClassifying, !isUploadingPhoto else { return }
         guard let roomID, let jpeg = image.sweetspotJPEG() else {
             error = "Could not prepare photo."
             return
         }
+        isUploadingPhoto = true
+        defer { isUploadingPhoto = false }
 
         do {
             try await backend.uploadPhoto(
@@ -1364,6 +1435,7 @@ struct PhotosStep: View {
                     Button("Take photo") {
                         showCamera = true
                     }
+                    .disabled(flow.isClassifying || flow.isUploadingPhoto)
                     .sheet(isPresented: $showCamera) {
                         CameraCapture { image in
                             guard let image else { return }
@@ -1388,15 +1460,34 @@ struct PhotosStep: View {
                 }
             }
 
+            if flow.isClassifying {
+                ProgressView()
+                Text("Waiting on Gemini to classify your photos... this can take up to 30 seconds")
+                Text("\(flow.classifyElapsedSeconds) s elapsed")
+                    .foregroundStyle(.secondary)
+                if let seconds = flow.retryCountdown {
+                    Text("Gemini is busy. Trying again in \(seconds) s")
+                }
+            }
+
+            if let error = flow.classificationError {
+                Text(error).foregroundStyle(.red)
+                Button("Retry") { Task { await flow.classify() } }
+                    .disabled(flow.isClassifying || flow.isUploadingPhoto)
+            }
+
             Button("Finish photos and classify") {
                 Task { await flow.classify() }
             }
+            .disabled(flow.isClassifying || flow.isUploadingPhoto)
 
             Button("Skip photos and continue") {
                 Task { await flow.classify() }
             }
+            .disabled(flow.isClassifying || flow.isUploadingPhoto)
         }
         .navigationTitle("Surface photos")
+        .task { await flow.checkMaterialsStatus() }
     }
 }
 
@@ -1422,6 +1513,10 @@ struct ResultsScreen: View {
                 Text("\(material.material) · \(Int(material.confidence * 100))%")
             }
 
+            if let caption = flow.materialsCaption {
+                Text(caption).font(.caption).foregroundStyle(.secondary)
+            }
+
             Stepper(value: $budget, in: 100...20000, step: 100) {
                 Text("Budget: \(budget, format: .currency(code: "USD"))")
             }
@@ -1440,7 +1535,7 @@ struct ResultsScreen: View {
         .navigationTitle("Results")
         .onAppear { flow.setBudget(budget) }
         .onChange(of: budget) { _, value in flow.setBudget(value) }
-        .sheet(isPresented: $showingShop) { ProductsView(flow: flow) }
+        .navigationDestination(isPresented: $showingShop) { ProductsView(flow: flow) }
     }
 }
 
@@ -1492,6 +1587,6 @@ struct ARLayoutScreen: View {
             }
         }
         .navigationTitle("AR layout")
-        .sheet(isPresented: $showingShop) { ProductsView(flow: flow) }
+        .navigationDestination(isPresented: $showingShop) { ProductsView(flow: flow) }
     }
 }

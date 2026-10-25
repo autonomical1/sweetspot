@@ -38,7 +38,7 @@ def test_materials_mock_persistence_and_idempotence(data_dir, monkeypatch):
     client, room_id = _client(monkeypatch)
     route = f"/rooms/{room_id}/materials"
     assert client.post("/rooms/r_missing/materials", json={}).status_code == 404
-    assert client.post(route, json={}).json() == {"surfaces": []}
+    assert client.post(route, json={}).json() == {"surfaces": [], "status": "fresh"}
     initial = {s["id"]: s for s in client.get(f"/rooms/{room_id}").json()["surfaces"]}
     _upload(client, room_id, "floor")
     _upload(client, room_id, "wall_n")
@@ -46,8 +46,14 @@ def test_materials_mock_persistence_and_idempotence(data_dir, monkeypatch):
     assert first == {"surfaces": [
         {"surface_id": "floor", "material": "hardwood", "confidence": 0.9, "applied": True},
         {"surface_id": "wall_n", "material": "drywall", "confidence": 0.8, "applied": True},
-    ]}
-    assert client.post(route, json={}).json() == first
+    ], "status": "fresh"}
+    assert client.post(route, json={}).json() == {**first, "status": "cached"}
+    reset = store.load_room(room_id)
+    floor = next(surface for surface in reset.surfaces if surface.id == "floor")
+    floor.material = "drywall"
+    floor.absorption = materials.ABSORPTION["drywall"].copy()
+    store.save_room(reset)
+    assert client.post(route, json={}).json()["status"] == "cached"
     saved = {s.id: s for s in store.load_room(room_id).surfaces}
     assert saved["floor"].material == "hardwood"
     assert saved["floor"].absorption == materials.ABSORPTION["hardwood"]
@@ -67,5 +73,12 @@ def test_low_confidence_and_unknown_not_applied(data_dir, monkeypatch):
     assert store.load_room(room_id).surfaces[4].model_dump() == original
     monkeypatch.setattr(materials, "classify_materials", lambda photos: [
         {"surface_id": "floor", "material": "unknown", "confidence": 1.0}])
+    _upload(client, room_id, "floor", _colored_image("red"))
     assert client.post(f"/rooms/{room_id}/materials", json={}).json()["surfaces"][0]["applied"] is False
     assert store.load_room(room_id).surfaces[4].model_dump() == original
+
+
+def _colored_image(color):
+    stream = io.BytesIO()
+    Image.new("RGB", (30, 20), color).save(stream, "PNG")
+    return stream.getvalue()

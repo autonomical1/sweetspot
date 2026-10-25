@@ -56,7 +56,6 @@ extension UIImage {
 
 struct ProductsView: View {
     @ObservedObject var flow: Flow
-    @Environment(\.dismiss) private var dismiss
     @State private var selectedItem: ProductItem?
     @State private var showWarnings = false
 
@@ -70,59 +69,52 @@ struct ProductsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if flow.productsLoading && !flow.productsLoaded {
-                    VStack(spacing: 12) {
-                        ProgressView()
-                        Text("Finding products...")
-                    }
-                } else if let error = flow.productsError {
-                    message(error)
-                } else if flow.productsLoaded && flow.productItems.isEmpty {
-                    message("No products fit this budget. Try another budget and retry.")
-                } else if flow.productsLoaded {
-                    List {
-                        Section {
-                            let total = chosenTotal(items: flow.productItems)
-                            HStack {
-                                Text("Total")
-                                Spacer()
-                                Text(total, format: .currency(code: "USD"))
-                                    .foregroundStyle(total <= flow.budget ? .green : .red)
-                            }
-                            Text("Budget: \(flow.budget, format: .currency(code: "USD"))")
-                                .foregroundStyle(.secondary)
+        Group {
+            if flow.productsLoading && !flow.productsLoaded {
+                VStack(spacing: 12) {
+                    ProgressView()
+                    Text("Finding products...")
+                }
+            } else if let error = flow.productsError {
+                message(error)
+            } else if flow.productsLoaded && flow.productItems.isEmpty {
+                message("No products fit this budget. Try another budget and retry.")
+            } else if flow.productsLoaded {
+                List {
+                    Section {
+                        let total = chosenTotal(items: flow.productItems)
+                        HStack {
+                            Text("Total")
+                            Spacer()
+                            Text(total, format: .currency(code: "USD"))
+                                .foregroundStyle(total <= flow.budget ? .green : .red)
                         }
-                        if !flow.productWarnings.isEmpty {
-                            Section {
-                                DisclosureGroup("Warnings (\(flow.productWarnings.count))", isExpanded: $showWarnings) {
-                                    ForEach(flow.productWarnings, id: \.self) { warning in
-                                        Text(warning).font(.footnote)
-                                    }
+                        Text("Budget: \(flow.budget, format: .currency(code: "USD"))")
+                            .foregroundStyle(.secondary)
+                    }
+                    if !flow.productWarnings.isEmpty {
+                        Section {
+                            DisclosureGroup("Warnings (\(flow.productWarnings.count))", isExpanded: $showWarnings) {
+                                ForEach(flow.productWarnings, id: \.self) { warning in
+                                    Text(warning).font(.footnote)
                                 }
                             }
                         }
-                        Section("Recommended setup") {
-                            ForEach(orderedItems) { item in
-                                productRow(item)
-                            }
+                    }
+                    Section("Recommended setup") {
+                        ForEach(orderedItems) { item in
+                            productRow(item)
                         }
                     }
-                } else {
-                    ProgressView("Finding products...")
                 }
+            } else {
+                ProgressView("Finding products...")
             }
-            .navigationTitle("Shop this setup")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
-            }
-            .sheet(item: $selectedItem) { item in
-                if let current = flow.productItems.first(where: { $0.role == item.role }) {
-                    alternativesView(for: current)
-                }
+        }
+        .navigationTitle("Shop")
+        .sheet(item: $selectedItem) { item in
+            if let current = flow.productItems.first(where: { $0.role == item.role }) {
+                alternativesView(for: current)
             }
         }
         .task(id: flow.productsGeneration) { await flow.loadProducts() }
