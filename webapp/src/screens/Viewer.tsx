@@ -42,7 +42,9 @@ export function Viewer({ roomId, initialView, navigate }: Props) {
 
   useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(config)); }, [config]);
   useEffect(() => { setViewMode(initialView); }, [initialView, setViewMode]);
-  useEffect(() => { if (roomId && room?.room_id !== roomId) void loadRoom(roomId); }, [roomId, room?.room_id, loadRoom]);
+  useEffect(() => {
+    if (roomId && useAppStore.getState().room?.room_id !== roomId) void loadRoom(roomId);
+  }, [roomId, loadRoom]);
 
   const importJson = async (file?: File) => {
     if (!file) return;

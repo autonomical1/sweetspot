@@ -65,6 +65,18 @@ export interface Metrics {
 export interface LayoutResult { layout: Layout; metrics: Metrics }
 export interface ScoreResult { metrics: Metrics }
 
+export interface ProductAlternative {
+  title: string;
+  price: number;
+  link: string;
+  seller: string | null;
+  thumbnail: string | null;
+  source: string;
+  specs: Record<string, string>;
+  dimensions: { width: number; height: number; depth: number; source: 'listing' | 'default' } | null;
+  price_delta: number;
+}
+
 export interface Product {
   role: string;
   title: string;
@@ -78,7 +90,7 @@ export interface Product {
   dimensions?: { width: number; height: number; depth: number; source: 'listing' | 'default' } | null;
   pair_with?: string | null;
   included_in?: string;
-  alternatives?: Array<Product & { price_delta: number }>;
+  alternatives?: ProductAlternative[];
 }
 export interface ProductsResult { budget: number; total: number; items: Product[]; warnings?: string[] }
 
