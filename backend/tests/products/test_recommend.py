@@ -1,14 +1,19 @@
+import json
 import os
 import time
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
+from backend.app.engine import run_optimize
 from backend.app.main import app
+from backend.app.schemas import Room
 from backend.tests.contract.checks import assert_valid_products
 from products import catalog, get_products
-from products.db import SEED
+from products.db import SEED, connect, working_path
 from products.dimensions import dimensions
+from products.recommend import _candidates, _choice
 from products.value import quality
 
 ROLES = ("L", "R", "C", "LFE", "Ls", "Rs")
@@ -73,10 +78,10 @@ def test_value_pick_and_second_pass(small_db):
     result = get_products({"speakers": [{"role": "C"}]}, 130)
     assert "Better" in result["items"][0]["title"] or "Premium" in result["items"][0]["title"]
     result = get_products({"speakers": [{"role": "C"}, {"role": "LFE"}]}, 130)
-    assert "Better" in result["items"][0]["title"]
+    assert "Premium" in result["items"][0]["title"]
 
 
-def test_second_pass_keeps_higher_value_pick(small_db):
+def test_second_pass_upgrades_for_quality(small_db):
     catalog.save_listings(small_db, "speaker value", "speaker", [
         listing("Good Bookshelf Speaker 100W", 70, rating=4.0, reviews=100),
         listing("Slightly Better Bookshelf Speaker 100W", 105, rating=4.5, reviews=100),
@@ -86,7 +91,7 @@ def test_second_pass_keeps_higher_value_pick(small_db):
     ])
     result = get_products({"speakers": [{"role": "C"}, {"role": "LFE"}]}, 200)
     by_role = {item["role"]: item for item in result["items"]}
-    assert by_role["C"]["title"] == "Good Bookshelf Speaker 100W"
+    assert by_role["C"]["title"] == "Slightly Better Bookshelf Speaker 100W"
 
 
 def test_front_floorstanding_count_does_not_expand_speakers(small_db, monkeypatch):
@@ -228,6 +233,38 @@ def test_seed_catalog(tmp_path, monkeypatch, budget, screen):
     assert {item["role"] for item in result["items"]} >= set(ROLES)
     assert all(item["dimensions"] and isinstance(item["specs"], dict) for item in result["items"])
     assert (tmp_path / "av_prices.db").exists() and SEED.is_file()
+
+
+def test_demo_seed_spend_and_caps(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.delenv("AV_DB", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("SERPAPI_KEY", raising=False)
+    room = Room.model_validate(json.loads(Path("fixtures/room_demo.json").read_text()))
+    demo_layout = run_optimize(room)["layout"]
+    for budget, minimum in [(500, 0), (1500, 1100), (4000, 2400)]:
+        result = get_products(demo_layout, budget)
+        assert minimum <= result["total"] <= budget
+        assert_valid_products(result, budget, demo_layout)
+        shares = {"C": 3, "L": 2, "R": 2, "LFE": 2, "Ls": 1, "Rs": 1,
+                  "screen": 1, "projector": 1}
+        unit = budget / sum(shares.values())
+        for item in result["items"]:
+            factor = shares[item["role"]]
+            if item.get("pair_with"):
+                factor += shares[item["pair_with"]]
+            assert item["price"] <= 2 * factor * unit + 0.001
+        if budget == 1500:
+            by_role = {item["role"]: item for item in result["items"]}
+            assert by_role["C"]["price"] >= (by_role["L"]["price"] + by_role["R"]["price"]) / 2
+            assert sum(item["price"] > 0 for item in result["items"] if item["role"] in ROLES) >= 5
+            with connect(working_path()) as conn:
+                first_center = _choice(_candidates(conn, "speaker"), ("C",), 3 * unit,
+                                       demo_layout["screen"])["C"]
+                first_sub = _choice(_candidates(conn, "subwoofer"), ("LFE",), 2 * unit,
+                                    demo_layout["screen"])["LFE"]
+            assert by_role["C"]["price"] > first_center["price"]
+            assert by_role["LFE"]["price"] > first_sub["price"]
 
 
 def test_demo_api_uses_catalog(tmp_path, monkeypatch):
