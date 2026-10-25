@@ -258,6 +258,7 @@ struct ARLayoutView: UIViewRepresentable {
     /// the scan's world coordinate frame, so no manual alignment is needed.
     let scanSession: ARSession?
     let layout: Layout
+    let products: [ProductItem]
     let roomWidthFeet: Double?
     let roomFrame: RoomFrame?
     let sharedScanFrame: Bool
@@ -339,6 +340,9 @@ struct ARLayoutView: UIViewRepresentable {
             } else if alignmentState != "Aligned to scan" {
                 alignmentState = "Aligned to scan"
             }
+        } else if let transform = context.coordinator.lastTransform,
+                  alignmentState == "Aligned" {
+            context.coordinator.draw(layout: layout, transform: transform)
         }
     }
 
@@ -353,6 +357,7 @@ struct ARLayoutView: UIViewRepresentable {
         var parent: ARLayoutView
         weak var view: ARView?
         var points: [SIMD3<Float>] = []
+        var lastTransform: simd_float4x4?
         private var didStartSession = false
 
         init(parent: ARLayoutView) {
@@ -460,6 +465,7 @@ struct ARLayoutView: UIViewRepresentable {
 
         func draw(layout: Layout, transform: simd_float4x4) {
             guard let view else { return }
+            lastTransform = transform
 
             view.scene.anchors.removeAll()
             let anchor = AnchorEntity(world: transform)
@@ -471,8 +477,23 @@ struct ARLayoutView: UIViewRepresentable {
                     Float(speaker.position[2] * 0.3048)
                 )
 
+                let dimensions = parent.products.first { $0.role == speaker.role }?.dimensions
+                let validDimensions = dimensions.flatMap { value -> SIMD3<Float>? in
+                    guard value.width > 0, value.height > 0, value.depth > 0 else { return nil }
+                    return SIMD3(
+                        Float(value.width * 0.3048),
+                        Float(value.height * 0.3048),
+                        Float(value.depth * 0.3048)
+                    )
+                }
+                let markerMesh: MeshResource
+                if let validDimensions {
+                    markerMesh = .generateBox(size: validDimensions)
+                } else {
+                    markerMesh = .generateSphere(radius: 0.09)
+                }
                 let marker = ModelEntity(
-                    mesh: .generateSphere(radius: 0.09),
+                    mesh: markerMesh,
                     materials: [
                         SimpleMaterial(
                             color: .orange,
@@ -482,6 +503,16 @@ struct ARLayoutView: UIViewRepresentable {
                     ]
                 )
                 marker.position = position
+                if validDimensions != nil, speaker.aim.count == 3 {
+                    let dx = Float(speaker.aim[0] - speaker.position[0])
+                    let dz = Float(speaker.aim[2] - speaker.position[2])
+                    if abs(dx) + abs(dz) > 0.0001 {
+                        marker.orientation = simd_quatf(
+                            angle: atan2(-dx, -dz),
+                            axis: SIMD3<Float>(0, 1, 0)
+                        )
+                    }
+                }
                 anchor.addChild(marker)
 
                 let stem = ModelEntity(
