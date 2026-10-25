@@ -11,6 +11,7 @@ from .db import connect, working_path
 from .dimensions import dimensions
 from .expand import expand
 from .value import PRICE_PENALTY, quality, value
+from .variety import family_key, model_key, same_family
 
 ORDER = ("C", "L", "R", "LFE", "Ls", "Rs", "screen", "projector")
 WEIGHTS = {"C": 3, "L": 2, "R": 2, "LFE": 2, "Ls": 1, "Rs": 1, "screen": 1, "projector": 1}
@@ -66,6 +67,53 @@ def _choice(rows: list[dict], roles: tuple[str, ...], cap: float, screen: dict |
                  >= sum(value(row, role, cap / 2, screen) for row, role in zip(singles, roles, strict=True)) / 2):
         return {first: pair, second: pair}
     return {role: row for role, row in zip(roles, singles, strict=True) if row}
+
+
+def _center_rows(rows: list[dict], front: dict, cap: float) -> list[dict]:
+    eligible = [row for row in rows if row["price"] <= cap and not PAIR.search(row["title"])]
+    series = [row for row in eligible if same_family(row, front)]
+    if series:
+        return series
+    brand = family_key(front)[0]
+    branded = [row for row in eligible if family_key(row)[0] == brand] if brand else []
+    return branded or rows
+
+
+def _surround_rows(rows: list[dict], front: dict, cap: float, screen: dict | None) -> list[dict]:
+    eligible = [row for row in rows if row["price"] <= cap]
+    if not eligible:
+        return rows
+    best = max(quality(row, "Ls", screen) for row in eligible)
+    different = [row for row in eligible if model_key(row) != model_key(front)
+                 and quality(row, "Ls", screen) >= 0.85 * best]
+    return different if different else rows
+
+
+def _valid_variety(picks: dict, catalog: dict, shares: dict, screen: dict | None,
+                   surround_scores: dict[float, tuple[float, set[str]]]) -> bool:
+    selected = {role: row for choice in picks.values() for role, row in choice.items()}
+    front = selected.get("L") or selected.get("R")
+    if selected.get("L") and selected.get("R") and model_key(selected["L"]) != model_key(selected["R"]):
+        return False
+    if not front:
+        return True
+    center = selected.get("C")
+    if center and center not in _center_rows(catalog["speaker"], front, center["price"]):
+        return False
+    for role in ("Ls", "Rs"):
+        row = selected.get(role)
+        if not row:
+            continue
+        paired = row is selected.get("Rs") and role == "Ls" and bool(PAIR.search(row["title"]))
+        cap = 2 * (shares["Ls"] + shares.get("Rs", 0)) if paired else 2 * shares[role]
+        best, good_models = surround_scores[cap]
+        row_model = model_key(row)
+        if (row_model == model_key(front) and any(key != row_model for key in good_models)
+                or row_model != model_key(front) and quality(row, role, screen) < 0.85 * best):
+            return False
+    if selected.get("Ls") and selected.get("Rs") and model_key(selected["Ls"]) != model_key(selected["Rs"]):
+        return False
+    return True
 
 
 def _cost(choice: dict) -> float:
@@ -151,6 +199,33 @@ def _item(role: str, row: dict, screen: dict | None, pair_with: str | None) -> d
             **({"pair_with": pair_with} if pair_with else {})}
 
 
+def _alternatives(role: str, row: dict, rows: list[dict], cap: float, total: float,
+                  budget: float, screen: dict | None, paired: bool) -> list[dict]:
+    candidates = [other for other in rows if other["price"] <= cap + 0.001
+                  and total - row["price"] + other["price"] <= budget + 0.001
+                  and bool(PAIR.search(other["title"])) == paired
+                  and model_key(other) != model_key(row)]
+    unique = {}
+    for other in candidates:
+        key = model_key(other)
+        if key not in unique or value(other, role, cap, screen) > value(unique[key], role, cap, screen):
+            unique[key] = other
+    candidates = list(unique.values())
+    cheaper = [other for other in candidates if other["price"] < row["price"]]
+    pricier = [other for other in candidates if other["price"] > row["price"]]
+    result = []
+    if cheaper:
+        result.append(max(cheaper, key=lambda other: value(other, role, cap, screen)))
+    if pricier:
+        result.append(max(pricier, key=lambda other: quality(other, role, screen)))
+    remaining = [other for other in candidates if other not in result]
+    if remaining:
+        result.append(max(remaining, key=lambda other: value(other, role, cap, screen)))
+    return [{key: value_ for key, value_ in _item(role, other, screen, None).items()
+             if key not in {"role", "pair_with"}} | {"price_delta": round(other["price"] - row["price"], 2)}
+            for other in sorted(result, key=lambda other: other["price"])]
+
+
 def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None) -> dict:
     budget = max(0.0, float(budget))
     roles = [role for role in ORDER if role in {speaker.get("role") for speaker in layout.get("speakers", [])}
@@ -187,11 +262,32 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
     if requests and not any("skipped" in warning for warning in warnings):
         with connect(path) as conn:
             catalog = {category: _candidates(conn, category) for category in catalog}
+    groups.sort(key=lambda group: 0 if group[0] == "L" else 1 if group[0] == "C" else 2)
     picks = {}
     for group in groups:
         cap = sum(shares[role] for role in group)
-        picks[group] = _choice(catalog[_category(group[0])], group, cap, screen)
+        rows = catalog[_category(group[0])]
+        front = next((choice["L"] for choice in picks.values() if "L" in choice), None)
+        if front and group[0] == "C":
+            rows = _center_rows(rows, front, cap)
+        elif front and group[0] == "Ls":
+            varied = _surround_rows(rows, front, cap, screen)
+            if len(_choice(varied, group, cap, screen)) == len(group):
+                rows = varied
+        picks[group] = _choice(rows, group, cap, screen)
     total = sum(_cost(choice) for choice in picks.values())
+    surround_scores = {}
+    for role in ("Ls", "Rs"):
+        if role not in shares:
+            continue
+        caps = [2 * shares[role]]
+        if role == "Ls" and "Rs" in shares:
+            caps.append(2 * (shares["Ls"] + shares["Rs"]))
+        for cap in caps:
+            eligible = [row for row in catalog["speaker"] if row["price"] <= cap]
+            best = max((quality(row, role, screen) for row in eligible), default=0)
+            surround_scores[cap] = (best, {model_key(row) for row in eligible
+                                          if quality(row, role, screen) >= 0.85 * best})
     while True:
         best_upgrade = None
         best_ratio = float("-inf")
@@ -201,6 +297,10 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
             by_role = {}
             for role, candidate in _upgrades(old, group, catalog[_category(group[0])], shares,
                                              budget - total, screen):
+                if (group[0] in {"L", "C", "Ls"}
+                        and not _valid_variety({**picks, group: candidate}, catalog, shares,
+                                               screen, surround_scores)):
+                    continue
                 gain = _choice_quality(candidate, screen) - old_quality
                 if gain <= 0.000001:
                     continue
@@ -231,6 +331,13 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
             continue
         partner = {"L": "R", "R": "L", "Ls": "Rs", "Rs": "Ls"}.get(role)
         paired = partner if partner and selected.get(partner) is row and PAIR.search(row["title"]) else None
-        items.append(_item(role, row, screen, paired))
+        item = _item(role, row, screen, paired)
+        if paired and role in {"R", "Rs"}:
+            item["alternatives"] = []
+        else:
+            cap = 2 * (shares[role] + shares[paired]) if paired else 2 * shares[role]
+            item["alternatives"] = _alternatives(role, row, catalog[_category(role)], cap, total,
+                                                  budget, screen, bool(paired))
+        items.append(item)
     return {"budget": budget, "total": round(sum(item["price"] for item in items), 2), "items": items,
             "warnings": warnings}
