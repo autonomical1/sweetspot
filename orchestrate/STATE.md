@@ -6,14 +6,14 @@
 - phase: integrate   # discover | spec | plan | build | integrate | polish | done
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
-- wave: 3
-- last_checkpoint: 2026-10-24 21:05
+- wave: 4
+- last_checkpoint: 2026-10-24 21:20
 
 ## Next action
-Wave 3 merged (lint, products-adapter, integrate; demo-ok at 54bb9b1); master verified: `python -m ruff check . && python -m pytest -q` = 273 passed; config.json test now includes ruff. Push master, then on the server: `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build` (keys already in /srv/sweetspot/.env), then `bash deploy/smoke.sh https://144-202-27-51.sslip.io` and `python tools/e2e.py https://144-202-27-51.sslip.io`; Gemini gemini-3.8-flash verified live (credits added); re-check materials and live SerpApi expansion in e2e. Then GATE 6 prep: integration phase leftovers = web app (webapp/, teammate), real iOS scan, DEMO.md rehearsal.
+Wave 3 is merged, pushed and deployed (master verified 273 tests + ruff; live smoke and e2e PASS; Gemini gemini-3.8-flash verified with credits). Wave 4 = `products-spend` (gpt-6-sol medium, MAIN Codex account, dispatched about 21:20 via background `run-wave -Review`): demo room at 1500 USD totals only 521 USD, so the task lowers the price penalty to 0.15, adds a greedy upgrade loop and a 2x share cap (targets in its BRIEF). When it exits: read the summary and review; PASS + OK -> `DISPATCH merge -All`, then `python -m ruff check . && python -m pytest -q`, push, server `git pull && docker compose -f deploy/docker-compose.yml up -d --build`, check `GET /rooms/{id}/products?budget=1500` totals on the live server (first products request after a deploy takes ~20 s while expansion fills the working DB; warm it before demos). ISSUES -> one retry, then ask the user. Remaining project work: web app (teammate), 3D model (teammate), real iOS scan, DEMO.md rehearsal, .tech domain.
 
 ## Waiting on user
-Nothing blocking. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` (feet, listing-parsed or default) and `pair_with` for AR; 3D model teammate can read the same room/layout JSON.
+Nothing right now. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py and that catalog.py now defaults to gemini-3.8-flash; tell the web and 3D teammates product items carry `dimensions` (feet) and `pair_with`.
 
 ## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
