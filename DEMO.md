@@ -22,7 +22,8 @@
 
 | Symptom | What to do | Verify |
 |---|---|---|
-| Gemini key missing/invalid or Gemini returns 429 busy | Continue; materials fall back to `unknown`. Repeated taps join one request, and identical photos are cached. | Retry after the returned retry time; `python tools/e2e.py https://sweetspotav.tech` passes the materials step. |
+| Gemini key missing/invalid | Continue; materials fall back to `unknown`. | The materials response contains `surfaces`; continue with the demo. |
+| Gemini returns 429 busy | Wait for the returned `Retry-After` time and retry materials; this response has no `surfaces` fallback. Repeated taps join one request, and identical photos are cached. | Retry succeeds, then `python tools/e2e.py https://sweetspotav.tech` passes the materials step. |
 | Gemini UI is still waiting | The "Waiting on Gemini" progress UI and disabled buttons are **pending (after ios-phone_context)**; use the saved scan and wait/retry manually. | Confirm the materials response returns `surfaces`. |
 | SerpApi quota exhausted | Continue with the products fallback and its warning. | Products still satisfy `total <= budget`. |
 | Phone offline | Use the saved scan or load the fixture with `POST /rooms/demo`. | Run the e2e command and confirm scan/demo optimization passes. |

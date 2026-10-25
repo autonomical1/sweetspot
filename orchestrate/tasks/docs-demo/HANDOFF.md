@@ -10,7 +10,11 @@
 ## Unfinished
 
 - No code changes were made. `python -m ruff check .` passed.
-- `python -m pytest -q` was started but produced many existing errors/failures and then hung during the suite; it was interrupted after the progress output stopped. No test files were changed.
+- `python -m pytest -q` was rerun and again reached 39 passing tests before stalling with no further output; it was interrupted. No test files were changed.
+
+## Review correction
+
+- Corrected the Gemini 429 drill: the server returns HTTP 429 with `Retry-After`/`retry_after_s` and no `surfaces`, so the presenter must wait and retry rather than continue with an `unknown` fallback.
 
 ## Design questions
 
