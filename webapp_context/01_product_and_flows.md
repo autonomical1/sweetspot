@@ -30,7 +30,7 @@ Layout (desktop first, works down to 1280 x 720 for projectors):
 - **Status line:** last action, loading spinners, errors (dismissible red banner with the server's `detail`).
 
 States:
-- **Optimizing** (about 8 s): keep the room visible, show a progress overlay "Computing the best placement..." with an indeterminate bar; disable drag until done. Never block the whole page.
+- **Optimizing**: show the quick layout immediately with a small "refining in 3D..." indicator; keep the room visible and never block the whole page. The refined result may arrive later and replace the quick layout.
 - **No layout yet** (room loaded, optimize not run or failed): show the room and listener, a primary "Place my speakers" button.
 - **Error**: banner + keep the last good state.
 
@@ -43,6 +43,7 @@ Same as the viewer, loaded from the hash: `GET /rooms/{id}` then `GET /rooms/{id
 - **Nudge the listener** (P2): drag the listener marker; on drop `PATCH /rooms/{id}/listener` with `{position, facing}` then re-run optimize (ask first: "Re-optimize for the new seat?").
 - **Budget**: number input with $ prefix, default `room.budget` or 1500; **Get products** -> `GET /rooms/{id}/products?budget=`.
 - **Toggle 2D/3D** keeps the selection, the current layout (including unsaved drags) and the panel state.
+- The first-time flow shows the quick layout as soon as it is returned, then swaps in the refined 3D layout when available.
 
 ## The pitch demo path (must be flawless)
 1. Laptop on `/app/`, click **Pair your iPhone**; QR on the projector.
@@ -54,4 +55,4 @@ Same as the viewer, loaded from the hash: `GET /rooms/{id}` then `GET /rooms/{id
 Fallback at any step: **Use demo room** gives the same flow without the phone.
 
 ## Visual direction
-Dark theme (projectors), one accent colour, generous type (base 16 px, panel numbers 20+ px). Role colours, used identically in 2D, 3D and the panel: L `#4F8EF7`, R `#E5534B`, C `#F2C744`, LFE `#9B6CF0`, Ls `#3BB58E`, Rs `#F28C38`; listener white; screen light grey; treatment patches amber at 35% opacity; reflections: line width and opacity by `level_db` (louder = thicker/brighter). Respect `prefers-reduced-motion` (no auto-orbit).
+Dark theme (projectors), one accent colour, generous type (base 16 px, panel numbers 20+ px). LIVE role colours, used identically in 2D, 3D and the panel: L `#4F8EF7`, R `#E5534B`, C `#F2C744`, LFE `#9B6CF0`, Ls `#3BB58E`, Rs `#F28C38`; listener white; screen light grey; treatment patches amber at 35% opacity; reflections: line width and opacity by `level_db` (louder = thicker/brighter). SUGGESTED colours for LIVE roles: Lss `#37A889`, Rss `#F08A3C`, Lrs `#2C8E78`, Rrs `#D96B35`, Ltf `#8A7BE8`, Rtf `#B06BE0`, Ltr `#6D63C7`, Rtr `#9560C5`, Ltm `#6E9BEA`, Rtm `#D3759A`, LFE2 `#7D55C7`; receiver `#7D8796`, projector `#B7BDC7`, TV `#D1A85A`, mount `#8C949E`, HDMI `#6C7480`, speaker wire `#59616C`. Keep the suggested palette visually consistent but do not require it for LIVE 5.1. Respect `prefers-reduced-motion` (no auto-orbit).
