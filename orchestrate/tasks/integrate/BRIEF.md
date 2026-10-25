@@ -39,3 +39,8 @@ Changing backend endpoints or fixtures (if the API disagrees with docs/API.md, r
 - tools/e2e.py:139 the optimize step must verify there are exactly six speakers whose roles are exactly {L,R,C,LFE,Ls,Rs} (no duplicates).
 - tools/e2e.py:152 the score step must move the speaker whose `role == "L"`, not the first speaker in the list (order is not guaranteed).
 Add or extend tests for each (fake client responses). Keep `ruff check tools/e2e.py backend/tests/e2e` and the full suite green.
+
+## Retry 2: review findings to fix (all valid)
+- tools/e2e.py:195-198 the scan step must keep the room response and print its `warnings` as WARN lines.
+- tools/e2e.py:180-185 the products step must report the provider: print the distinct item `source` values (e.g. `source=stub` or `source=google_shopping`) in the step detail.
+Add tests (fake client) for both. Keep ruff and the full suite green.
