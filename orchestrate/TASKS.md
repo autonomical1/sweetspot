@@ -27,6 +27,7 @@
 | gemini-limits | Backend: join duplicate materials requests, 10 min cache, Gemini rate limit (429 + Retry-After), GET materials/status | gpt-6-sol | medium |  | 8 | blocked | PAUSED 23:30 for engine priority (user). Worker already finished and committed on branch task/gemini-limits; review not run. Resume: `DISPATCH review -Id gemini-limits` (or `check -Id` first), then merge |
 | ios-materials-wait | iOS: waiting-on-Gemini progress UI, block repeat taps, status polling, 429 countdown and one retry (lands on ios-phone_context) | gpt-6-sol | medium |  | 8 | blocked | PAUSED 23:30 for engine priority (user). Worker already finished and committed on branch task/ios-materials-wait; review not run. Resume: `DISPATCH review -Id ios-materials-wait` (or `check -Id` first), then merge |
 | engine3d-core | Run the new 3D speakerplacer headless (engine3d.run_scene) and map schema-2 output into our layout (to_layout), fixtures + tests | gpt-6-sol | high | | 10 | ready | owns backend/app/engine3d.py, tests; contract docs/API.md 2a; follow-ups: engine3d-wire (staged quick/refined results, schema, endpoints), audit tasks |
+| domain-rename | Replace sslip.io references with sweetspotav.tech in DEPLOY.md, .env.example, webapp_context/README.md (sslip.io stays only as the documented fallback); fix stale deploy notes | gpt-5.6-luna | medium | | 11 | todo | queued by user 23:40; about 10 lines, owns DEPLOY.md, .env.example, webapp_context/README.md, test_deploy_files.py; run on Codex account 2 |
 
 status: todo | ready | running | review | done | blocked | cut
 
