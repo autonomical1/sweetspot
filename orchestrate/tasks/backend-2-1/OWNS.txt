@@ -1,0 +1,7 @@
+backend/app/engine3d.py
+backend/app/refine.py
+backend/app/rooms.py
+products/**
+backend/tests/test_preset_2_1.py
+backend/tests/products/**
+orchestrate/tasks/backend-2-1/HANDOFF.md

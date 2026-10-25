@@ -44,3 +44,5 @@ Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as
 | web-deploy | Docker multi-stage build of webapp into web/, smoke checks, DEPLOY.md | gpt-5.6-terra | medium |  | 14 | running | Gate 3 OK by user 02:40, account 1 |
 | web-drag | Drag-to-rescore, 2D/3D toggle, refine polling | gpt-6-sol | medium | web-adapter,web-view2d | 15 | todo | Brief written, batch Gate 3 |
 | web-e2e | jsdom flow tests, backend contract test, tools/e2e web checks | gpt-5.6-luna | medium | web-drag,web-panels,web-pairing,web-deploy | 16 | todo | Brief written, batch Gate 3 |
+| backend-2-1 | Add 2.1 preset (L,R,LFE) to optimize, quick layout and products | gpt-6-sol | medium |  | 15 | ready | User decisions 02:52: 2.1/5.1/7.1 + none/.2/.4, no .6; account 1 |
+| ios-flow | iOS: scan -> photos -> form (budget, 2.1/5.1/7.1 + height) -> loader -> AR; remove Compute button | gpt-6-sol | medium |  | 15 | ready | User flow 02:52; branch ios-phone_context first; will conflict with held ios-qr-pairing |
