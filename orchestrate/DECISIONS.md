@@ -86,3 +86,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-25 01:13] web app: adopt teammate frontend/ as base (rename webapp/, raw three.js, adapter feet->m); web teammate = tester + assets only; Docker multi-stage npm build into web/ - user
 - [2026-10-25 01:13] all Codex tasks run on account 2 (CODEX_HOME=~/.codex-second) until it is depleted - user
 - [2026-10-25 01:16] web pairing: QR only, the 6-character code is removed from the web UI (backend field and iOS manual entry untouched for now) - user
+- [2026-10-25 01:24] pairing is per scan, QR only: web opens with a QR (pair_url); iOS scans it FIRST to get the session id, then scans the room, then the result shows on the web; typed 6-char code removed from iOS UI (task ios-qr-pairing); session id not persisted between scans - user
