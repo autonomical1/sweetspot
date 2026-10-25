@@ -215,9 +215,13 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
     };
     const speakerAt = (e: PointerEvent): string | null => {
       pointerAt(e);
-      const hit = ray.intersectObject(root, true)[0];
-      for (let node: THREE.Object3D | null = hit?.object ?? null; node; node = node.parent) {
-        for (const [key, group] of state.current?.groups ?? []) if (key.startsWith('speaker:') && group.object === node) return key.slice('speaker:'.length);
+      // The nearest selectable object decides: transparent walls carry no selectId, so they never block a speaker.
+      for (const hit of ray.intersectObject(root, true)) {
+        let node: THREE.Object3D | null = hit.object;
+        while (node && !node.userData.selectId) node = node.parent;
+        if (!node) continue;
+        const id = String(node.userData.selectId);
+        return useAppStore.getState().layout?.speakers.some(item => item.role === id) ? id : null;
       }
       return null;
     };
