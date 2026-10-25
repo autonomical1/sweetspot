@@ -143,10 +143,13 @@ Backend implementations behind one interface: Gemini API (default, `GEMINI_API_K
 | `GET /rooms/{id}/photo-targets` | | `[{"surface_id","kind","label"}]` (about 6 surfaces to photograph) |
 | `POST /rooms/{id}/photos` | multipart: `surface_id`, `file` | `{"stored": true}` |
 | `POST /rooms/{id}/materials` | `{}` (classifies stored photos) | `{"surfaces":[{"surface_id","material","confidence","applied"}]}` (`applied` is false when confidence < 0.5 and the surface kept its previous material); also updates room absorption |
+| `GET /rooms/{id}/materials/status` | | `{"state": "idle\|running", "started_at": iso \| null, "elapsed_s": float \| null, "photos": int}` (no Gemini call; for progress UI) |
 | `POST /rooms/{id}/optimize` | `{"options?": {}}` | `{"layout","metrics"}` (saved as the room's current layout) |
 | `POST /rooms/{id}/score` | `{"layout"}` | `{"metrics"}` |
 | `GET /rooms/{id}/layout` | | latest `{"layout","metrics"}` or 404 |
 | `GET /rooms/{id}/products?budget=1500` | | products result (section 4) for the current layout |
+
+**Gemini limits on `POST /rooms/{id}/materials` (decided 2026-10-25).** (1) One classification per room at a time: a second request while one is running JOINS it and receives the same result (response `"status": "joined"`); no second Gemini call. (2) Results are cached for 10 minutes keyed by the stored photos (surface ids + image hashes): an unchanged photo set returns the cached result (`"status": "cached"`) without calling Gemini; a fresh run says `"status": "fresh"`. (3) Global limits for real Gemini calls: at most `GEMINI_MAX_CONCURRENT` (default 2) at once and `GEMINI_MAX_PER_MINUTE` (default 6) per minute; over the limit returns HTTP 429 with header `Retry-After: <s>` and body `{"detail": "Gemini is busy; retry in 12 s", "retry_after_s": 12}`. The mock backend and rooms without photos are never limited. Responses keep the shape `{"surfaces":[...]}` plus the optional `"status"` field.
 
 Errors: HTTP status + `{"detail": "..."}`. Unknown ids -> 404. Sessions expire after 30 min. `POST /rooms` with `session_id` marks that session `ready` and sets `room_id`. CORS: none needed (web app is served from the same origin by Caddy).
 
@@ -156,7 +159,7 @@ Errors: HTTP status + `{"detail": "..."}`. Unknown ids -> 404. Sessions expire a
 
 ## 8. Env vars
 
-`DATA_DIR`, `DOMAIN`, `GEMINI_API_KEY`, `SERPAPI_KEY`, `MATERIALS_BACKEND` (`gemini|mock`), `ENGINE_BACKEND` (`auto|stub`), `PRODUCTS_BACKEND` (`auto|stub`), `AV_DB` (products working DB path), `PRODUCTS_EXPAND_DEADLINE_S` (default 20). Never committed; `.env.example` lists them.
+`DATA_DIR`, `DOMAIN`, `GEMINI_API_KEY`, `SERPAPI_KEY`, `MATERIALS_BACKEND` (`gemini|mock`), `GEMINI_MAX_CONCURRENT` (default 2), `GEMINI_MAX_PER_MINUTE` (default 6), `ENGINE_BACKEND` (`auto|stub`), `PRODUCTS_BACKEND` (`auto|stub`), `AV_DB` (products working DB path), `PRODUCTS_EXPAND_DEADLINE_S` (default 20). Never committed; `.env.example` lists them.
 
 ## 9. Repo layout
 

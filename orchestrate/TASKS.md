@@ -24,6 +24,8 @@
 | products-theater | Complete home theater: passive-only speakers, receiver, projector-first display (TV only if budget allows), mount, HDMI cable, bundles, 5 products-options fixes, tools/expand_catalog.py, tests | gpt-6-sol | high | products-options | 8 | ready | owns products/{theater,recommend,value,variety,dimensions}.py, tools/expand_catalog.py, backend/tests/products/** |
 | polygon-geometry | Non-rectangular rooms: Room outline in the contract, POST /rooms/polygon, scan outline conversion, point-in-polygon validators, 2D plot outline, largest-TV facing | gpt-6-sol | high |  | 8 | blocked | PAUSED by user 02:05 (worker aborted after about 7 min, no commits; branch task/polygon-geometry kept at the brief commit). Brief, OWNS and docs/API.md outline contract stay. Resume: set ready and `start -Id polygon-geometry` |
 | polygon-engine | Optimizer and acoustics on the room outline: adapter passes the polygon to speakerplacer, per-edge reflections/modes/treatment, objects avoidance, tests | gpt-6-sol | high | polygon-geometry | 9 | blocked | paused with polygon-geometry; brief not written yet |
+| gemini-limits | Backend: join duplicate materials requests, 10 min cache, Gemini rate limit (429 + Retry-After), GET materials/status | gpt-6-sol | medium | | 8 | ready | owns backend/app/gemini_limits.py, materials_router.py, materials.py, tests |
+| ios-materials-wait | iOS: waiting-on-Gemini progress UI, block repeat taps, status polling, 429 countdown and one retry (lands on ios-phone_context) | gpt-6-sol | medium | | 8 | ready | owns Models.swift, BackendClient.swift, SweetspotApp.swift; no compiler in sandbox |
 
 status: todo | ready | running | review | done | blocked | cut
 
