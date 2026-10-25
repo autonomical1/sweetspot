@@ -48,3 +48,4 @@ Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as
 | ios-flow | iOS: scan -> photos -> form (budget, 2.1/5.1/7.1 + height) -> loader -> AR; remove Compute button | gpt-6-sol | medium |  | 15 | done | merged 03:45 via ios-phone_context (Swift unbuilt, needs Xcode build + device test) |
 | ios-polish | iOS+backend wording: config descriptions, no 'Gemini' in user text, AR alignment aids (outline, tracking, manual align) | gpt-6-sol | medium | ios-flow | 16 | done | merged and deployed (backend wording); Swift awaits iOS tester |
 | ios-theme | iOS minimalist UI matching the web theme (tokens, Theme.swift, restyle all screens) | gpt-6-sol | medium |  | 17 | review | check PASS; no Codex review (user auto-approved) |
+| speakerplacer-speed | Speed up speakerplacer search several times with identical output (golden check) | gpt-6-sol | high |  | 18 | ready | user asked 2026-10-25; baseline 31 s/28 s/75 s on this machine |
