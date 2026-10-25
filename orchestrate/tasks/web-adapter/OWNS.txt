@@ -1,3 +1,4 @@
 webapp/src/scene/**
 webapp/src/__fixtures__/**
 orchestrate/tasks/web-adapter/HANDOFF.md
+webapp/tsconfig.app.tsbuildinfo
