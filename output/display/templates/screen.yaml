@@ -1,0 +1,16 @@
+# Generic screen template. Fill in measured/user-supplied values.
+# Units are encoded in field names. Targets are conventions marked verify.
+diag_in: 120
+aspect_ratio: 16:9
+material: matte_white  # matte_white | alr | ats
+gain: 1.0
+half_gain_angle_deg: 45
+border_width_m: 0.05
+thickness_m: 0.03
+standoff_from_wall_m: 0.05
+bottom_edge_height_m: 0.61
+image_fit: fit_width
+curvature: flat
+# ATS only: transmission_loss_db: {125: 1, 250: 2, 500: 3, 1000: 4, 2000: 5, 4000: 6}
+# ATS only: standoff_behind_m: 0.15
+# Optional: fixed_x_offset_m: 0.0

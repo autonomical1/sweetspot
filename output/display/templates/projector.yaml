@@ -1,0 +1,32 @@
+# Generic projector constraints. Do not treat these as a real product.
+model: generic_placeholder
+native_resolution: 3840x2160
+native_aspect: 16:9
+lumens_ansi: 3000
+eco_mode_factor: 0.75
+native_contrast: 1000
+throw_ratio_min: 1.4
+throw_ratio_max: 2.2
+lumens_loss_at_tele_pct: 0.15
+lens_shift_vertical_min: -0.5
+lens_shift_vertical_max: 0.5
+lens_shift_horizontal_min: -0.2
+lens_shift_horizontal_max: 0.2
+lens_shift_convention: center_fraction
+keystone_max_v_deg: 5
+keystone_max_h_deg: 5
+fixed_lens_offset_m: 0.0
+throw_reference: lens_front
+lens_offset_x_m: 0.0
+lens_offset_z_m: 0.0
+body_width_m: 0.35
+body_height_m: 0.15
+body_depth_m: 0.30
+noise_dba_1m: 32
+noise_dba_eco_1m: 28
+allowed_mounts: [ceiling_inverted, rear_shelf, table, floor_front]
+mount_drop_min_m: 0.10
+mount_drop_max_m: 0.50
+min_distance_m: 2.0
+max_distance_m: 8.0
+ventilation_clearance_m: 0.20

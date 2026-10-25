@@ -1,0 +1,149 @@
+Optimizing speaker positions...
+Optimizing speaker positions: finished in 1.4s
+Layout JSON saved: output/home-theater/current-714/layout.json
+Receiver distance compensation (relative delays and free-field trims):
+channel | distance m | delay ms | trim dB
+L | 3.07 | 0.00 | +2.06
+C | 2.74 | 0.94 | +1.10
+R | 3.07 | 0.00 | +2.06
+Lss | 3.02 | 0.13 | +1.94
+Rss | 3.02 | 0.13 | +1.94
+Lrs | 2.04 | 2.98 | -1.46
+Rrs | 2.04 | 2.98 | -1.46
+LFE | 1.64 | 4.16 | +10.00
+Ltf | 2.42 | 1.89 | -0.01
+Rtf | 2.42 | 1.88 | +0.01
+Ltr | 2.35 | 2.09 | -0.26
+Rtr | 2.35 | 2.07 | -0.23
+Distance spread 1.43 m; trim spread 3.52 dB (receiver reference 2.42 m)
+Channel compliance (dolby)
+channel | azimuth | allowed | elevation | allowed | distance m | result
+L | -26.5° | -30..-22° | +0.0° | -10..+15° | 3.07 | PASS
+C | +0.5° | -5..+5° | +0.0° | -10..+15° | 2.74 | PASS
+R | +26.5° | +22..+30° | +0.0° | -10..+15° | 3.07 | PASS
+Lss | -110.0° | -120..-90° | +15.0° | +0..+15° | 3.02 | PASS
+Rss | +110.0° | +90..+120° | +15.0° | +0..+15° | 3.02 | PASS
+Lrs | -140.5° | -150..-135° | +15.0° | +0..+15° | 2.04 | PASS
+Rrs | +140.5° | +135..+150° | +15.0° | +0..+15° | 2.04 | PASS
+LFE | N/A | N/A | N/A | N/A | 1.64 | N/A
+Ltf | -30.3° | -45..-15° | +42.9° | +30..+55° | 2.42 | PASS
+Rtf | +30.7° | +15..+45° | +42.8° | +30..+55° | 2.42 | PASS
+Ltr | -134.5° | -150..-120° | +44.5° | +30..+55° | 2.35 | PASS
+Rtr | +134.2° | +120..+150° | +44.4° | +30..+55° | 2.35 | PASS
+front / generic_bookshelf_onwall (score 17.41):
+  generic_bookshelf_onwall (4.51, 14.00, 3.60) ft; yaw +20 deg; tilt +0.0 deg; SPL 114.2 dB; headroom -3.7 dB
+    1000 Hz level: direct 111.2, reverberant 111.8, total 114.5 dB SPL; critical distance 2.77 m (listener beyond critical distance)
+  headroom_db: -6.73
+  worst_seat_headroom_db: -3.63
+  reflection_directivity_gain_db: -8.42
+  early_reflection_db: 8.40
+  worst_seat_clarity_db: 10.72
+  off_axis_db: -0.11
+  clarity_db: 10.72
+  direct_level_db: 0.00
+  geometry_db: -0.26
+center / generic_center_onwall (score 14.79):
+  generic_center_onwall (9.08, 14.00, 3.60) ft; yaw -1 deg; tilt +0.0 deg; SPL 115.0 dB; headroom -3.4 dB
+    1000 Hz level: direct 112.6, reverberant 111.8, total 115.2 dB SPL; critical distance 2.94 m
+  headroom_db: -5.76
+  c50_2k_db: 9.31
+  worst_seat_headroom_db: -3.38
+  c50_1k_db: 9.54
+  reflection_directivity_gain_db: -6.35
+  c50_4k_db: 10.71
+  early_reflection_db: 6.33
+  worst_seat_clarity_db: 9.85
+  off_axis_db: 0.00
+  floor_ceiling_comb_notch_hz: 222.78
+  clarity_db: 9.85
+  direct_level_db: 0.00
+  geometry_db: -0.25
+front / generic_bookshelf_onwall (score 17.41):
+  generic_bookshelf_onwall (13.49, 14.00, 3.60) ft; yaw -20 deg; tilt +0.0 deg; SPL 114.2 dB; headroom -3.7 dB
+    1000 Hz level: direct 111.2, reverberant 111.8, total 114.5 dB SPL; critical distance 2.77 m (listener beyond critical distance)
+  headroom_db: -6.73
+  worst_seat_headroom_db: -3.63
+  reflection_directivity_gain_db: -8.42
+  early_reflection_db: 8.40
+  worst_seat_clarity_db: 10.72
+  off_axis_db: -0.11
+  clarity_db: 10.72
+  direct_level_db: 0.00
+  geometry_db: -0.26
+surround / generic_surround_wide (score 13.78):
+  generic_surround_wide (0.00, 1.72, 6.17) ft; yaw +60 deg; tilt -15.0 deg; SPL 109.8 dB; headroom -4.8 dB; WARN: toe-in at allowed boundary
+    1000 Hz level: direct 105.3, reverberant 108.6, total 110.2 dB SPL; critical distance 1.96 m (listener beyond critical distance)
+  headroom_db: -9.30
+  worst_seat_headroom_db: -3.24
+  reflection_directivity_gain_db: -7.66
+  early_reflection_db: 5.33
+  worst_seat_clarity_db: 11.45
+  off_axis_db: -1.62
+  clarity_db: 11.45
+  direct_level_db: 0.00
+  geometry_db: -0.00
+surround / generic_surround_wide (score 13.78):
+  generic_surround_wide (18.00, 1.72, 6.17) ft; yaw -60 deg; tilt -15.0 deg; SPL 109.8 dB; headroom -4.8 dB; WARN: toe-in at allowed boundary
+    1000 Hz level: direct 105.3, reverberant 108.6, total 110.2 dB SPL; critical distance 1.96 m (listener beyond critical distance)
+  headroom_db: -9.30
+  worst_seat_headroom_db: -3.24
+  reflection_directivity_gain_db: -7.66
+  early_reflection_db: 5.33
+  worst_seat_clarity_db: 11.45
+  off_axis_db: -1.62
+  clarity_db: 11.45
+  direct_level_db: 0.00
+  geometry_db: -0.00
+rear_surround / generic_surround_wide (score 18.74):
+  generic_surround_wide (4.88, 0.00, 5.34) ft; yaw -20 deg; tilt -15.0 deg; SPL 111.4 dB; headroom -3.2 dB
+    1000 Hz level: direct 108.7, reverberant 108.6, total 111.6 dB SPL; critical distance 1.96 m (listener beyond critical distance)
+  headroom_db: -5.91
+  worst_seat_headroom_db: -3.00
+  reflection_directivity_gain_db: -8.02
+  early_reflection_db: 7.88
+  worst_seat_clarity_db: 12.53
+  off_axis_db: -0.36
+  clarity_db: 12.53
+  direct_level_db: 0.00
+  geometry_db: -0.23
+rear_surround / generic_surround_wide (score 18.74):
+  generic_surround_wide (13.12, 0.00, 5.34) ft; yaw +20 deg; tilt -15.0 deg; SPL 111.4 dB; headroom -3.2 dB
+    1000 Hz level: direct 108.7, reverberant 108.6, total 111.6 dB SPL; critical distance 1.96 m (listener beyond critical distance)
+  headroom_db: -5.91
+  worst_seat_headroom_db: -3.00
+  reflection_directivity_gain_db: -8.02
+  early_reflection_db: 7.88
+  worst_seat_clarity_db: 12.53
+  off_axis_db: -0.36
+  clarity_db: 12.53
+  direct_level_db: 0.00
+  geometry_db: -0.23
+bass / generic_inwall_sub (score -10.17):
+  generic_inwall_sub (9.19, 0.00, 1.64) ft; yaw +0 deg; tilt +0.0 deg; SPL 114.8 dB; headroom +13.8 dB
+    125 Hz level: direct 110.4, reverberant 110.3, total 113.4 dB SPL; critical distance 1.44 m (listener beyond critical distance)
+  flatness: -11.81
+  null_penalty: -0.22
+  spatial_variance_db: -0.00
+  seat_max_min_db: 0.00
+  geometry_db: 0.00
+  headroom_db: 9.34
+Crossover handoff: 80-80 Hz overlap (0 Hz); front low edge 80 Hz, bass crossover 120 Hz, bass F3 30 Hz
+Bass management: LR4 HP mains + LP subs at 80.0 Hz; LFE gain +10.0 dB; aligned sum -0.00..0.00 dB
+Crossover phase diagnostic: 6.25 ms offset sums to -300.0 dB at crossover
+First-reflection points (L/C/R): 15 points; coordinates and relative levels are included in layout JSON
+WARN average Sabine RT60 0.82 s exceeds 0.30 s target; consider broadband absorption/diffusion
+Figures saved: output/home-theater/current-714/candidate_speakers.png, output/home-theater/current-714/recommended_placement.png, output/home-theater/current-714/best_response.png, output/home-theater/current-714/speaker_table.png
+Wall/height score heatmaps saved: output/home-theater/current-714/height_heatmaps.png
+Seat-by-seat bass response saved: output/home-theater/current-714/seat_bass_response.png
+Sub-strategy comparison saved: output/home-theater/current-714/sub_strategy_comparison.png
+Room acoustics (typical material estimates; replace with measured data):
+  125 Hz: RT60 Sabine 0.45 s / Eyring 0.40 s; mean absorption 0.227
+  250 Hz: RT60 Sabine 1.14 s / Eyring 1.08 s; mean absorption 0.091
+  500 Hz: RT60 Sabine 1.45 s / Eyring 1.40 s; mean absorption 0.071
+  1000 Hz: RT60 Sabine 0.88 s / Eyring 0.83 s; mean absorption 0.117
+  2000 Hz: RT60 Sabine 0.53 s / Eyring 0.48 s; mean absorption 0.194
+  4000 Hz: RT60 Sabine 0.47 s / Eyring 0.41 s; mean absorption 0.221
+  Schroeder frequency 220 Hz; modal count 29 (30-200 Hz); smallest modal gap 0.20 Hz
+3D comparison figure saved: output/home-theater/current-714/model_comparison_3d.png
+Preparing interactive 3D viewer...
+3D view saved: output/home-theater/current-714/layout_3d.png

@@ -1,0 +1,2600 @@
+{
+  "schema_version": 2,
+  "room_polygon_m": [
+    [
+      0.0,
+      5.486400000000001,
+      5.486400000000001,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      4.2672,
+      4.2672
+    ]
+  ],
+  "room_dimensions_m": [
+    5.486400000000001,
+    4.2672,
+    2.7432000000000003
+  ],
+  "room_dimensions_ft": [
+    18.0,
+    13.999999999999998,
+    9.0
+  ],
+  "listener_m": [
+    2.7432000000000003,
+    1.524,
+    1.09728
+  ],
+  "facing": "north",
+  "speakers": [
+    {
+      "type": "front",
+      "model_id": "generic_bookshelf_onwall",
+      "mount_type": "on_wall",
+      "wall_index": 2,
+      "wall_u_m": 4.110909067212173,
+      "wall_t": 0.7492908040267157,
+      "position_m": [
+        1.3754909327878275,
+        4.2672,
+        1.09728
+      ],
+      "position_ft": [
+        4.512765527519119,
+        13.999999999999998,
+        3.6
+      ],
+      "allowed_height_range_m": [
+        0.5569510353855501,
+        1.918372206841355
+      ],
+      "box_mount_position_m": [
+        1.3754909327878275,
+        4.2672,
+        1.09728
+      ],
+      "optimizer_position_xy_m": [
+        1.375490932787827,
+        4.2661999999999995
+      ],
+      "aim_xy": [
+        0.3420201433256687,
+        -0.9396926207859084
+      ],
+      "aim_direction": [
+        0.3420201433256687,
+        -0.9396926207859084,
+        0.0
+      ],
+      "yaw_deg": 20.0,
+      "pitch_deg": 0.0,
+      "width_m": 0.3,
+      "height_m": 0.2,
+      "depth_m": 0.18,
+      "visible_depth_m": 0.18,
+      "coverage_h_deg": 90.0,
+      "coverage_v_deg": 60.0,
+      "predicted_spl_db": 114.19951931595531,
+      "headroom_db": -3.682594157418464,
+      "warnings": [],
+      "channel": "L",
+      "compliance": {
+        "channel": "L",
+        "azimuth_deg": -26.499999999999993,
+        "azimuth_allowed": "-30..-22\u00b0",
+        "elevation_deg": 0.0,
+        "elevation_allowed": "-10..+15\u00b0",
+        "distance_m": 3.065252735507203,
+        "status": "PASS"
+      },
+      "receiver_delay_ms": 0.0,
+      "receiver_trim_db": 2.059424071829098,
+      "distance_m": 3.065252735507203
+    },
+    {
+      "type": "center",
+      "model_id": "generic_center_onwall",
+      "mount_type": "on_wall",
+      "wall_index": 2,
+      "wall_u_m": 2.7192604562763907,
+      "wall_t": 0.4956365661046206,
+      "position_m": [
+        2.76713954372361,
+        4.2672,
+        1.09728
+      ],
+      "position_ft": [
+        9.07854181011683,
+        13.999999999999998,
+        3.6
+      ],
+      "allowed_height_range_m": [
+        0.6137377282630214,
+        1.8320782747600797
+      ],
+      "box_mount_position_m": [
+        2.76713954372361,
+        4.2672,
+        1.09728
+      ],
+      "optimizer_position_xy_m": [
+        2.76713954372361,
+        4.266199999999999
+      ],
+      "aim_xy": [
+        -0.008729717567729984,
+        -0.9999618952896093
+      ],
+      "aim_direction": [
+        -0.008729717567729986,
+        -0.9999618952896094,
+        0.0
+      ],
+      "yaw_deg": -0.5001823260891702,
+      "pitch_deg": 0.0,
+      "width_m": 0.52,
+      "height_m": 0.18,
+      "depth_m": 0.16,
+      "visible_depth_m": 0.16,
+      "coverage_h_deg": 120.0,
+      "coverage_v_deg": 40.0,
+      "predicted_spl_db": 115.01483410880562,
+      "headroom_db": -3.3788045890419767,
+      "warnings": [],
+      "channel": "C",
+      "compliance": {
+        "channel": "C",
+        "azimuth_deg": 0.5000000000000024,
+        "azimuth_allowed": "-5..+5\u00b0",
+        "elevation_deg": 0.0,
+        "elevation_allowed": "-10..+15\u00b0",
+        "distance_m": 2.7433044566277536,
+        "status": "PASS"
+      },
+      "receiver_delay_ms": 0.938624719765158,
+      "receiver_trim_db": 1.0955784787543679,
+      "distance_m": 2.7433044566277536
+    },
+    {
+      "type": "front",
+      "model_id": "generic_bookshelf_onwall",
+      "mount_type": "on_wall",
+      "wall_index": 2,
+      "wall_u_m": 1.3754909327878275,
+      "wall_t": 0.25070919597328434,
+      "position_m": [
+        4.110909067212173,
+        4.2672,
+        1.09728
+      ],
+      "position_ft": [
+        13.487234472480882,
+        13.999999999999998,
+        3.6
+      ],
+      "allowed_height_range_m": [
+        0.5569510353855502,
+        1.918372206841355
+      ],
+      "box_mount_position_m": [
+        4.110909067212173,
+        4.2672,
+        1.09728
+      ],
+      "optimizer_position_xy_m": [
+        4.110909067212173,
+        4.2661999999999995
+      ],
+      "aim_xy": [
+        -0.3420201433256687,
+        -0.9396926207859084
+      ],
+      "aim_direction": [
+        -0.3420201433256687,
+        -0.9396926207859084,
+        0.0
+      ],
+      "yaw_deg": -20.0,
+      "pitch_deg": 0.0,
+      "width_m": 0.3,
+      "height_m": 0.2,
+      "depth_m": 0.18,
+      "visible_depth_m": 0.18,
+      "coverage_h_deg": 90.0,
+      "coverage_v_deg": 60.0,
+      "predicted_spl_db": 114.19951931595531,
+      "headroom_db": -3.682594157418464,
+      "warnings": [],
+      "channel": "R",
+      "compliance": {
+        "channel": "R",
+        "azimuth_deg": 26.499999999999993,
+        "azimuth_allowed": "+22..+30\u00b0",
+        "elevation_deg": 0.0,
+        "elevation_allowed": "-10..+15\u00b0",
+        "distance_m": 3.065252735507203,
+        "status": "PASS"
+      },
+      "receiver_delay_ms": 0.0,
+      "receiver_trim_db": 2.059424071829098,
+      "distance_m": 3.065252735507203
+    },
+    {
+      "type": "surround",
+      "model_id": "generic_surround_wide",
+      "mount_type": "on_wall",
+      "wall_index": 3,
+      "wall_u_m": 3.741643146639046,
+      "wall_t": 0.8768380077425587,
+      "position_m": [
+        0.0,
+        0.5255568533609538,
+        1.879239556112849
+      ],
+      "position_ft": [
+        0.0,
+        1.7242678916041791,
+        6.165484107981788
+      ],
+      "allowed_height_range_m": [
+        1.09728,
+        1.879239556112849
+      ],
+      "box_mount_position_m": [
+        0.0,
+        0.5255568533609538,
+        1.879239556112849
+      ],
+      "optimizer_position_xy_m": [
+        0.001,
+        0.5255568533609537
+      ],
+      "aim_xy": [
+        0.5000000000000001,
+        0.8660254037844386
+      ],
+      "aim_direction": [
+        0.48296291314453427,
+        0.8365163037378078,
+        -0.25881904510252074
+      ],
+      "yaw_deg": 60.0,
+      "pitch_deg": -14.999999999999998,
+      "width_m": 0.28,
+      "height_m": 0.18,
+      "depth_m": 0.14,
+      "visible_depth_m": 0.14,
+      "coverage_h_deg": 120.0,
+      "coverage_v_deg": 90.0,
+      "predicted_spl_db": 109.80286584067724,
+      "headroom_db": -4.819560309973724,
+      "warnings": [
+        "toe-in at allowed boundary"
+      ],
+      "channel": "Lss",
+      "compliance": {
+        "channel": "Lss",
+        "azimuth_deg": -110.0,
+        "azimuth_allowed": "-120..-90\u00b0",
+        "elevation_deg": 14.995389193437543,
+        "elevation_allowed": "+0..+15\u00b0",
+        "distance_m": 3.0221673852496465,
+        "status": "PASS"
+      },
+      "receiver_delay_ms": 0.12561326605701553,
+      "receiver_trim_db": 1.936468586849116,
+      "distance_m": 3.0221673852496465
+    },
+    {
+      "type": "surround",
+      "model_id": "generic_surround_wide",
+      "mount_type": "on_wall",
+      "wall_index": 1,
+      "wall_u_m": 0.5255568533609537,
+      "wall_t": 0.12316199225744132,
+      "position_m": [
+        5.486400000000001,
+        0.5255568533609537,
+        1.8792395561128488
+      ],
+      "position_ft": [
+        18.0,
+        1.7242678916041787,
+        6.165484107981787
+      ],
+      "allowed_height_range_m": [
+        1.09728,
+        1.8792395561128488
+      ],
+      "box_mount_position_m": [
+        5.486400000000001,
+        0.5255568533609537,
+        1.8792395561128488
+      ],
+      "optimizer_position_xy_m": [
+        5.4854,
+        0.5255568533609537
+      ],
+      "aim_xy": [
+        -0.5000000000000001,
+        0.8660254037844386
+      ],
+      "aim_direction": [
+        -0.48296291314453427,
+        0.8365163037378078,
+        -0.25881904510252074
+      ],
+      "yaw_deg": -60.0,
+      "pitch_deg": -14.999999999999998,
+      "width_m": 0.28,
+      "height_m": 0.18,
+      "depth_m": 0.14,
+      "visible_depth_m": 0.14,
+      "coverage_h_deg": 120.0,
+      "coverage_v_deg": 90.0,
+      "predicted_spl_db": 109.80286584067724,
+      "headroom_db": -4.819560309973724,
+      "warnings": [
+        "toe-in at allowed boundary"
+      ],
+      "channel": "Rss",
+      "compliance": {
+        "channel": "Rss",
+        "azimuth_deg": 110.0,
+        "azimuth_allowed": "+90..+120\u00b0",
+        "elevation_deg": 14.99538919343754,
+        "elevation_allowed": "+0..+15\u00b0",
+        "distance_m": 3.0221673852496465,
+        "status": "PASS"
+      },
+      "receiver_delay_ms": 0.12561326605701553,
+      "receiver_trim_db": 1.936468586849116,
+      "distance_m": 3.0221673852496465
+    },
+    {
+      "type": "rear_surround",
+      "model_id": "generic_surround_wide",
+      "mount_type": "on_wall",
+      "wall_index": 0,
+      "wall_u_m": 1.4869113480141372,
+      "wall_t": 0.2710176706062513,
+      "position_m": [
+        1.4869113480141372,
+        0.0,
+        1.626287319212351
+      ],
+      "position_ft": [
+        4.878318070912523,
+        0.0,
+        5.335588317625823
+      ],
+      "allowed_height_range_m": [
+        1.09728,
+        1.626287319212351
+      ],
+      "box_mount_position_m": [
+        1.4869113480141372,
+        0.0,
+        1.626287319212351
+      ],
+      "optimizer_position_xy_m": [
+        1.4869113480141372,
+        0.001
+      ],
+      "aim_xy": [
+        0.3420201433256687,
+        0.9396926207859084
+      ],
+      "aim_direction": [
+        0.33036608954935215,
+        0.9076733711903687,
+        -0.25881904510252074
+      ],
+      "yaw_deg": -20.0,
+      "pitch_deg": -14.999999999999998,
+      "width_m": 0.28,
+      "height_m": 0.18,
+      "depth_m": 0.14,
+      "visible_depth_m": 0.14,
+      "coverage_h_deg": 120.0,
+      "coverage_v_deg": 90.0,
+      "predicted_spl_db": 111.38225230754033,
+      "headroom_db": -3.2401738431106395,
+      "warnings": [],
+      "channel": "Lrs",
+      "compliance": {
+        "channel": "Lrs",
+        "azimuth_deg": -140.5,
+        "azimuth_allowed": "-150..-135\u00b0",
+        "elevation_deg": 14.994404441080995,
+        "elevation_allowed": "+0..+15\u00b0",
+        "distance_m": 2.0446725705815822,
+        "status": "PASS"
+      },
+      "receiver_delay_ms": 2.975452375876445,
+      "receiver_trim_db": -1.4574262829915805,
+      "distance_m": 2.0446725705815822
+    },
+    {
+      "type": "rear_surround",
+      "model_id": "generic_surround_wide",
+      "mount_type": "on_wall",
+      "wall_index": 0,
+      "wall_u_m": 3.9994886519858635,
+      "wall_t": 0.7289823293937487,
+      "position_m": [
+        3.9994886519858635,
+        0.0,
+        1.626287319212351
+      ],
+      "position_ft": [
+        13.121681929087478,
+        0.0,
+        5.335588317625823
+      ],
+      "allowed_height_range_m": [
+        1.09728,
+        1.626287319212351
+      ],
+      "box_mount_position_m": [
+        3.9994886519858635,
+        0.0,
+        1.626287319212351
+      ],
+      "optimizer_position_xy_m": [
+        3.9994886519858635,
+        0.001
+      ],
+      "aim_xy": [
+        -0.3420201433256687,
+        0.9396926207859084
+      ],
+      "aim_direction": [
+        -0.33036608954935215,
+        0.9076733711903687,
+        -0.25881904510252074
+      ],
+      "yaw_deg": 20.0,
+      "pitch_deg": -14.999999999999998,
+      "width_m": 0.28,
+      "height_m": 0.18,
+      "depth_m": 0.14,
+      "visible_depth_m": 0.14,
+      "coverage_h_deg": 120.0,
+      "coverage_v_deg": 90.0,
+      "predicted_spl_db": 111.38225230754033,
+      "headroom_db": -3.2401738431106395,
+      "warnings": [],
+      "channel": "Rrs",
+      "compliance": {
+        "channel": "Rrs",
+        "azimuth_deg": 140.5,
+        "azimuth_allowed": "+135..+150\u00b0",
+        "elevation_deg": 14.994404441080995,
+        "elevation_allowed": "+0..+15\u00b0",
+        "distance_m": 2.0446725705815822,
+        "status": "PASS"
+      },
+      "receiver_delay_ms": 2.975452375876445,
+      "receiver_trim_db": -1.4574262829915805,
+      "distance_m": 2.0446725705815822
+    },
+    {
+      "type": "bass",
+      "model_id": "generic_inwall_sub",
+      "mount_type": "in_wall",
+      "wall_index": 0,
+      "wall_u_m": 2.8,
+      "wall_t": 0.5103528725575969,
+      "position_m": [
+        2.8,
+        0.0,
+        0.5
+      ],
+      "position_ft": [
+        9.186351706036744,
+        0.0,
+        1.6404199475065615
+      ],
+      "allowed_height_range_m": [
+        0.5,
+        0.6
+      ],
+      "box_mount_position_m": [
+        2.8,
+        0.0,
+        0.5
+      ],
+      "optimizer_position_xy_m": [
+        2.8,
+        0.001
+      ],
+      "aim_xy": [
+        -0.0,
+        1.0
+      ],
+      "aim_direction": [
+        -0.0,
+        1.0,
+        0.0
+      ],
+      "yaw_deg": 0.0,
+      "pitch_deg": 0.0,
+      "width_m": 0.45,
+      "height_m": 0.32,
+      "depth_m": 0.12,
+      "visible_depth_m": 0.012,
+      "coverage_h_deg": 360.0,
+      "coverage_v_deg": 180.0,
+      "predicted_spl_db": 114.8309578164894,
+      "headroom_db": 13.800057946569979,
+      "warnings": [],
+      "channel": "LFE",
+      "compliance": {
+        "channel": "LFE",
+        "azimuth_deg": "N/A",
+        "azimuth_allowed": "N/A",
+        "elevation_deg": "N/A",
+        "elevation_allowed": "N/A",
+        "distance_m": 1.6378478679047086,
+        "status": "N/A",
+        "note": "LFE is not an azimuth/elevation channel"
+      },
+      "receiver_delay_ms": 4.161530226246339,
+      "receiver_trim_db": 10.0,
+      "distance_m": 1.6378478679047086,
+      "distance_trim_db": -3.3844305078074735
+    },
+    {
+      "type": "height",
+      "channel": "Ltf",
+      "model_id": "generic_in_ceiling",
+      "mount_type": "in_ceiling",
+      "surface": "ceiling",
+      "position_m": [
+        1.8499999999999996,
+        3.0499999999999994,
+        2.7432000000000003
+      ],
+      "position_ft": [
+        6.069553805774277,
+        10.006561679790023,
+        9.0
+      ],
+      "optimizer_position_xy_m": [
+        1.8499999999999996,
+        3.0499999999999994
+      ],
+      "wall_index": -1,
+      "wall_t": 0.0,
+      "wall_u_m": null,
+      "aim_direction": [
+        0.36975016760634244,
+        -0.6317048318039385,
+        -0.6813470620987805
+      ],
+      "aim_xy": [
+        0.36975016760634244,
+        -0.6317048318039385
+      ],
+      "normal": [
+        0.36975016760634244,
+        -0.6317048318039385
+      ],
+      "yaw_deg": 0.0,
+      "pitch_deg": -42.94899711641968,
+      "width_m": 0.22,
+      "height_m": 2.7432000000000003,
+      "depth_m": 0.1,
+      "visible_depth_m": 0.1,
+      "coverage_h_deg": 100.0,
+      "coverage_v_deg": 100.0,
+      "allowed_height_range_m": [
+        2.7432000000000003,
+        2.7432000000000003
+      ],
+      "distance_m": 2.41568517948842,
+      "predicted_spl_db": 96.1207058065086,
+      "headroom_db": 0.0,
+      "receiver_delay_ms": 1.893782962153886,
+      "receiver_trim_db": -0.009095004414707526,
+      "warnings": [],
+      "azimuth_deg": -30.341339088583062,
+      "elevation_deg": 42.94899711641969,
+      "compliance": {
+        "channel": "Ltf",
+        "azimuth_deg": -30.341339088583062,
+        "azimuth_allowed": "-45..-15\u00b0",
+        "elevation_deg": 42.94899711641969,
+        "elevation_allowed": "+30..+55\u00b0",
+        "distance_m": 2.41568517948842,
+        "status": "PASS"
+      }
+    },
+    {
+      "type": "height",
+      "channel": "Rtf",
+      "model_id": "generic_in_ceiling",
+      "mount_type": "in_ceiling",
+      "surface": "ceiling",
+      "position_m": [
+        3.6499999999999995,
+        3.0499999999999994,
+        2.7432000000000003
+      ],
+      "position_ft": [
+        11.975065616797897,
+        10.006561679790023,
+        9.0
+      ],
+      "optimizer_position_xy_m": [
+        3.6499999999999995,
+        3.0499999999999994
+      ],
+      "wall_index": -1,
+      "wall_t": 0.0,
+      "wall_u_m": null,
+      "aim_direction": [
+        -0.37459515145617284,
+        -0.6303839888863255,
+        -0.6799224213550338
+      ],
+      "aim_xy": [
+        -0.37459515145617284,
+        -0.6303839888863255
+      ],
+      "normal": [
+        -0.37459515145617284,
+        -0.6303839888863255
+      ],
+      "yaw_deg": 0.0,
+      "pitch_deg": -42.837581072151366,
+      "width_m": 0.22,
+      "height_m": 2.7432000000000003,
+      "depth_m": 0.1,
+      "visible_depth_m": 0.1,
+      "coverage_h_deg": 100.0,
+      "coverage_v_deg": 100.0,
+      "allowed_height_range_m": [
+        2.7432000000000003,
+        2.7432000000000003
+      ],
+      "distance_m": 2.4207467621376666,
+      "predicted_spl_db": 96.10252531110747,
+      "headroom_db": 0.0,
+      "receiver_delay_ms": 1.879026161427219,
+      "receiver_trim_db": 0.009085490986421346,
+      "warnings": [],
+      "azimuth_deg": 30.72019115173272,
+      "elevation_deg": 42.837581072151366,
+      "compliance": {
+        "channel": "Rtf",
+        "azimuth_deg": 30.72019115173272,
+        "azimuth_allowed": "+15..+45\u00b0",
+        "elevation_deg": 42.837581072151366,
+        "elevation_allowed": "+30..+55\u00b0",
+        "distance_m": 2.4207467621376666,
+        "status": "PASS"
+      }
+    },
+    {
+      "type": "height",
+      "channel": "Ltr",
+      "model_id": "generic_in_ceiling",
+      "mount_type": "in_ceiling",
+      "surface": "ceiling",
+      "position_m": [
+        1.5499999999999998,
+        0.35,
+        2.7432000000000003
+      ],
+      "position_ft": [
+        5.0853018372703405,
+        1.148293963254593,
+        9.0
+      ],
+      "optimizer_position_xy_m": [
+        1.5499999999999998,
+        0.35
+      ],
+      "wall_index": -1,
+      "wall_t": 0.0,
+      "wall_u_m": null,
+      "aim_direction": [
+        0.5082716381843334,
+        0.5000929460512966,
+        -0.7011183831045574
+      ],
+      "aim_xy": [
+        0.5082716381843334,
+        0.5000929460512966
+      ],
+      "normal": [
+        0.5082716381843334,
+        0.5000929460512966
+      ],
+      "yaw_deg": 0.0,
+      "pitch_deg": -44.51680104326948,
+      "width_m": 0.22,
+      "height_m": 2.7432000000000003,
+      "depth_m": 0.1,
+      "visible_depth_m": 0.1,
+      "coverage_h_deg": 100.0,
+      "coverage_v_deg": 100.0,
+      "allowed_height_range_m": [
+        2.7432000000000003,
+        2.7432000000000003
+      ],
+      "distance_m": 2.3475636064652226,
+      "predicted_spl_db": 96.36916514055696,
+      "headroom_db": 0.0,
+      "receiver_delay_ms": 2.0923881313177266,
+      "receiver_trim_db": -0.25755433846306197,
+      "warnings": [],
+      "azimuth_deg": -134.5352928166653,
+      "elevation_deg": 44.51680104326948,
+      "compliance": {
+        "channel": "Ltr",
+        "azimuth_deg": -134.5352928166653,
+        "azimuth_allowed": "-150..-120\u00b0",
+        "elevation_deg": 44.51680104326948,
+        "elevation_allowed": "+30..+55\u00b0",
+        "distance_m": 2.3475636064652226,
+        "status": "PASS"
+      }
+    },
+    {
+      "type": "height",
+      "channel": "Rtr",
+      "model_id": "generic_in_ceiling",
+      "mount_type": "in_ceiling",
+      "surface": "ceiling",
+      "position_m": [
+        3.9499999999999993,
+        0.35,
+        2.7432000000000003
+      ],
+      "position_ft": [
+        12.959317585301834,
+        1.148293963254593,
+        9.0
+      ],
+      "optimizer_position_xy_m": [
+        3.9499999999999993,
+        0.35
+      ],
+      "wall_index": -1,
+      "wall_t": 0.0,
+      "wall_u_m": null,
+      "aim_direction": [
+        -0.5125492964380898,
+        0.4986185565282713,
+        -0.6990513241575915
+      ],
+      "aim_xy": [
+        -0.5125492964380898,
+        0.4986185565282713
+      ],
+      "normal": [
+        -0.5125492964380898,
+        0.4986185565282713
+      ],
+      "yaw_deg": 0.0,
+      "pitch_deg": -44.35094107254151,
+      "width_m": 0.22,
+      "height_m": 2.7432000000000003,
+      "depth_m": 0.1,
+      "visible_depth_m": 0.1,
+      "coverage_h_deg": 100.0,
+      "coverage_v_deg": 100.0,
+      "allowed_height_range_m": [
+        2.7432000000000003,
+        2.7432000000000003
+      ],
+      "distance_m": 2.3545052317631403,
+      "predicted_spl_db": 96.34351930799966,
+      "headroom_db": 0.0,
+      "receiver_delay_ms": 2.0721501566882288,
+      "receiver_trim_db": -0.23190850590576711,
+      "warnings": [],
+      "azimuth_deg": 134.21069275752922,
+      "elevation_deg": 44.35094107254152,
+      "compliance": {
+        "channel": "Rtr",
+        "azimuth_deg": 134.21069275752922,
+        "azimuth_allowed": "+120..+150\u00b0",
+        "elevation_deg": 44.35094107254152,
+        "elevation_allowed": "+30..+55\u00b0",
+        "distance_m": 2.3545052317631403,
+        "status": "PASS"
+      }
+    }
+  ],
+  "seats": [
+    {
+      "row": 1,
+      "seat": 1,
+      "position_m": [
+        2.7432000000000003,
+        1.524
+      ],
+      "ear_height_m": 1.09728
+    }
+  ],
+  "standard": "dolby",
+  "compliance": [
+    {
+      "channel": "L",
+      "azimuth_deg": -26.499999999999993,
+      "azimuth_allowed": "-30..-22\u00b0",
+      "elevation_deg": 0.0,
+      "elevation_allowed": "-10..+15\u00b0",
+      "distance_m": 3.065252735507203,
+      "status": "PASS"
+    },
+    {
+      "channel": "C",
+      "azimuth_deg": 0.5000000000000024,
+      "azimuth_allowed": "-5..+5\u00b0",
+      "elevation_deg": 0.0,
+      "elevation_allowed": "-10..+15\u00b0",
+      "distance_m": 2.7433044566277536,
+      "status": "PASS"
+    },
+    {
+      "channel": "R",
+      "azimuth_deg": 26.499999999999993,
+      "azimuth_allowed": "+22..+30\u00b0",
+      "elevation_deg": 0.0,
+      "elevation_allowed": "-10..+15\u00b0",
+      "distance_m": 3.065252735507203,
+      "status": "PASS"
+    },
+    {
+      "channel": "Lss",
+      "azimuth_deg": -110.0,
+      "azimuth_allowed": "-120..-90\u00b0",
+      "elevation_deg": 14.995389193437543,
+      "elevation_allowed": "+0..+15\u00b0",
+      "distance_m": 3.0221673852496465,
+      "status": "PASS"
+    },
+    {
+      "channel": "Rss",
+      "azimuth_deg": 110.0,
+      "azimuth_allowed": "+90..+120\u00b0",
+      "elevation_deg": 14.99538919343754,
+      "elevation_allowed": "+0..+15\u00b0",
+      "distance_m": 3.0221673852496465,
+      "status": "PASS"
+    },
+    {
+      "channel": "Lrs",
+      "azimuth_deg": -140.5,
+      "azimuth_allowed": "-150..-135\u00b0",
+      "elevation_deg": 14.994404441080995,
+      "elevation_allowed": "+0..+15\u00b0",
+      "distance_m": 2.0446725705815822,
+      "status": "PASS"
+    },
+    {
+      "channel": "Rrs",
+      "azimuth_deg": 140.5,
+      "azimuth_allowed": "+135..+150\u00b0",
+      "elevation_deg": 14.994404441080995,
+      "elevation_allowed": "+0..+15\u00b0",
+      "distance_m": 2.0446725705815822,
+      "status": "PASS"
+    },
+    {
+      "channel": "LFE",
+      "azimuth_deg": "N/A",
+      "azimuth_allowed": "N/A",
+      "elevation_deg": "N/A",
+      "elevation_allowed": "N/A",
+      "distance_m": 1.6378478679047086,
+      "status": "N/A",
+      "note": "LFE is not an azimuth/elevation channel"
+    },
+    {
+      "channel": "Ltf",
+      "azimuth_deg": -30.341339088583062,
+      "azimuth_allowed": "-45..-15\u00b0",
+      "elevation_deg": 42.94899711641969,
+      "elevation_allowed": "+30..+55\u00b0",
+      "distance_m": 2.41568517948842,
+      "status": "PASS"
+    },
+    {
+      "channel": "Rtf",
+      "azimuth_deg": 30.72019115173272,
+      "azimuth_allowed": "+15..+45\u00b0",
+      "elevation_deg": 42.837581072151366,
+      "elevation_allowed": "+30..+55\u00b0",
+      "distance_m": 2.4207467621376666,
+      "status": "PASS"
+    },
+    {
+      "channel": "Ltr",
+      "azimuth_deg": -134.5352928166653,
+      "azimuth_allowed": "-150..-120\u00b0",
+      "elevation_deg": 44.51680104326948,
+      "elevation_allowed": "+30..+55\u00b0",
+      "distance_m": 2.3475636064652226,
+      "status": "PASS"
+    },
+    {
+      "channel": "Rtr",
+      "azimuth_deg": 134.21069275752922,
+      "azimuth_allowed": "+120..+150\u00b0",
+      "elevation_deg": 44.35094107254152,
+      "elevation_allowed": "+30..+55\u00b0",
+      "distance_m": 2.3545052317631403,
+      "status": "PASS"
+    }
+  ],
+  "receiver_calibration": {
+    "distance_spread_m": 1.4274048676024942,
+    "d_ref_m": 2.4182159708130433,
+    "d_max_m": 3.065252735507203,
+    "trim_spread_db": 3.5168503548206784
+  },
+  "definitions": {
+    "units": {
+      "length": "metres in *_m; feet in *_ft",
+      "angles": "degrees"
+    },
+    "origin_and_axes": "world origin is the room polygon's first vertex; x/y follow the supplied world frame; z is up from floor",
+    "facing": "listener forward direction in world coordinates (north=+y, east=+x, south=-y, west=-x)",
+    "wall_index": "zero-based polygon edge from vertex i to vertex (i+1) modulo vertex count; vertices are counterclockwise",
+    "aim_vector": "unit vector from speaker toward its acoustic/visual forward direction",
+    "position_m": "mount point projected to the wall plane; position_xy optimizer points are offset inward by the search nudge",
+    "optimizer_position_xy_m": "optimizer's horizontal acoustic candidate, nudged into the room for a valid image-source computation",
+    "candidate_data": "stored separately when --save-candidates is supplied; each row is a wall-u and height-grid sample"
+  },
+  "warnings": [],
+  "keepouts": [],
+  "crossover": {
+    "frequency_hz": 80.0,
+    "filter": "Linkwitz-Riley 4th order",
+    "lfe_gain_db": 10.0,
+    "lfe_reference_convention": "+10 dB default"
+  },
+  "seat_coverage": [
+    {
+      "channel": "L",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 6.499999999999993,
+      "vertical_off_axis_deg": 0.0,
+      "covered": true
+    },
+    {
+      "channel": "C",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 0.0001823260891678871,
+      "vertical_off_axis_deg": 0.0,
+      "covered": true
+    },
+    {
+      "channel": "R",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 6.499999999999993,
+      "vertical_off_axis_deg": 0.0,
+      "covered": true
+    },
+    {
+      "channel": "Lss",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 40.0,
+      "vertical_off_axis_deg": 0.004610806562455494,
+      "covered": true
+    },
+    {
+      "channel": "Rss",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 40.0,
+      "vertical_off_axis_deg": 0.004610806562459047,
+      "covered": true
+    },
+    {
+      "channel": "Lrs",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 19.499999999999996,
+      "vertical_off_axis_deg": 0.005595558919003096,
+      "covered": true
+    },
+    {
+      "channel": "Rrs",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 19.499999999999996,
+      "vertical_off_axis_deg": 0.005595558919003096,
+      "covered": true
+    },
+    {
+      "channel": "LFE",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 2.134445314102447,
+      "vertical_off_axis_deg": 21.387501449341187,
+      "covered": true
+    },
+    {
+      "channel": "Ltf",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 0.0,
+      "vertical_off_axis_deg": 7.105427357601002e-15,
+      "covered": true
+    },
+    {
+      "channel": "Rtf",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 3.583531800906831e-15,
+      "vertical_off_axis_deg": 0.0,
+      "covered": true
+    },
+    {
+      "channel": "Ltr",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 3.800131481781815e-15,
+      "vertical_off_axis_deg": 0.0,
+      "covered": true
+    },
+    {
+      "channel": "Rtr",
+      "row": 1,
+      "seat": 1,
+      "horizontal_off_axis_deg": 1.1334568455027529e-14,
+      "vertical_off_axis_deg": 7.105427357601002e-15,
+      "covered": true
+    }
+  ],
+  "seat_acoustics": {
+    "seat_count": 1,
+    "mlp_weight": 0.6,
+    "seats": [
+      {
+        "row": 1,
+        "seat": 1,
+        "position_m": [
+          2.7432000000000003,
+          1.524
+        ],
+        "ear_height_m": 1.09728,
+        "mlp": true
+      }
+    ],
+    "worst_coverage_seat": null
+  },
+  "first_reflections": [
+    {
+      "surface": "floor",
+      "reflection_point_m": [
+        2.059345466393914,
+        2.8956,
+        0.0
+      ],
+      "time_ms": 10.99085457053059,
+      "level_relative_db": -2.502996597749945,
+      "path_length_m": 3.7698631176919926,
+      "reflection_point_ft": [
+        6.756382763759561,
+        9.5,
+        0.0
+      ],
+      "source_level_db": 111.69652271820537,
+      "panel": {
+        "center_m": [
+          2.059345466393914,
+          2.8956,
+          0.0
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "ceiling",
+      "reflection_point_m": [
+        2.0593454663939137,
+        2.8956,
+        2.7432000000000003
+      ],
+      "time_ms": 13.113696439794392,
+      "level_relative_db": -4.036869895216404,
+      "path_length_m": 4.4979978788494765,
+      "reflection_point_ft": [
+        6.756382763759559,
+        9.5,
+        9.0
+      ],
+      "source_level_db": 110.16264942073892,
+      "panel": {
+        "center_m": [
+          2.0593454663939137,
+          2.8956,
+          2.7432000000000003
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 3",
+      "reflection_point_m": [
+        2.220446049250313e-16,
+        3.3510723302140173,
+        1.09728
+      ],
+      "time_ms": 14.427440384435798,
+      "level_relative_db": -5.129442526125371,
+      "path_length_m": 4.9486120518614785,
+      "reflection_point_ft": [
+        7.284927983104701e-16,
+        10.994331792040738,
+        3.6
+      ],
+      "source_level_db": 109.07007678982994,
+      "panel": {
+        "center_m": [
+          2.220446049250313e-16,
+          3.3510723302140173,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 0",
+      "reflection_point_m": [
+        2.383276561259955,
+        8.881784197001252e-16,
+        1.09728
+      ],
+      "time_ms": 17.348439441308546,
+      "level_relative_db": -6.730865045942277,
+      "path_length_m": 5.950514728368831,
+      "reflection_point_ft": [
+        7.819148823031347,
+        2.9139711932418804e-15,
+        3.6
+      ],
+      "source_level_db": 107.46865427001303,
+      "panel": {
+        "center_m": [
+          2.383276561259955,
+          8.881784197001252e-16,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 1",
+      "reflection_point_m": [
+        5.486400000000001,
+        2.621902902654096,
+        1.09728
+      ],
+      "time_ms": 21.523847085980012,
+      "level_relative_db": -8.60405471703801,
+      "path_length_m": 7.382679550491145,
+      "reflection_point_ft": [
+        18.0,
+        8.602043643878266,
+        3.6
+      ],
+      "source_level_db": 105.5954645989173,
+      "panel": {
+        "center_m": [
+          5.486400000000001,
+          2.621902902654096,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "floor",
+      "reflection_point_m": [
+        2.755169771861805,
+        2.8956,
+        0.0
+      ],
+      "time_ms": 10.24224970598756,
+      "level_relative_db": -2.8541201577027975,
+      "path_length_m": 3.5130916491537327,
+      "reflection_point_ft": [
+        9.039270905058416,
+        9.5,
+        0.0
+      ],
+      "source_level_db": 112.16071395110282,
+      "panel": {
+        "center_m": [
+          2.755169771861805,
+          2.8956,
+          0.0
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "ceiling",
+      "reflection_point_m": [
+        2.755169771861805,
+        2.8956,
+        2.7432000000000003
+      ],
+      "time_ms": 12.492951179137988,
+      "level_relative_db": -4.579513819439132,
+      "path_length_m": 4.28508225444433,
+      "reflection_point_ft": [
+        9.039270905058416,
+        9.5,
+        9.0
+      ],
+      "source_level_db": 110.43532028936649,
+      "panel": {
+        "center_m": [
+          2.755169771861805,
+          2.8956,
+          2.7432000000000003
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 0",
+      "reflection_point_m": [
+        2.749499879927266,
+        8.881784197001252e-16,
+        1.09728
+      ],
+      "time_ms": 16.88410927167907,
+      "level_relative_db": -7.459065434175175,
+      "path_length_m": 5.79124948018592,
+      "reflection_point_ft": [
+        9.020668897399165,
+        2.9139711932418804e-15,
+        3.6
+      ],
+      "source_level_db": 107.55576867463044,
+      "panel": {
+        "center_m": [
+          2.749499879927266,
+          8.881784197001252e-16,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 1",
+      "reflection_point_m": [
+        5.486400000000001,
+        2.9016111150339907,
+        1.09728
+      ],
+      "time_ms": 17.820929658352526,
+      "level_relative_db": -7.9281094701142605,
+      "path_length_m": 6.112578872814916,
+      "reflection_point_ft": [
+        18.0,
+        9.51972150601703,
+        3.6
+      ],
+      "source_level_db": 107.08672463869135,
+      "panel": {
+        "center_m": [
+          5.486400000000001,
+          2.9016111150339907,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 3",
+      "reflection_point_m": [
+        -4.440892098500626e-16,
+        2.889641115268713,
+        1.09728
+      ],
+      "time_ms": 17.94578182297023,
+      "level_relative_db": -7.988750020102292,
+      "path_length_m": 6.155403165278788,
+      "reflection_point_ft": [
+        -1.4569855966209402e-15,
+        9.480449853243808,
+        3.6
+      ],
+      "source_level_db": 107.02608408870333,
+      "panel": {
+        "center_m": [
+          -4.440892098500626e-16,
+          2.889641115268713,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "floor",
+      "reflection_point_m": [
+        3.4270545336060865,
+        2.8956,
+        0.0
+      ],
+      "time_ms": 10.99085457053059,
+      "level_relative_db": -2.502996597749945,
+      "path_length_m": 3.7698631176919926,
+      "reflection_point_ft": [
+        11.243617236240441,
+        9.5,
+        0.0
+      ],
+      "source_level_db": 111.69652271820537,
+      "panel": {
+        "center_m": [
+          3.4270545336060865,
+          2.8956,
+          0.0
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "ceiling",
+      "reflection_point_m": [
+        3.427054533606087,
+        2.8956,
+        2.7432000000000003
+      ],
+      "time_ms": 13.113696439794392,
+      "level_relative_db": -4.036869895216404,
+      "path_length_m": 4.4979978788494765,
+      "reflection_point_ft": [
+        11.243617236240443,
+        9.5,
+        9.0
+      ],
+      "source_level_db": 110.16264942073892,
+      "panel": {
+        "center_m": [
+          3.427054533606087,
+          2.8956,
+          2.7432000000000003
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 1",
+      "reflection_point_m": [
+        5.486400000000001,
+        3.3510723302140173,
+        1.09728
+      ],
+      "time_ms": 14.427440384435798,
+      "level_relative_db": -5.129442526125371,
+      "path_length_m": 4.9486120518614785,
+      "reflection_point_ft": [
+        18.0,
+        10.994331792040738,
+        3.6
+      ],
+      "source_level_db": 109.07007678982994,
+      "panel": {
+        "center_m": [
+          5.486400000000001,
+          3.3510723302140173,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 0",
+      "reflection_point_m": [
+        3.1031234387400457,
+        8.881784197001252e-16,
+        1.09728
+      ],
+      "time_ms": 17.348439441308546,
+      "level_relative_db": -6.730865045942277,
+      "path_length_m": 5.950514728368831,
+      "reflection_point_ft": [
+        10.180851176968654,
+        2.9139711932418804e-15,
+        3.6
+      ],
+      "source_level_db": 107.46865427001303,
+      "panel": {
+        "center_m": [
+          3.1031234387400457,
+          8.881784197001252e-16,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    },
+    {
+      "surface": "wall 3",
+      "reflection_point_m": [
+        -8.881784197001252e-16,
+        2.621902902654096,
+        1.09728
+      ],
+      "time_ms": 21.523847085980012,
+      "level_relative_db": -8.60405471703801,
+      "path_length_m": 7.382679550491145,
+      "reflection_point_ft": [
+        -2.9139711932418804e-15,
+        8.602043643878266,
+        3.6
+      ],
+      "source_level_db": 105.5954645989173,
+      "panel": {
+        "center_m": [
+          -8.881784197001252e-16,
+          2.621902902654096,
+          1.09728
+        ],
+        "width_m": 1.2,
+        "height_m": 1.2,
+        "thickness_m": 0.05,
+        "type": "broadband absorber/diffuser guidance"
+      }
+    }
+  ],
+  "room_acoustics": {
+    "rt60_target_s": 0.3,
+    "rt60_sabine": [
+      0.4539774449339209,
+      1.1366126470588238,
+      1.4514490140845075,
+      0.8807938461538464,
+      0.5321146987951808,
+      0.4670070090634442
+    ],
+    "rt60_eyring": [
+      0.40024230524898696,
+      1.084270120631664,
+      1.3992901739104315,
+      0.828199108633478,
+      0.47874110459310376,
+      0.4133417192407541
+    ]
+  },
+  "sub_strategy_comparison": [
+    {
+      "strategy": "front midpoint",
+      "sub_count": 1,
+      "positions_m": [
+        [
+          2.7432000000000003,
+          4.1172
+        ]
+      ],
+      "mean_level_db": -56.2614517307997,
+      "seat_std_db": 0.0,
+      "worst_null_db": -74.90880447832467,
+      "flatness_db": -7.183402361495162,
+      "frequencies_hz": [
+        30.0,
+        31.0,
+        32.0,
+        33.0,
+        34.0,
+        35.0,
+        36.0,
+        37.0,
+        38.0,
+        39.0,
+        40.0,
+        41.0,
+        42.0,
+        43.0,
+        44.0,
+        45.0,
+        46.0,
+        47.0,
+        48.0,
+        49.0,
+        50.0,
+        51.0,
+        52.0,
+        53.0,
+        54.0,
+        55.0,
+        56.0,
+        57.0,
+        58.0,
+        59.0,
+        60.0,
+        61.0,
+        62.0,
+        63.0,
+        64.0,
+        65.0,
+        66.0,
+        67.0,
+        68.0,
+        69.0,
+        70.0,
+        71.0,
+        72.0,
+        73.0,
+        74.0,
+        75.0,
+        76.0,
+        77.0,
+        78.0,
+        79.0,
+        80.0
+      ],
+      "mean_response_db": [
+        -68.79012029698532,
+        -67.66117495091686,
+        -66.41356358597915,
+        -65.02020732837633,
+        -63.44213318771442,
+        -61.6202792882094,
+        -59.45878781040211,
+        -56.78655932849832,
+        -53.252560780487826,
+        -47.96894756743647,
+        -39.241482610420235,
+        -44.417389611992974,
+        -50.03494058940713,
+        -53.22135976335279,
+        -55.303239996940505,
+        -56.76004526133245,
+        -57.80735706029736,
+        -58.55810516512011,
+        -59.077133571462134,
+        -59.403458186434676,
+        -59.5605524308251,
+        -59.5614462396025,
+        -59.41123983483928,
+        -59.10809611194911,
+        -58.64309267921199,
+        -57.99889632987272,
+        -57.146786603411016,
+        -56.04080710929662,
+        -54.60613648139157,
+        -52.7143519838842,
+        -50.12554106651221,
+        -46.34683955912834,
+        -40.72348772425446,
+        -40.54249891611799,
+        -46.1650053081863,
+        -49.930633617842474,
+        -52.44332038059662,
+        -54.18231335317443,
+        -55.359205799099406,
+        -56.056038581973276,
+        -56.272242209394115,
+        -55.9243459063015,
+        -54.802233164900336,
+        -52.484640845413054,
+        -49.224650882927385,
+        -52.443584293627374,
+        -58.83410523104186,
+        -63.887605570296174,
+        -68.02261537968042,
+        -71.62407425594172,
+        -74.90880447832467
+      ],
+      "seat_response_db": [
+        [
+          -68.79012029698532,
+          -67.66117495091686,
+          -66.41356358597915,
+          -65.02020732837633,
+          -63.44213318771442,
+          -61.6202792882094,
+          -59.45878781040211,
+          -56.78655932849832,
+          -53.252560780487826,
+          -47.96894756743647,
+          -39.241482610420235,
+          -44.417389611992974,
+          -50.03494058940713,
+          -53.22135976335279,
+          -55.303239996940505,
+          -56.76004526133245,
+          -57.80735706029736,
+          -58.55810516512011,
+          -59.077133571462134,
+          -59.403458186434676,
+          -59.5605524308251,
+          -59.5614462396025,
+          -59.41123983483928,
+          -59.10809611194911,
+          -58.64309267921199,
+          -57.99889632987272,
+          -57.146786603411016,
+          -56.04080710929662,
+          -54.60613648139157,
+          -52.7143519838842,
+          -50.12554106651221,
+          -46.34683955912834,
+          -40.72348772425446,
+          -40.54249891611799,
+          -46.1650053081863,
+          -49.930633617842474,
+          -52.44332038059662,
+          -54.18231335317443,
+          -55.359205799099406,
+          -56.056038581973276,
+          -56.272242209394115,
+          -55.9243459063015,
+          -54.802233164900336,
+          -52.484640845413054,
+          -49.224650882927385,
+          -52.443584293627374,
+          -58.83410523104186,
+          -63.887605570296174,
+          -68.02261537968042,
+          -71.62407425594172,
+          -74.90880447832467
+        ]
+      ]
+    },
+    {
+      "strategy": "front corners",
+      "sub_count": 2,
+      "positions_m": [
+        [
+          5.336400000000001,
+          4.1172
+        ],
+        [
+          0.1499999999999999,
+          4.1172
+        ]
+      ],
+      "mean_level_db": -53.02203303732055,
+      "seat_std_db": 0.0,
+      "worst_null_db": -79.3413007025728,
+      "flatness_db": -10.584845856126167,
+      "frequencies_hz": [
+        30.0,
+        31.0,
+        32.0,
+        33.0,
+        34.0,
+        35.0,
+        36.0,
+        37.0,
+        38.0,
+        39.0,
+        40.0,
+        41.0,
+        42.0,
+        43.0,
+        44.0,
+        45.0,
+        46.0,
+        47.0,
+        48.0,
+        49.0,
+        50.0,
+        51.0,
+        52.0,
+        53.0,
+        54.0,
+        55.0,
+        56.0,
+        57.0,
+        58.0,
+        59.0,
+        60.0,
+        61.0,
+        62.0,
+        63.0,
+        64.0,
+        65.0,
+        66.0,
+        67.0,
+        68.0,
+        69.0,
+        70.0,
+        71.0,
+        72.0,
+        73.0,
+        74.0,
+        75.0,
+        76.0,
+        77.0,
+        78.0,
+        79.0,
+        80.0
+      ],
+      "mean_response_db": [
+        -55.51429381622408,
+        -54.89848757331706,
+        -54.19466235616157,
+        -53.3786996148623,
+        -52.415179880654605,
+        -51.24934564708408,
+        -49.79060859084471,
+        -47.874401169760446,
+        -45.157906668942275,
+        -40.76379683291799,
+        -33.01157692050525,
+        -39.266883977026616,
+        -46.093430228592055,
+        -50.65495809155082,
+        -54.33309991233116,
+        -57.695759605202554,
+        -61.113565640835944,
+        -65.00679428693613,
+        -70.15903353968866,
+        -77.77488206562984,
+        -74.86917151165578,
+        -68.9287552518214,
+        -65.15947220618591,
+        -62.35195078276753,
+        -60.00146128522016,
+        -57.86334696613659,
+        -55.78793932603656,
+        -53.65784856146277,
+        -51.352848768945954,
+        -48.71410425097601,
+        -45.480567386235194,
+        -41.14433629947828,
+        -35.03984356062817,
+        -34.446389750918705,
+        -39.71979148976866,
+        -43.19634114860335,
+        -45.47840582739403,
+        -47.045373882899035,
+        -48.110788436842604,
+        -48.76072416752347,
+        -49.001236595076925,
+        -48.75892336300219,
+        -47.83858758476207,
+        -45.84110076786614,
+        -43.05300758604026,
+        -46.94794037125375,
+        -54.30431096777609,
+        -60.762535793338294,
+        -67.0114020117621,
+        -73.8065118793293,
+        -79.3413007025728
+      ],
+      "seat_response_db": [
+        [
+          -55.51429381622408,
+          -54.89848757331706,
+          -54.19466235616157,
+          -53.3786996148623,
+          -52.415179880654605,
+          -51.24934564708408,
+          -49.79060859084471,
+          -47.874401169760446,
+          -45.157906668942275,
+          -40.76379683291799,
+          -33.01157692050525,
+          -39.266883977026616,
+          -46.093430228592055,
+          -50.65495809155082,
+          -54.33309991233116,
+          -57.695759605202554,
+          -61.113565640835944,
+          -65.00679428693613,
+          -70.15903353968866,
+          -77.77488206562984,
+          -74.86917151165578,
+          -68.9287552518214,
+          -65.15947220618591,
+          -62.35195078276753,
+          -60.00146128522016,
+          -57.86334696613659,
+          -55.78793932603656,
+          -53.65784856146277,
+          -51.352848768945954,
+          -48.71410425097601,
+          -45.480567386235194,
+          -41.14433629947828,
+          -35.03984356062817,
+          -34.446389750918705,
+          -39.71979148976866,
+          -43.19634114860335,
+          -45.47840582739403,
+          -47.045373882899035,
+          -48.110788436842604,
+          -48.76072416752347,
+          -49.001236595076925,
+          -48.75892336300219,
+          -47.83858758476207,
+          -45.84110076786614,
+          -43.05300758604026,
+          -46.94794037125375,
+          -54.30431096777609,
+          -60.762535793338294,
+          -67.0114020117621,
+          -73.8065118793293,
+          -79.3413007025728
+        ]
+      ]
+    },
+    {
+      "strategy": "front + rear midpoints",
+      "sub_count": 2,
+      "positions_m": [
+        [
+          2.7432000000000003,
+          4.1172
+        ],
+        [
+          2.7432000000000003,
+          0.1499999999999999
+        ]
+      ],
+      "mean_level_db": -55.511840287452344,
+      "seat_std_db": 0.0,
+      "worst_null_db": -63.5473270827072,
+      "flatness_db": -7.311694544351253,
+      "frequencies_hz": [
+        30.0,
+        31.0,
+        32.0,
+        33.0,
+        34.0,
+        35.0,
+        36.0,
+        37.0,
+        38.0,
+        39.0,
+        40.0,
+        41.0,
+        42.0,
+        43.0,
+        44.0,
+        45.0,
+        46.0,
+        47.0,
+        48.0,
+        49.0,
+        50.0,
+        51.0,
+        52.0,
+        53.0,
+        54.0,
+        55.0,
+        56.0,
+        57.0,
+        58.0,
+        59.0,
+        60.0,
+        61.0,
+        62.0,
+        63.0,
+        64.0,
+        65.0,
+        66.0,
+        67.0,
+        68.0,
+        69.0,
+        70.0,
+        71.0,
+        72.0,
+        73.0,
+        74.0,
+        75.0,
+        76.0,
+        77.0,
+        78.0,
+        79.0,
+        80.0
+      ],
+      "mean_response_db": [
+        -63.5473270827072,
+        -63.369499619388286,
+        -63.181941751171856,
+        -62.98409293552734,
+        -62.775331967662105,
+        -62.55496845984686,
+        -62.32223274219301,
+        -62.07626382258841,
+        -61.81609494255562,
+        -61.54063613141566,
+        -61.24865298033099,
+        -60.9387406117211,
+        -60.60929148045496,
+        -60.25845516966646,
+        -59.884087672967084,
+        -59.483686688603036,
+        -59.054308035426814,
+        -58.592456186148965,
+        -58.093938687578444,
+        -57.553669198776774,
+        -56.96539579675715,
+        -56.32131784771794,
+        -55.611531927476854,
+        -54.82320676304867,
+        -53.939311971254014,
+        -52.9365784166032,
+        -51.782062935407566,
+        -50.427010007799744,
+        -48.795053732979994,
+        -46.75740723521198,
+        -44.074984288092494,
+        -40.257033948824855,
+        -34.65239466056558,
+        -34.55349496175293,
+        -40.32922395082592,
+        -44.33012777663333,
+        -47.17552648966666,
+        -49.3666404896245,
+        -51.14724137151115,
+        -52.648246568233155,
+        -53.94710449968378,
+        -55.09317705067191,
+        -56.11977534954954,
+        -57.05040724626925,
+        -57.90226711422069,
+        -58.68830469903523,
+        -59.41851295595997,
+        -60.10076298333097,
+        -60.7413642326751,
+        -61.34545158090638,
+        -61.91725964104825
+      ],
+      "seat_response_db": [
+        [
+          -63.5473270827072,
+          -63.369499619388286,
+          -63.181941751171856,
+          -62.98409293552734,
+          -62.775331967662105,
+          -62.55496845984686,
+          -62.32223274219301,
+          -62.07626382258841,
+          -61.81609494255562,
+          -61.54063613141566,
+          -61.24865298033099,
+          -60.9387406117211,
+          -60.60929148045496,
+          -60.25845516966646,
+          -59.884087672967084,
+          -59.483686688603036,
+          -59.054308035426814,
+          -58.592456186148965,
+          -58.093938687578444,
+          -57.553669198776774,
+          -56.96539579675715,
+          -56.32131784771794,
+          -55.611531927476854,
+          -54.82320676304867,
+          -53.939311971254014,
+          -52.9365784166032,
+          -51.782062935407566,
+          -50.427010007799744,
+          -48.795053732979994,
+          -46.75740723521198,
+          -44.074984288092494,
+          -40.257033948824855,
+          -34.65239466056558,
+          -34.55349496175293,
+          -40.32922395082592,
+          -44.33012777663333,
+          -47.17552648966666,
+          -49.3666404896245,
+          -51.14724137151115,
+          -52.648246568233155,
+          -53.94710449968378,
+          -55.09317705067191,
+          -56.11977534954954,
+          -57.05040724626925,
+          -57.90226711422069,
+          -58.68830469903523,
+          -59.41851295595997,
+          -60.10076298333097,
+          -60.7413642326751,
+          -61.34545158090638,
+          -61.91725964104825
+        ]
+      ]
+    },
+    {
+      "strategy": "four wall midpoints",
+      "sub_count": 4,
+      "positions_m": [
+        [
+          2.7432000000000003,
+          4.1172
+        ],
+        [
+          2.7432000000000003,
+          0.1499999999999999
+        ],
+        [
+          0.1499999999999999,
+          2.1336
+        ],
+        [
+          5.336400000000001,
+          2.1336
+        ]
+      ],
+      "mean_level_db": -92.15445902752482,
+      "seat_std_db": 0.0,
+      "worst_null_db": -100.1899458227796,
+      "flatness_db": -7.3116945443512416,
+      "frequencies_hz": [
+        30.0,
+        31.0,
+        32.0,
+        33.0,
+        34.0,
+        35.0,
+        36.0,
+        37.0,
+        38.0,
+        39.0,
+        40.0,
+        41.0,
+        42.0,
+        43.0,
+        44.0,
+        45.0,
+        46.0,
+        47.0,
+        48.0,
+        49.0,
+        50.0,
+        51.0,
+        52.0,
+        53.0,
+        54.0,
+        55.0,
+        56.0,
+        57.0,
+        58.0,
+        59.0,
+        60.0,
+        61.0,
+        62.0,
+        63.0,
+        64.0,
+        65.0,
+        66.0,
+        67.0,
+        68.0,
+        69.0,
+        70.0,
+        71.0,
+        72.0,
+        73.0,
+        74.0,
+        75.0,
+        76.0,
+        77.0,
+        78.0,
+        79.0,
+        80.0
+      ],
+      "mean_response_db": [
+        -100.1899458227796,
+        -100.01211835946069,
+        -99.82456049124426,
+        -99.62671167559975,
+        -99.41795070773449,
+        -99.19758719991924,
+        -98.96485148226537,
+        -98.71888256266072,
+        -98.45871368262789,
+        -98.18325487148778,
+        -97.89127172040308,
+        -97.58135935179398,
+        -97.25191022052763,
+        -96.90107390973907,
+        -96.52670641303965,
+        -96.12630542867558,
+        -95.69692677549935,
+        -95.2350749262215,
+        -94.73655742765095,
+        -94.19628793884927,
+        -93.60801453682966,
+        -92.96393658779044,
+        -92.25415066754934,
+        -91.46582550312115,
+        -90.58193071132649,
+        -89.57919715667569,
+        -88.42468167548004,
+        -87.06962874787222,
+        -85.43767247305247,
+        -83.40002597528446,
+        -80.71760302816497,
+        -76.89965268889733,
+        -71.29501340063806,
+        -71.1961137018254,
+        -76.97184269089838,
+        -80.9727465167058,
+        -83.81814522973912,
+        -86.00925922969695,
+        -87.78986011158361,
+        -89.29086530830561,
+        -90.58972323975622,
+        -91.73579579074435,
+        -92.76239408962196,
+        -93.69302598634164,
+        -94.5448858542931,
+        -95.3309234391078,
+        -96.06113169603253,
+        -96.7433817234035,
+        -97.38398297274762,
+        -97.98807032097889,
+        -98.55987838112074
+      ],
+      "seat_response_db": [
+        [
+          -100.1899458227796,
+          -100.01211835946069,
+          -99.82456049124426,
+          -99.62671167559975,
+          -99.41795070773449,
+          -99.19758719991924,
+          -98.96485148226537,
+          -98.71888256266072,
+          -98.45871368262789,
+          -98.18325487148778,
+          -97.89127172040308,
+          -97.58135935179398,
+          -97.25191022052763,
+          -96.90107390973907,
+          -96.52670641303965,
+          -96.12630542867558,
+          -95.69692677549935,
+          -95.2350749262215,
+          -94.73655742765095,
+          -94.19628793884927,
+          -93.60801453682966,
+          -92.96393658779044,
+          -92.25415066754934,
+          -91.46582550312115,
+          -90.58193071132649,
+          -89.57919715667569,
+          -88.42468167548004,
+          -87.06962874787222,
+          -85.43767247305247,
+          -83.40002597528446,
+          -80.71760302816497,
+          -76.89965268889733,
+          -71.29501340063806,
+          -71.1961137018254,
+          -76.97184269089838,
+          -80.9727465167058,
+          -83.81814522973912,
+          -86.00925922969695,
+          -87.78986011158361,
+          -89.29086530830561,
+          -90.58972323975622,
+          -91.73579579074435,
+          -92.76239408962196,
+          -93.69302598634164,
+          -94.5448858542931,
+          -95.3309234391078,
+          -96.06113169603253,
+          -96.7433817234035,
+          -97.38398297274762,
+          -97.98807032097889,
+          -98.55987838112074
+        ]
+      ]
+    },
+    {
+      "strategy": "delayed inverted rear array",
+      "sub_count": 2,
+      "positions_m": [
+        [
+          2.7432000000000003,
+          4.1172
+        ],
+        [
+          2.7432000000000003,
+          0.1499999999999999
+        ]
+      ],
+      "mean_level_db": -53.90585901036835,
+      "seat_std_db": 0.0,
+      "worst_null_db": -61.09795059801459,
+      "flatness_db": -5.98450783702244,
+      "frequencies_hz": [
+        30.0,
+        31.0,
+        32.0,
+        33.0,
+        34.0,
+        35.0,
+        36.0,
+        37.0,
+        38.0,
+        39.0,
+        40.0,
+        41.0,
+        42.0,
+        43.0,
+        44.0,
+        45.0,
+        46.0,
+        47.0,
+        48.0,
+        49.0,
+        50.0,
+        51.0,
+        52.0,
+        53.0,
+        54.0,
+        55.0,
+        56.0,
+        57.0,
+        58.0,
+        59.0,
+        60.0,
+        61.0,
+        62.0,
+        63.0,
+        64.0,
+        65.0,
+        66.0,
+        67.0,
+        68.0,
+        69.0,
+        70.0,
+        71.0,
+        72.0,
+        73.0,
+        74.0,
+        75.0,
+        76.0,
+        77.0,
+        78.0,
+        79.0,
+        80.0
+      ],
+      "mean_response_db": [
+        -61.09795059801459,
+        -60.89713440251178,
+        -60.670933220017304,
+        -60.410972849053806,
+        -60.10366237560242,
+        -59.725320956714484,
+        -59.230766163477,
+        -58.52280649268251,
+        -57.35502740000878,
+        -54.94637982959917,
+        -49.38114403744591,
+        -56.062290075672976,
+        -59.77691916123074,
+        -60.203446624121106,
+        -59.96613294830947,
+        -59.591357224680834,
+        -59.17927907206119,
+        -58.74776849387185,
+        -58.29606410024938,
+        -57.81839950293802,
+        -57.307115181322494,
+        -56.75312851925646,
+        -56.14556113044459,
+        -55.47091460669017,
+        -54.71175793358083,
+        -53.844642748765416,
+        -52.83662694982208,
+        -51.63909640885752,
+        -50.175919645813266,
+        -48.31856743886949,
+        -45.828115169941384,
+        -42.213658553895385,
+        -36.82315282035367,
+        -36.94661260371659,
+        -42.94741561536161,
+        -47.164403412472325,
+        -50.19287976420698,
+        -52.485931101681665,
+        -54.19409810833291,
+        -55.280392211759555,
+        -55.56163283108735,
+        -54.77209926347033,
+        -52.649067805790935,
+        -48.89273418035433,
+        -43.944310773874086,
+        -45.37097409294183,
+        -49.94436353115981,
+        -53.18662427505524,
+        -55.519704376634664,
+        -57.31730436063093,
+        -58.77624858437908
+      ],
+      "seat_response_db": [
+        [
+          -61.09795059801459,
+          -60.89713440251178,
+          -60.670933220017304,
+          -60.410972849053806,
+          -60.10366237560242,
+          -59.725320956714484,
+          -59.230766163477,
+          -58.52280649268251,
+          -57.35502740000878,
+          -54.94637982959917,
+          -49.38114403744591,
+          -56.062290075672976,
+          -59.77691916123074,
+          -60.203446624121106,
+          -59.96613294830947,
+          -59.591357224680834,
+          -59.17927907206119,
+          -58.74776849387185,
+          -58.29606410024938,
+          -57.81839950293802,
+          -57.307115181322494,
+          -56.75312851925646,
+          -56.14556113044459,
+          -55.47091460669017,
+          -54.71175793358083,
+          -53.844642748765416,
+          -52.83662694982208,
+          -51.63909640885752,
+          -50.175919645813266,
+          -48.31856743886949,
+          -45.828115169941384,
+          -42.213658553895385,
+          -36.82315282035367,
+          -36.94661260371659,
+          -42.94741561536161,
+          -47.164403412472325,
+          -50.19287976420698,
+          -52.485931101681665,
+          -54.19409810833291,
+          -55.280392211759555,
+          -55.56163283108735,
+          -54.77209926347033,
+          -52.649067805790935,
+          -48.89273418035433,
+          -43.944310773874086,
+          -45.37097409294183,
+          -49.94436353115981,
+          -53.18662427505524,
+          -55.519704376634664,
+          -57.31730436063093,
+          -58.77624858437908
+        ]
+      ]
+    },
+    {
+      "strategy": "optimizer placement",
+      "sub_count": 1,
+      "positions_m": [
+        [
+          2.8,
+          0.001
+        ]
+      ],
+      "mean_level_db": -57.72590843695554,
+      "seat_std_db": 0.0,
+      "worst_null_db": -82.142291510299,
+      "flatness_db": -8.812134845628506,
+      "frequencies_hz": [
+        30.0,
+        31.0,
+        32.0,
+        33.0,
+        34.0,
+        35.0,
+        36.0,
+        37.0,
+        38.0,
+        39.0,
+        40.0,
+        41.0,
+        42.0,
+        43.0,
+        44.0,
+        45.0,
+        46.0,
+        47.0,
+        48.0,
+        49.0,
+        50.0,
+        51.0,
+        52.0,
+        53.0,
+        54.0,
+        55.0,
+        56.0,
+        57.0,
+        58.0,
+        59.0,
+        60.0,
+        61.0,
+        62.0,
+        63.0,
+        64.0,
+        65.0,
+        66.0,
+        67.0,
+        68.0,
+        69.0,
+        70.0,
+        71.0,
+        72.0,
+        73.0,
+        74.0,
+        75.0,
+        76.0,
+        77.0,
+        78.0,
+        79.0,
+        80.0
+      ],
+      "mean_response_db": [
+        -59.731530219976456,
+        -59.20491872609986,
+        -58.59984115142098,
+        -57.89380413745202,
+        -57.05345219723367,
+        -56.02669442275069,
+        -54.72645607267499,
+        -52.99290566774804,
+        -50.48978223912624,
+        -46.349121910494475,
+        -38.904321309695355,
+        -45.5426008498626,
+        -52.86321436019753,
+        -58.09300306268544,
+        -62.737526619250445,
+        -67.644755355268,
+        -73.93966410842006,
+        -82.142291510299,
+        -76.7744472353502,
+        -71.8054146809172,
+        -68.7242344456036,
+        -66.47776698638448,
+        -64.65024419768545,
+        -63.04236869343366,
+        -61.538724584738524,
+        -60.05905827507075,
+        -58.535315608525764,
+        -56.89629941870077,
+        -55.0511601940351,
+        -52.86206029118618,
+        -50.084956941304554,
+        -46.227638906851986,
+        -40.640954113039854,
+        -40.62337263217071,
+        -46.555226510530346,
+        -50.806635339334825,
+        -54.02997217019028,
+        -56.78392177189554,
+        -59.418034185361996,
+        -62.272551109607114,
+        -65.83566223058031,
+        -69.76100975505047,
+        -65.69947513604633,
+        -57.64608281084865,
+        -50.07829634502508,
+        -49.897800336444206,
+        -53.41516526204656,
+        -55.91740931971231,
+        -57.702727379560045,
+        -59.07630556737195,
+        -60.19515392947238
+      ],
+      "seat_response_db": [
+        [
+          -59.731530219976456,
+          -59.20491872609986,
+          -58.59984115142098,
+          -57.89380413745202,
+          -57.05345219723367,
+          -56.02669442275069,
+          -54.72645607267499,
+          -52.99290566774804,
+          -50.48978223912624,
+          -46.349121910494475,
+          -38.904321309695355,
+          -45.5426008498626,
+          -52.86321436019753,
+          -58.09300306268544,
+          -62.737526619250445,
+          -67.644755355268,
+          -73.93966410842006,
+          -82.142291510299,
+          -76.7744472353502,
+          -71.8054146809172,
+          -68.7242344456036,
+          -66.47776698638448,
+          -64.65024419768545,
+          -63.04236869343366,
+          -61.538724584738524,
+          -60.05905827507075,
+          -58.535315608525764,
+          -56.89629941870077,
+          -55.0511601940351,
+          -52.86206029118618,
+          -50.084956941304554,
+          -46.227638906851986,
+          -40.640954113039854,
+          -40.62337263217071,
+          -46.555226510530346,
+          -50.806635339334825,
+          -54.02997217019028,
+          -56.78392177189554,
+          -59.418034185361996,
+          -62.272551109607114,
+          -65.83566223058031,
+          -69.76100975505047,
+          -65.69947513604633,
+          -57.64608281084865,
+          -50.07829634502508,
+          -49.897800336444206,
+          -53.41516526204656,
+          -55.91740931971231,
+          -57.702727379560045,
+          -59.07630556737195,
+          -60.19515392947238
+        ]
+      ]
+    }
+  ],
+  "report_file": "/Users/aaditya/Documents/Projects/HackTX 26 Physics Model/output/home-theater/current-714/report.md"
+}

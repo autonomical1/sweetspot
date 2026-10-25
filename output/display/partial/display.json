@@ -1,0 +1,73 @@
+{
+  "screen": {
+    "geometry": {
+      "width_m": 2.6565622371556263,
+      "height_m": 1.4943162584000398,
+      "image_width_m": 2.6565622371556263,
+      "image_height_m": 1.4943162584000398,
+      "aspect_ratio": 1.7777777777777777
+    },
+    "center_m": [
+      2.7432000000000003,
+      4.2672,
+      1.35675812920002
+    ],
+    "material": "matte_white",
+    "gain": 1.0
+  },
+  "projector": {
+    "position_m": [
+      2.7432000000000003,
+      -0.514612026880128,
+      1.35675812920002
+    ],
+    "position_source": "solved at mid-zoom on screen centerline",
+    "throw_distance_m": 4.781812026880128,
+    "native_resolution": "3840x2160",
+    "lumens_effective": 2081.25,
+    "implied_throw_ratio": 1.8000000000000003,
+    "throw_ratio_min": 1.4,
+    "throw_ratio_max": 2.2,
+    "feasible": true,
+    "nearest_feasible_distance_m": 4.781812026880128,
+    "nearest_feasible_image_width_m": 2.6565622371556263,
+    "zoom_position": 0.5000000000000002,
+    "brightness": {
+      "image_area_ft2": 42.7299703264095,
+      "foot_lamberts": 48.70703124999999,
+      "nits": 166.87028906249998
+    },
+    "effective_contrast": 50.76267280808566,
+    "ambient_lux": 10.0,
+    "lens_position_m": [
+      2.7432000000000003,
+      -0.514612026880128,
+      1.35675812920002
+    ],
+    "lens_shift": {
+      "required_vertical_shift": -0.0,
+      "keystone_angle_deg": 0.0,
+      "keystone_allowed": true
+    },
+    "noise_at_seats_dba": [
+      25.743513689841535
+    ]
+  },
+  "per_seat": [
+    {
+      "index": 0,
+      "viewing_angle_deg": 51.47342499544972,
+      "vertical_top_angle_deg": 20.150962119664243,
+      "distance_m": 2.755444635541266,
+      "distance_in_screen_heights": 1.8439501143429389,
+      "pixels_unresolved": true
+    }
+  ],
+  "pixel_unresolved_distance_m": 2.3782781235894337,
+  "target_fl": 16.0,
+  "brightness_status": "PASS",
+  "spec_sources": {
+    "screen": "user supplied",
+    "projector": "generic placeholder"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "screen": {
+    "geometry": {
+      "width_m": 2.8117950012784365,
+      "height_m": 1.176483264133237,
+      "image_width_m": 2.0915258029035324,
+      "image_height_m": 1.176483264133237,
+      "aspect_ratio": 2.39
+    },
+    "center_m": [
+      2.7432000000000003,
+      4.2672,
+      1.1978416320666185
+    ],
+    "center_ft": [
+      9.0,
+      13.999999999999998,
+      3.929926614391793
+    ],
+    "material": "matte_white",
+    "gain": 1.0,
+    "diag_in": 120.0,
+    "transmission_loss_db": {}
+  },
+  "projector": {
+    "position_m": [
+      2.7432000000000003,
+      -4.8768,
+      1.1978416320666185
+    ],
+    "position_ft": [
+      9.0,
+      -16.0,
+      3.929926614391793
+    ],
+    "position_source": "solved from throw distance and room-facing axis",
+    "throw_distance_m": 9.144,
+    "native_resolution": "3840x2160",
+    "lumens_effective": 1912.4999999999998,
+    "implied_throw_ratio": 4.371927894604966,
+    "throw_ratio_min": 1.4,
+    "throw_ratio_max": 2.2,
+    "feasible": false,
+    "nearest_feasible_distance_m": 4.601356766387772,
+    "nearest_feasible_image_width_m": 4.156363636363636,
+    "zoom_position": 1.0,
+    "brightness": {
+      "image_area_ft2": 26.48616346266857,
+      "foot_lamberts": 72.20751328125002,
+      "nits": 247.38294050156256
+    },
+    "effective_contrast": 1000.0,
+    "ambient_lux": 0.0,
+    "lens_position_m": [
+      2.7432000000000003,
+      -4.8768,
+      1.1978416320666185
+    ],
+    "lens_position_ft": [
+      9.0,
+      -16.0,
+      3.929926614391793
+    ],
+    "lens_shift": {
+      "required_vertical_shift": -0.0,
+      "allowed_min": -0.5,
+      "allowed_max": 0.5,
+      "lens_shift_feasible": true,
+      "keystone_angle_deg": 0.0,
+      "keystone_allowed": true
+    },
+    "noise_at_seats_dba": [
+      15.874243019696205
+    ],
+    "body_width_m": 0.35,
+    "body_height_m": 0.15,
+    "body_depth_m": 0.3
+  },
+  "per_seat": [
+    {
+      "index": 0,
+      "viewing_angle_deg": 41.7100967161419,
+      "vertical_top_angle_deg": 14.095265986471347,
+      "distance_m": 2.745042601098187,
+      "distance_in_screen_heights": 2.3332610711811284,
+      "pixels_unresolved": true,
+      "foot_lamberts": 72.20751328125002,
+      "nits": 247.38294050156256
+    }
+  ],
+  "pixel_unresolved_distance_m": 1.8724312167044093,
+  "target_fl": 16.0,
+  "brightness_status": "PASS",
+  "spec_sources": {
+    "screen": "user supplied",
+    "projector": "user supplied"
+  }
+}

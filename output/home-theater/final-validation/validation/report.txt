@@ -1,0 +1,437 @@
+Physics validation report
+Room: 5.486400000000001 x 4.2672 x 2.7432000000000003 m; facing north; absorption 0.20
+Materials (typical octave-band approximations): walls=drywall, floor=carpet, ceiling=drywall
+band Hz | mean alpha | Sabine RT60 s | Eyring RT60 s
+125 | 0.227 | 0.454 | 0.400
+250 | 0.091 | 1.137 | 1.084
+500 | 0.071 | 1.451 | 1.399
+1000 | 0.117 | 0.881 | 0.828
+2000 | 0.194 | 0.532 | 0.479
+4000 | 0.221 | 0.467 | 0.413
+Schroeder frequency mean 220.3 Hz; 30-200 Hz modal count 29; smallest mode gap 0.20 Hz
+front generic_bookshelf_onwall 1000 Hz: direct 102.1 dB, reverberant 111.8 dB, total 112.2 dB; critical distance 2.77 m (beyond critical distance)
+center generic_center_onwall 1000 Hz: direct 103.0 dB, reverberant 111.8 dB, total 112.3 dB; critical distance 2.94 m
+front generic_bookshelf_onwall 1000 Hz: direct 102.1 dB, reverberant 111.8 dB, total 112.2 dB; critical distance 2.77 m (beyond critical distance)
+surround generic_surround_wide 1000 Hz: direct 99.5 dB, reverberant 108.6 dB, total 109.1 dB; critical distance 1.96 m (beyond critical distance)
+surround generic_surround_wide 1000 Hz: direct 99.5 dB, reverberant 108.6 dB, total 109.1 dB; critical distance 1.96 m (beyond critical distance)
+bass generic_inwall_sub 125 Hz: direct 107.6 dB, reverberant 110.3 dB, total 112.2 dB; critical distance 1.44 m (beyond critical distance)
+First-order paths for front generic_bookshelf_onwall: surface | time ms | level relative to direct dB
+wall 2 | 9.19 | -1.0
+floor | 11.19 | -2.4
+ceiling | 13.29 | -3.9
+wall 3 | 14.62 | -5.0
+wall 0 | 17.05 | -6.3
+wall 1 | 21.61 | -8.4
+RIR octave-band metrics (filtered): band Hz | C50 dB | C80 dB | D50 | RT60 measured s
+125 | 3.02 | 9.50 | 0.460 | 0.263
+250 | 10.53 | 15.06 | 0.733 | 0.295
+500 | 10.63 | 17.62 | 0.773 | 0.226
+1000 | 9.77 | 15.02 | 0.763 | 0.271
+2000 | 9.31 | 16.32 | 0.779 | 0.254
+4000 | 10.43 | 17.26 | 0.817 | 0.258
+INFO first-order reflection-directivity estimate enabled; runtime 0.085s vs 0.065s disabled (+30.8%)
+Reflection directivity estimates first-order specular wall hits from image geometry; higher-order RIR taps are not individually decomposed.
+PASS front score spread min/max/std 13.17/19.99/2.28 dB; best-median 1.17 dB (408 candidates)
+PASS center score spread min/max/std 15.88/17.60/0.40 dB; best-median 0.42 dB (220 candidates)
+PASS front score spread min/max/std 13.17/19.99/2.28 dB; best-median 1.17 dB (408 candidates)
+PASS surround score spread min/max/std 8.25/16.33/2.09 dB; best-median 1.29 dB (615 candidates)
+PASS surround score spread min/max/std 8.25/16.33/2.09 dB; best-median 1.29 dB (615 candidates)
+PASS bass score spread min/max/std -9.90/-6.83/0.80 dB; best-median 1.20 dB (456 candidates)
+PASS front hard/wide/soft/acoustics-only evaluated; hard vs soft shift 0.00 ft; acoustics-only angle 24.7 deg (textbook 26.0), score 20.23 vs textbook candidate 13.17 dB
+PASS center hard/wide/soft/acoustics-only evaluated; hard vs soft shift 0.00 ft; acoustics-only angle 4.0 deg (textbook 0.0), score 17.60 vs textbook candidate 15.88 dB
+PASS front hard/wide/soft/acoustics-only evaluated; hard vs soft shift 0.00 ft; acoustics-only angle 24.7 deg (textbook 26.0), score 20.23 vs textbook candidate 13.17 dB
+PASS surround hard/wide/soft/acoustics-only evaluated; hard vs soft shift 0.00 ft; acoustics-only angle 91.5 deg (textbook 110.0), score 16.33 vs textbook candidate 14.45 dB
+PASS surround hard/wide/soft/acoustics-only evaluated; hard vs soft shift 0.00 ft; acoustics-only angle 91.5 deg (textbook 110.0), score 16.33 vs textbook candidate 14.45 dB
+WARN front ablate clarity at ±4° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate off_axis at ±4° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS front ablate early_reflection at ±4° (216 candidates): movement 0.10 ft
+PASS front ablate geometry at ±4° (216 candidates): movement 0.16 ft
+WARN front ablate headroom at ±4° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate clarity at ±15° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate off_axis at ±15° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS front ablate early_reflection at ±15° (216 candidates): movement 0.10 ft
+PASS front ablate geometry at ±15° (216 candidates): movement 0.16 ft
+WARN front ablate headroom at ±15° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate clarity at ±20° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate off_axis at ±20° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS front ablate early_reflection at ±20° (216 candidates): movement 0.10 ft
+PASS front ablate geometry at ±20° (216 candidates): movement 0.16 ft
+WARN front ablate headroom at ±20° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS center ablate clarity at ±5° (231 candidates): movement 0.08 ft
+WARN center ablate off_axis at ±5° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN center ablate early_reflection at ±5° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS center ablate geometry at ±5° (231 candidates): movement 0.73 ft
+WARN center ablate headroom at ±5° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS center ablate clarity at ±15° (231 candidates): movement 0.08 ft
+WARN center ablate off_axis at ±15° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN center ablate early_reflection at ±15° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS center ablate geometry at ±15° (231 candidates): movement 0.73 ft
+WARN center ablate headroom at ±15° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS center ablate clarity at ±20° (231 candidates): movement 0.08 ft
+WARN center ablate off_axis at ±20° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN center ablate early_reflection at ±20° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS center ablate geometry at ±20° (231 candidates): movement 0.73 ft
+WARN center ablate headroom at ±20° (231 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate clarity at ±4° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate off_axis at ±4° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS front ablate early_reflection at ±4° (216 candidates): movement 0.10 ft
+WARN front ablate geometry at ±4° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate headroom at ±4° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate clarity at ±15° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate off_axis at ±15° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS front ablate early_reflection at ±15° (216 candidates): movement 0.10 ft
+WARN front ablate geometry at ±15° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate headroom at ±15° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate clarity at ±20° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate off_axis at ±20° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS front ablate early_reflection at ±20° (216 candidates): movement 0.10 ft
+WARN front ablate geometry at ±20° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN front ablate headroom at ±20° (216 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate clarity at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate off_axis at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS surround ablate early_reflection at ±20° (324 candidates): movement 0.09 ft
+PASS surround ablate geometry at ±20° (324 candidates): movement 3.04 ft
+WARN surround ablate headroom at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate clarity at ±15° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate off_axis at ±15° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS surround ablate early_reflection at ±15° (324 candidates): movement 0.09 ft
+PASS surround ablate geometry at ±15° (324 candidates): movement 3.04 ft
+WARN surround ablate headroom at ±15° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate clarity at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate off_axis at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS surround ablate early_reflection at ±20° (324 candidates): movement 0.09 ft
+PASS surround ablate geometry at ±20° (324 candidates): movement 3.04 ft
+WARN surround ablate headroom at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate clarity at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate off_axis at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS surround ablate early_reflection at ±20° (324 candidates): movement 0.09 ft
+PASS surround ablate geometry at ±20° (324 candidates): movement 3.04 ft
+WARN surround ablate headroom at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate clarity at ±15° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate off_axis at ±15° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS surround ablate early_reflection at ±15° (324 candidates): movement 0.09 ft
+PASS surround ablate geometry at ±15° (324 candidates): movement 3.04 ft
+WARN surround ablate headroom at ±15° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate clarity at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+WARN surround ablate off_axis at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS surround ablate early_reflection at ±20° (324 candidates): movement 0.09 ft
+PASS surround ablate geometry at ±20° (324 candidates): movement 3.04 ft
+WARN surround ablate headroom at ±20° (324 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+PASS bass ablate flatness at all candidates (1254 candidates): movement 5.74 ft
+WARN bass ablate null_penalty at all candidates (1254 candidates): movement 0.00 ft (dead weight at adequate candidate count)
+INFO front corrected headroom term changes answer by 0.00 ft when enabled
+INFO center corrected headroom term changes answer by 0.00 ft when enabled
+PASS front corrected headroom term changes answer by 8.90 ft when enabled
+INFO surround corrected headroom term changes answer by 0.00 ft when enabled
+PASS surround corrected headroom term changes answer by 17.99 ft when enabled
+PASS bass corrected headroom term changes answer by 10.66 ft when enabled
+PASS random valid candidate layouts: 200 / 200 draws; per-role distributions follow
+INFO Per-role comparison (scores are dB-like; do not sum across unlike role metrics):
+  front selected group 19.74, matched candidate mean 19.99 | rule group 13.17 | random group mean 8.16 | Δrandom +11.58, Δrule +6.57 dB-like | percentile 97.1 | terms optimized [direct_level_db=-0.00, reflection_directivity_gain_db=-8.14, clarity_db=10.56, off_axis_db=-0.00, worst_seat_headroom_db=6.52, worst_seat_clarity_db=10.56, early_reflection_db=8.12, headroom_db=6.52, geometry_db=-0.24] vs rule [clarity_db=10.42, off_axis_db=-0.00, early_reflection_db=1.45, headroom_db=6.52, reflection_directivity_gain_db=-8.13, direct_level_db=-0.00, worst_seat_clarity_db=10.42, worst_seat_headroom_db=6.52]
+  center selected group 16.51, matched candidate mean 16.76 | rule group 15.88 | random group mean 7.66 | Δrandom +8.85, Δrule +0.63 dB-like | percentile 15.0 | terms optimized [direct_level_db=0.00, reflection_directivity_gain_db=-6.23, clarity_db=9.59, off_axis_db=-0.00, worst_seat_headroom_db=6.65, worst_seat_clarity_db=9.59, c50_4k_db=10.52, floor_ceiling_comb_notch_hz=229.24, early_reflection_db=5.85, c50_1k_db=8.63, c50_2k_db=9.61, headroom_db=6.65, geometry_db=-0.25] vs rule [clarity_db=8.72, off_axis_db=0.00, early_reflection_db=5.84, headroom_db=6.65, reflection_directivity_gain_db=-6.23, direct_level_db=0.00, c50_1k_db=8.54, c50_2k_db=9.34, c50_4k_db=8.28, floor_ceiling_comb_notch_hz=229.23, worst_seat_clarity_db=8.72, worst_seat_headroom_db=6.65]
+  front selected group 19.74, matched candidate mean 19.99 | rule group 13.17 | random group mean 8.16 | Δrandom +11.58, Δrule +6.57 dB-like | percentile 97.1 | terms optimized [direct_level_db=-0.00, reflection_directivity_gain_db=-8.14, clarity_db=10.56, off_axis_db=-0.00, worst_seat_headroom_db=6.52, worst_seat_clarity_db=10.56, early_reflection_db=8.12, headroom_db=6.52, geometry_db=-0.24] vs rule [clarity_db=10.42, off_axis_db=-0.00, early_reflection_db=1.45, headroom_db=6.52, reflection_directivity_gain_db=-8.13, direct_level_db=-0.00, worst_seat_clarity_db=10.42, worst_seat_headroom_db=6.52]
+  surround selected group 14.46, matched candidate mean 14.45 | rule group 14.45 | random group mean -98.38 | Δrandom +112.84, Δrule +0.00 dB-like | percentile 37.2 | terms optimized [direct_level_db=-0.13, reflection_directivity_gain_db=-5.26, clarity_db=11.09, off_axis_db=-0.09, worst_seat_headroom_db=3.34, worst_seat_clarity_db=11.09, early_reflection_db=2.82, headroom_db=3.36, geometry_db=-0.00] vs rule [clarity_db=11.09, off_axis_db=-0.09, early_reflection_db=2.82, headroom_db=3.34, reflection_directivity_gain_db=-5.26, direct_level_db=-0.13, worst_seat_clarity_db=11.09, worst_seat_headroom_db=3.34]
+  surround selected group 14.46, matched candidate mean 14.45 | rule group 14.45 | random group mean -98.38 | Δrandom +112.84, Δrule +0.00 dB-like | percentile 37.2 | terms optimized [direct_level_db=-0.13, reflection_directivity_gain_db=-5.26, clarity_db=11.09, off_axis_db=-0.09, worst_seat_headroom_db=3.34, worst_seat_clarity_db=11.09, early_reflection_db=2.82, headroom_db=3.36, geometry_db=-0.00] vs rule [clarity_db=11.09, off_axis_db=-0.09, early_reflection_db=2.82, headroom_db=3.34, reflection_directivity_gain_db=-5.26, direct_level_db=-0.13, worst_seat_clarity_db=11.09, worst_seat_headroom_db=3.34]
+  bass selected group -6.83, matched candidate mean -6.83 | rule group -9.90 | random group mean -10.88 | Δrandom +4.05, Δrule +3.07 dB-like | percentile 100.0 | terms optimized [flatness=-10.47, null_penalty=-0.15, spatial_variance_db=-0.00, seat_max_min_db=0.00, geometry_db=0.00, headroom_db=18.92] vs rule [flatness=-13.26, null_penalty=-0.28, spatial_variance_db=-0.00, geometry_db=0.00, headroom_db=18.16]
+INFO Random legal candidate layouts are scored as groups; the rule-of-thumb is rescored with the same role scorer. Roles where optimized group score loses: none
+PASS listener sweep evaluated 25 grid points (25 with legal layouts), all listener points at least 3 ft from walls; largest adjacent spacing change 6.15 ft; 14 bass wall transitions
+  bass wall transition (3.0,3.0) -> (6.0,3.0) ft; runner-up gap 0.085 dB-like
+  bass wall transition (12.0,3.0) -> (15.0,3.0) ft; runner-up gap 0.072 dB-like
+  bass wall transition (15.0,3.0) -> (3.0,5.0) ft; runner-up gap 0.072 dB-like
+  bass wall transition (3.0,5.0) -> (6.0,5.0) ft; runner-up gap 0.004 dB-like
+  bass wall transition (12.0,5.0) -> (15.0,5.0) ft; runner-up gap 0.044 dB-like
+  bass wall transition (15.0,5.0) -> (3.0,7.0) ft; runner-up gap 0.110 dB-like
+  bass wall transition (6.0,7.0) -> (9.0,7.0) ft; runner-up gap 0.000 dB-like
+  bass wall transition (9.0,7.0) -> (12.0,7.0) ft; runner-up gap 0.000 dB-like
+  bass wall transition (15.0,7.0) -> (3.0,9.0) ft; runner-up gap 0.110 dB-like
+  bass wall transition (6.0,9.0) -> (9.0,9.0) ft; runner-up gap 0.187 dB-like
+  bass wall transition (9.0,9.0) -> (12.0,9.0) ft; runner-up gap 0.171 dB-like
+  bass wall transition (15.0,9.0) -> (3.0,11.0) ft; runner-up gap 0.072 dB-like
+  bass wall transition (6.0,11.0) -> (9.0,11.0) ft; runner-up gap 0.179 dB-like
+  bass wall transition (9.0,11.0) -> (12.0,11.0) ft; runner-up gap 0.179 dB-like
+INFO room 10x8 ft alpha 0.05: modal count 30-150 Hz 6, smallest adjacent gap 7.96 Hz, per-role scores front=22.53, bass=-5.68
+INFO room 10x8 ft alpha 0.20: modal count 30-150 Hz 6, smallest adjacent gap 7.96 Hz, per-role scores front=27.79, bass=-5.65
+INFO room 10x8 ft alpha 0.60: modal count 30-150 Hz 6, smallest adjacent gap 7.96 Hz, per-role scores front=49.24, bass=-5.68
+INFO room 10x10 ft alpha 0.05: modal count 30-150 Hz 4, smallest adjacent gap 13.28 Hz, per-role scores front=19.15, bass=-5.83
+INFO room 10x10 ft alpha 0.20: modal count 30-150 Hz 4, smallest adjacent gap 13.28 Hz, per-role scores front=24.29, bass=-5.79
+INFO room 10x10 ft alpha 0.60: modal count 30-150 Hz 4, smallest adjacent gap 13.28 Hz, per-role scores front=45.64, bass=-5.82
+INFO room 10x12 ft alpha 0.05: modal count 30-150 Hz 10, smallest adjacent gap 2.18 Hz, per-role scores front=14.67, bass=-5.73
+INFO room 10x12 ft alpha 0.20: modal count 30-150 Hz 10, smallest adjacent gap 2.18 Hz, per-role scores front=19.46, bass=-5.73
+INFO room 10x12 ft alpha 0.60: modal count 30-150 Hz 10, smallest adjacent gap 2.18 Hz, per-role scores front=38.91, bass=-5.72
+INFO room sweep 10x15.0 ft alpha 0.05 has no legal placement for this fixed role layout: No candidate for channel L satisfies its hard elevation window -10.0..15.0 degrees; check ceiling height, speaker mount range, listening distance, and seat/ear height or riser
+INFO room sweep 10x15.0 ft alpha 0.2 has no legal placement for this fixed role layout: No candidate for channel L satisfies its hard elevation window -10.0..15.0 degrees; check ceiling height, speaker mount range, listening distance, and seat/ear height or riser
+INFO room sweep 10x15.0 ft alpha 0.6 has no legal placement for this fixed role layout: No candidate for channel L satisfies its hard elevation window -10.0..15.0 degrees; check ceiling height, speaker mount range, listening distance, and seat/ear height or riser
+INFO room 12x10 ft alpha 0.05: modal count 30-150 Hz 8, smallest adjacent gap 6.63 Hz, per-role scores front=18.80, bass=-5.06
+INFO room 12x10 ft alpha 0.20: modal count 30-150 Hz 8, smallest adjacent gap 6.63 Hz, per-role scores front=23.68, bass=-5.06
+INFO room 12x10 ft alpha 0.60: modal count 30-150 Hz 8, smallest adjacent gap 6.63 Hz, per-role scores front=43.22, bass=-5.05
+INFO room 12x12 ft alpha 0.05: modal count 30-150 Hz 7, smallest adjacent gap 7.61 Hz, per-role scores front=16.00, bass=-4.96
+INFO room 12x12 ft alpha 0.20: modal count 30-150 Hz 7, smallest adjacent gap 7.61 Hz, per-role scores front=20.86, bass=-4.95
+INFO room 12x12 ft alpha 0.60: modal count 30-150 Hz 7, smallest adjacent gap 7.61 Hz, per-role scores front=40.77, bass=-4.93
+INFO room 12x15 ft alpha 0.05: modal count 30-150 Hz 13, smallest adjacent gap 0.90 Hz, per-role scores front=13.43, bass=-6.04
+INFO room 12x15 ft alpha 0.20: modal count 30-150 Hz 13, smallest adjacent gap 0.90 Hz, per-role scores front=17.87, bass=-6.04
+INFO room 12x15 ft alpha 0.60: modal count 30-150 Hz 13, smallest adjacent gap 0.90 Hz, per-role scores front=34.82, bass=-6.03
+INFO room 12x18 ft alpha 0.05: modal count 30-150 Hz 14, smallest adjacent gap 0.92 Hz, per-role scores front=1.51, bass=-4.84
+INFO room 12x18 ft alpha 0.20: modal count 30-150 Hz 14, smallest adjacent gap 0.92 Hz, per-role scores front=5.95, bass=-4.84
+INFO room 12x18 ft alpha 0.60: modal count 30-150 Hz 14, smallest adjacent gap 0.92 Hz, per-role scores front=23.02, bass=-4.83
+INFO room 15x12 ft alpha 0.05: modal count 30-150 Hz 13, smallest adjacent gap 0.90 Hz, per-role scores front=16.65, bass=-5.35
+INFO room 15x12 ft alpha 0.20: modal count 30-150 Hz 13, smallest adjacent gap 0.90 Hz, per-role scores front=21.23, bass=-5.35
+INFO room 15x12 ft alpha 0.60: modal count 30-150 Hz 13, smallest adjacent gap 0.90 Hz, per-role scores front=39.30, bass=-5.35
+INFO room 15x15 ft alpha 0.05: modal count 30-150 Hz 8, smallest adjacent gap 6.09 Hz, per-role scores front=13.28, bass=-5.65
+INFO room 15x15 ft alpha 0.20: modal count 30-150 Hz 8, smallest adjacent gap 6.09 Hz, per-role scores front=17.65, bass=-5.65
+INFO room 15x15 ft alpha 0.60: modal count 30-150 Hz 8, smallest adjacent gap 6.09 Hz, per-role scores front=34.33, bass=-5.65
+INFO room 15x19 ft alpha 0.05: modal count 30-150 Hz 18, smallest adjacent gap 0.72 Hz, per-role scores front=11.13, bass=-6.51
+INFO room 15x19 ft alpha 0.20: modal count 30-150 Hz 18, smallest adjacent gap 0.72 Hz, per-role scores front=15.30, bass=-6.51
+INFO room 15x19 ft alpha 0.60: modal count 30-150 Hz 18, smallest adjacent gap 0.72 Hz, per-role scores front=31.36, bass=-6.51
+INFO room 15x22 ft alpha 0.05: modal count 30-150 Hz 18, smallest adjacent gap 0.73 Hz, per-role scores front=-0.39, bass=-5.69
+INFO room 15x22 ft alpha 0.20: modal count 30-150 Hz 18, smallest adjacent gap 0.73 Hz, per-role scores front=3.58, bass=-5.69
+INFO room 15x22 ft alpha 0.60: modal count 30-150 Hz 18, smallest adjacent gap 0.73 Hz, per-role scores front=17.56, bass=-5.69
+INFO room 18x14 ft alpha 0.05: modal count 30-150 Hz 17, smallest adjacent gap 0.75 Hz, per-role scores front=15.67, bass=-6.57
+INFO room 18x14 ft alpha 0.20: modal count 30-150 Hz 17, smallest adjacent gap 0.75 Hz, per-role scores front=19.62, bass=-6.57
+INFO room 18x14 ft alpha 0.60: modal count 30-150 Hz 17, smallest adjacent gap 0.75 Hz, per-role scores front=34.35, bass=-6.57
+INFO room 18x18 ft alpha 0.05: modal count 30-150 Hz 12, smallest adjacent gap 3.74 Hz, per-role scores front=12.63, bass=-5.16
+INFO room 18x18 ft alpha 0.20: modal count 30-150 Hz 12, smallest adjacent gap 3.74 Hz, per-role scores front=16.76, bass=-5.16
+INFO room 18x18 ft alpha 0.60: modal count 30-150 Hz 12, smallest adjacent gap 3.74 Hz, per-role scores front=32.13, bass=-5.16
+INFO room 18x22 ft alpha 0.05: modal count 30-150 Hz 24, smallest adjacent gap 0.60 Hz, per-role scores front=8.75, bass=-6.22
+INFO room 18x22 ft alpha 0.20: modal count 30-150 Hz 24, smallest adjacent gap 0.60 Hz, per-role scores front=12.64, bass=-6.22
+INFO room 18x22 ft alpha 0.60: modal count 30-150 Hz 24, smallest adjacent gap 0.60 Hz, per-role scores front=26.28, bass=-6.22
+INFO room 18x27 ft alpha 0.05: modal count 30-150 Hz 27, smallest adjacent gap 0.39 Hz, per-role scores front=4.20, bass=-6.14
+INFO room 18x27 ft alpha 0.20: modal count 30-150 Hz 27, smallest adjacent gap 0.39 Hz, per-role scores front=7.88, bass=-6.14
+INFO room 18x27 ft alpha 0.60: modal count 30-150 Hz 27, smallest adjacent gap 0.39 Hz, per-role scores front=20.49, bass=-6.13
+INFO room 20x16 ft alpha 0.05: modal count 30-150 Hz 20, smallest adjacent gap 0.68 Hz, per-role scores front=14.95, bass=-7.09
+INFO room 20x16 ft alpha 0.20: modal count 30-150 Hz 20, smallest adjacent gap 0.68 Hz, per-role scores front=18.76, bass=-7.09
+INFO room 20x16 ft alpha 0.60: modal count 30-150 Hz 20, smallest adjacent gap 0.68 Hz, per-role scores front=32.94, bass=-7.08
+INFO room 20x20 ft alpha 0.05: modal count 30-150 Hz 13, smallest adjacent gap 2.79 Hz, per-role scores front=11.45, bass=-5.84
+INFO room 20x20 ft alpha 0.20: modal count 30-150 Hz 13, smallest adjacent gap 2.79 Hz, per-role scores front=15.43, bass=-5.84
+INFO room 20x20 ft alpha 0.60: modal count 30-150 Hz 13, smallest adjacent gap 2.79 Hz, per-role scores front=29.93, bass=-5.83
+INFO room 20x25 ft alpha 0.05: modal count 30-150 Hz 30, smallest adjacent gap 0.54 Hz, per-role scores front=9.22, bass=-6.45
+INFO room 20x25 ft alpha 0.20: modal count 30-150 Hz 30, smallest adjacent gap 0.54 Hz, per-role scores front=13.02, bass=-6.45
+INFO room 20x25 ft alpha 0.60: modal count 30-150 Hz 30, smallest adjacent gap 0.54 Hz, per-role scores front=26.37, bass=-6.44
+INFO room 20x30 ft alpha 0.05: modal count 30-150 Hz 32, smallest adjacent gap 0.35 Hz, per-role scores front=4.24, bass=-6.26
+INFO room 20x30 ft alpha 0.20: modal count 30-150 Hz 32, smallest adjacent gap 0.35 Hz, per-role scores front=7.72, bass=-6.26
+INFO room 20x30 ft alpha 0.60: modal count 30-150 Hz 32, smallest adjacent gap 0.35 Hz, per-role scores front=18.72, bass=-6.26
+INFO room 25x20 ft alpha 0.05: modal count 30-150 Hz 30, smallest adjacent gap 0.54 Hz, per-role scores front=13.83, bass=-6.77
+INFO room 25x20 ft alpha 0.20: modal count 30-150 Hz 30, smallest adjacent gap 0.54 Hz, per-role scores front=17.39, bass=-6.77
+INFO room 25x20 ft alpha 0.60: modal count 30-150 Hz 30, smallest adjacent gap 0.54 Hz, per-role scores front=30.02, bass=-6.76
+INFO room 25x25 ft alpha 0.05: modal count 30-150 Hz 20, smallest adjacent gap 1.77 Hz, per-role scores front=9.89, bass=-7.28
+INFO room 25x25 ft alpha 0.20: modal count 30-150 Hz 20, smallest adjacent gap 1.77 Hz, per-role scores front=13.58, bass=-7.28
+INFO room 25x25 ft alpha 0.60: modal count 30-150 Hz 20, smallest adjacent gap 1.77 Hz, per-role scores front=26.09, bass=-7.28
+INFO room 25x31 ft alpha 0.05: modal count 30-150 Hz 45, smallest adjacent gap 0.07 Hz, per-role scores front=7.26, bass=-7.79
+INFO room 25x31 ft alpha 0.20: modal count 30-150 Hz 45, smallest adjacent gap 0.07 Hz, per-role scores front=10.62, bass=-7.79
+INFO room 25x31 ft alpha 0.60: modal count 30-150 Hz 45, smallest adjacent gap 0.07 Hz, per-role scores front=21.20, bass=-7.81
+INFO room 25x38 ft alpha 0.05: modal count 30-150 Hz 47, smallest adjacent gap 0.21 Hz, per-role scores front=4.20, bass=-7.50
+INFO room 25x38 ft alpha 0.20: modal count 30-150 Hz 47, smallest adjacent gap 0.21 Hz, per-role scores front=7.58, bass=-7.50
+INFO room 25x38 ft alpha 0.60: modal count 30-150 Hz 47, smallest adjacent gap 0.21 Hz, per-role scores front=18.35, bass=-7.50
+PASS room/absorption sweep completed 69 configurations; bass/mode locations vary with geometry
+INFO default 15x12 ft bass score -5.35 ranks 5/23 at alpha 0.20; 13 modes in 30-150 Hz, nearest distinct gap 0.90 Hz
+INFO convergence baseline candidate spacing 0.25 m; bass frequency step 1.00 Hz; equivalence threshold 0.50 dB
+PASS bass frequency step 0.50 Hz score shift +0.000 dB-like from baseline; equivalent optimum=True
+PASS bass frequency step 1.00 Hz score shift +0.000 dB-like from baseline; equivalent optimum=True
+PASS bass frequency step 2.00 Hz score shift +0.000 dB-like from baseline; equivalent optimum=True
+WARN placement convergence maximum movement 14.04 ft across 10 numerical settings
+PASS near-anechoic direct arrival 28 samples vs 28.0; post-direct energy 0.0009
+PASS bottom-wall image-source echo predicted at 79.7 samples; local peak 80.0 samples
+PASS first axial mode 31.26 Hz; analytic formula verified by room_modes
+PASS symmetric coherent bass response max difference 0.000e+00
+
+SPEC INFLUENCE (single-role ±20% model perturbations)
+field | changed outputs; unchanged numeric specs are labeled informational only
+front / freq_low_hz: informational only
+front / freq_high_hz: informational only
+front / crossover_hz: informational only
+front / crossover_slope_db_oct: informational only
+front / sensitivity_db: predicted SPL, score
+front / rated_power_w: predicted SPL, score
+front / max_spl_db: predicted SPL, score
+front / nominal_impedance_ohm: informational only
+front / coverage_h_deg: score, toe-in
+front / coverage_v_deg: affects 3D height/aim selection; not the horizontal acoustic search
+front / width_m: informational only
+front / height_m: affects 3D height/aim selection; not the horizontal acoustic search
+front / depth_m: informational only
+front / min_corner_clearance_m: informational only
+front / min_listening_distance_m: informational only
+front / max_listening_distance_m: informational only
+front / min_spacing_to_other_speakers_m: informational only
+front / wall_gain_db: informational only
+front / f3_hz: informational only
+front / highpass_slope_db_oct: informational only
+front / max_toe_in_deg: score, toe-in
+front / max_tilt_deg: informational only
+front / coverage_h_vs_freq: informational only (unset)
+front / polar_table: informational only (unset)
+front / on_axis_response: informational only (unset)
+front / directivity_band_weights: informational only for current frequency-flat model
+center / freq_low_hz: informational only
+center / freq_high_hz: informational only
+center / crossover_hz: informational only
+center / crossover_slope_db_oct: informational only
+center / sensitivity_db: predicted SPL, score
+center / rated_power_w: predicted SPL, score
+center / max_spl_db: predicted SPL, score
+center / nominal_impedance_ohm: informational only
+center / coverage_h_deg: score
+center / coverage_v_deg: affects 3D height/aim selection; not the horizontal acoustic search
+center / width_m: informational only
+center / height_m: affects 3D height/aim selection; not the horizontal acoustic search
+center / depth_m: informational only
+center / min_corner_clearance_m: informational only
+center / min_listening_distance_m: informational only
+center / max_listening_distance_m: informational only
+center / min_spacing_to_other_speakers_m: informational only
+center / wall_gain_db: informational only
+center / f3_hz: informational only
+center / highpass_slope_db_oct: informational only
+center / max_toe_in_deg: informational only
+center / max_tilt_deg: informational only
+center / coverage_h_vs_freq: informational only (unset)
+center / polar_table: informational only (unset)
+center / on_axis_response: informational only (unset)
+center / directivity_band_weights: informational only for current frequency-flat model
+front / freq_low_hz: informational only
+front / freq_high_hz: informational only
+front / crossover_hz: informational only
+front / crossover_slope_db_oct: informational only
+front / sensitivity_db: predicted SPL, score
+front / rated_power_w: predicted SPL, score
+front / max_spl_db: predicted SPL, score
+front / nominal_impedance_ohm: informational only
+front / coverage_h_deg: score, toe-in
+front / coverage_v_deg: affects 3D height/aim selection; not the horizontal acoustic search
+front / width_m: informational only
+front / height_m: affects 3D height/aim selection; not the horizontal acoustic search
+front / depth_m: informational only
+front / min_corner_clearance_m: informational only
+front / min_listening_distance_m: informational only
+front / max_listening_distance_m: informational only
+front / min_spacing_to_other_speakers_m: informational only
+front / wall_gain_db: informational only
+front / f3_hz: informational only
+front / highpass_slope_db_oct: informational only
+front / max_toe_in_deg: score, toe-in
+front / max_tilt_deg: informational only
+front / coverage_h_vs_freq: informational only (unset)
+front / polar_table: informational only (unset)
+front / on_axis_response: informational only (unset)
+front / directivity_band_weights: informational only for current frequency-flat model
+surround / freq_low_hz: informational only
+surround / freq_high_hz: informational only
+surround / crossover_hz: informational only
+surround / crossover_slope_db_oct: informational only
+surround / sensitivity_db: predicted SPL, score, toe-in
+surround / rated_power_w: predicted SPL, score
+surround / max_spl_db: predicted SPL, score, toe-in
+surround / nominal_impedance_ohm: informational only
+surround / coverage_h_deg: score, toe-in
+surround / coverage_v_deg: affects 3D height/aim selection; not the horizontal acoustic search
+surround / width_m: informational only
+surround / height_m: affects 3D height/aim selection; not the horizontal acoustic search
+surround / depth_m: informational only
+surround / min_corner_clearance_m: informational only
+surround / min_listening_distance_m: informational only
+surround / max_listening_distance_m: informational only
+surround / min_spacing_to_other_speakers_m: informational only
+surround / wall_gain_db: informational only
+surround / f3_hz: informational only
+surround / highpass_slope_db_oct: informational only
+surround / max_toe_in_deg: toe-in
+surround / max_tilt_deg: informational only
+surround / coverage_h_vs_freq: informational only (unset)
+surround / polar_table: informational only (unset)
+surround / on_axis_response: informational only (unset)
+surround / directivity_band_weights: informational only for current frequency-flat model
+surround / freq_low_hz: informational only
+surround / freq_high_hz: informational only
+surround / crossover_hz: informational only
+surround / crossover_slope_db_oct: informational only
+surround / sensitivity_db: predicted SPL, score, toe-in
+surround / rated_power_w: predicted SPL, score
+surround / max_spl_db: predicted SPL, score, toe-in
+surround / nominal_impedance_ohm: informational only
+surround / coverage_h_deg: score, toe-in
+surround / coverage_v_deg: affects 3D height/aim selection; not the horizontal acoustic search
+surround / width_m: informational only
+surround / height_m: affects 3D height/aim selection; not the horizontal acoustic search
+surround / depth_m: informational only
+surround / min_corner_clearance_m: informational only
+surround / min_listening_distance_m: informational only
+surround / max_listening_distance_m: informational only
+surround / min_spacing_to_other_speakers_m: informational only
+surround / wall_gain_db: informational only
+surround / f3_hz: informational only
+surround / highpass_slope_db_oct: informational only
+surround / max_toe_in_deg: toe-in
+surround / max_tilt_deg: informational only
+surround / coverage_h_vs_freq: informational only (unset)
+surround / polar_table: informational only (unset)
+surround / on_axis_response: informational only (unset)
+surround / directivity_band_weights: informational only for current frequency-flat model
+bass / freq_low_hz: informational only
+bass / freq_high_hz: position, predicted SPL, score
+bass / crossover_hz: position, predicted SPL, score
+bass / crossover_slope_db_oct: score
+bass / sensitivity_db: informational only
+bass / rated_power_w: predicted SPL, score
+bass / max_spl_db: informational only
+bass / max_spl_lf_db: predicted SPL, score
+bass / nominal_impedance_ohm: informational only
+bass / coverage_h_deg: informational only
+bass / coverage_v_deg: affects 3D height/aim selection; not the horizontal acoustic search
+bass / width_m: informational only
+bass / height_m: affects 3D height/aim selection; not the horizontal acoustic search
+bass / depth_m: informational only
+bass / min_corner_clearance_m: informational only
+bass / min_listening_distance_m: informational only
+bass / max_listening_distance_m: informational only
+bass / min_spacing_to_other_speakers_m: informational only
+bass / wall_gain_db: informational only
+bass / f3_hz: score
+bass / highpass_slope_db_oct: informational only
+bass / max_toe_in_deg: informational only
+bass / max_tilt_deg: informational only
+bass / coverage_h_vs_freq: informational only (unset)
+bass / polar_table: informational only (unset)
+bass / on_axis_response: informational only (unset)
+bass / directivity_band_weights: informational only for current frequency-flat model
+Surround model comparison (same room and constraints):
+generic_narrow_onwall: positions [(0.0, 1.39)] ft, toe-in [25], score 20.85
+generic_surround_wide: positions [(0.0, 1.39)] ft, toe-in [30], score 14.47
+generic_dipole_surround: positions [(0.0, 1.39)] ft, toe-in [-70], score -6.64
+dipole listener-to-null deviation: 0.0° (usual guidance targets 0° deviation)
+Bass F3 sensitivity:
+F3 25 Hz: bass score -6.61; usable 30-200 Hz fraction 0.530
+F3 45 Hz: bass score -5.99; usable 30-200 Hz fraction 0.442
+Sensitivity basis check (4 ohm, same acoustic sensitivity): normalized SPL delta +0.000 dB
+
+SUMMARY
+front: percentile 97.1; Δrandom +11.58; Δrule +6.57 dB-like; acoustics-only deviation 1.3 ° from textbook angle; answer-changing terms early_reflection, geometry
+center: percentile 15.0; Δrandom +8.85; Δrule +0.63 dB-like; acoustics-only deviation 4.0 ° from textbook angle; answer-changing terms clarity, geometry
+front: percentile 97.1; Δrandom +11.58; Δrule +6.57 dB-like; acoustics-only deviation 1.3 ° from textbook angle; answer-changing terms early_reflection, geometry
+surround: percentile 37.2; Δrandom +112.84; Δrule +0.00 dB-like; acoustics-only deviation 18.5 ° from textbook angle; answer-changing terms early_reflection, geometry
+surround: percentile 37.2; Δrandom +112.84; Δrule +0.00 dB-like; acoustics-only deviation 18.5 ° from textbook angle; answer-changing terms early_reflection, geometry
+bass: percentile 100.0; Δrandom +4.05; Δrule +3.07 dB-like; acoustics-only deviation 14.0 ft from textbook positions; answer-changing terms none demonstrated
+generic_narrow_onwall: positions [(0.0, 1.39)] ft, toe-in [25], score 20.85
+generic_surround_wide: positions [(0.0, 1.39)] ft, toe-in [30], score 14.47
+generic_dipole_surround: positions [(0.0, 1.39)] ft, toe-in [-70], score -6.64
+dipole listener-to-null deviation: 0.0° (usual guidance targets 0° deviation)
+F3 25 Hz: bass score -6.61; usable 30-200 Hz fraction 0.530
+F3 45 Hz: bass score -5.99; usable 30-200 Hz fraction 0.442
+Sensitivity basis check (4 ohm, same acoustic sensitivity): normalized SPL delta +0.000 dB
+Bass peak-to-dip response swing 54.68 dB. Placement alone cannot flatten the response in a small room; equalization, treatment, or additional subwoofers may be needed.
+The modal model is 2D and omits floor-to-ceiling modes; those require a 3D room model.
+SURROUND YAW SWEEP at selected position (-60..+60°, 10° steps)
+yaw | score | clarity | directivity | reflections | headroom
+-60 | -7.58 | +11.09 | -10.65 | -3.59 | -11.52
+-50 | +0.21 | +11.09 | -6.53 | -0.75 | -11.52
+-40 | +4.39 | +11.09 | -4.22 | +0.66 | -11.52
+-30 | +7.18 | +11.09 | -2.69 | +1.61 | -11.52
+-20 | +9.19 | +11.09 | -1.62 | +2.34 | -11.52
+-10 | +10.05 | +11.09 | -0.87 | +2.31 | -11.52
+ +0 | +10.67 | +11.09 | -0.38 | +2.34 | -11.52
++10 | +11.10 | +11.09 | -0.09 | +2.42 | -11.52
++20 | +11.37 | +11.09 | -0.00 | +2.58 | -11.52
++30 | +11.50 | +11.09 | -0.09 | +2.82 | -11.52
++40 | +11.50 | +11.09 | -0.38 | +3.16 | -11.52
++50 | +11.36 | +11.09 | -0.87 | +3.62 | -11.52
++60 | +10.54 | +11.09 | -1.62 | +3.70 | -11.52
+PASS single-speaker surround yaw sweep optimum +30° is inside the ±60° bound; score terms with the largest weighted changes relative to 0°: early_reflection_db, off_axis_db. The paired optimizer selects each side under mirrored-pair scoring.
+Validation plots: output/home-theater/final-validation/validation
