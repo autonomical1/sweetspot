@@ -9,7 +9,7 @@ Authoritative contract: `docs/API.md`. Same origin, relative URLs, JSON bodies (
 | `POST /rooms/demo` `{}` | Use demo room | < 50 ms | `room_demo.json` |
 | `POST /rooms/rect` | Rectangular room form | < 50 ms | (same shape as `room_demo.json`) |
 | `GET /rooms/{id}` | Open/shared room, after pairing | < 20 ms | `room_demo.json`, `room_scanned.json` |
-| `POST /rooms/{id}/optimize` `{"options"?: ...}` | Auto after load, Optimize button | quick response; refined 3D result later (PLANNED) | `optimize_demo.json` |
+| `POST /rooms/{id}/optimize` `{"options"?: ...}` | Auto after load, Optimize button | synchronous current layout (LIVE); staged 3D refinement is PLANNED | `optimize_demo.json` |
 | `GET /rooms/{id}/layout` | Opening a room that may already have a layout | < 20 ms (404 if none) | (same shape as optimize) |
 | `GET /rooms/{id}/optimize/status` | PLANNED: while a refined layout is running | < 20 ms | status object |
 | `POST /rooms/{id}/score` `{"layout": ...}` | While dragging (throttled), on drop | **about 16 ms** + network | `score_demo.json` |
@@ -22,7 +22,7 @@ Authoritative contract: `docs/API.md`. Same origin, relative URLs, JSON bodies (
 - **`POST /sessions`** -> `{session_id, code, expires_at, pair_url}`. Put `pair_url` in the QR; show `code`; count down to `expires_at` (ISO 8601 UTC).
 - **`GET /sessions/{id}`** -> `{session_id, status: "waiting"|"ready"|"expired", room_id}`. 404 = unknown or server restarted (sessions live in memory): treat like expired.
 - **`POST /rooms/rect`** body: `{"width": 12, "length": 15, "height": 9, "listener": [x, y, z]?, "facing": [fx, fz]?, "budget": 1500?, "session_id": "..."?}` (feet). Dimensions must be 3..100 ft (422 otherwise). Omit `listener` to get the default seat.
-- **`POST /rooms/{id}/optimize`**: LIVE body `{}` returns and saves the quick layout immediately. PLANNED body `{"options": {"preset": "5.1|7.1|7.1.4", "standard": "dolby|itu|thx", "refine": true}}` may start the refined 3D run. Layout `stage` progresses `quick` -> `refining` -> `refined`; show the quick result immediately, poll status every 3 s, and swap in the refined result without blocking the UI. Ignore responses if the user changed rooms meanwhile (generation counter, as in `web/plot2d/plot.js`).
+- **`POST /rooms/{id}/optimize`**: LIVE body `{}` is synchronous and returns/saves the current layout. PLANNED body `{"options": {"preset": "5.1|7.1|7.1.4", "standard": "dolby|itu|thx", "refine": true}}` may start the staged 3D run. For that planned flow, show the returned quick layout immediately, poll status every 3 s, and when the status is complete fetch `GET /rooms/{id}/layout` to obtain the refined layout (the status response has no layout); swap it in without blocking the UI. Treat `stage` values `quick` -> `refining` -> `refined` as PLANNED. Ignore responses if the user changed rooms meanwhile (generation counter, as in `web/plot2d/plot.js`).
 - **`GET /rooms/{id}/optimize/status`** (PLANNED): returns `{"state":"idle|running|failed", "preset", "started_at", "elapsed_s", "error"}`. A failed refinement leaves the quick layout visible.
 - **`POST /rooms/{id}/score`**: body `{"layout": {"speakers": [...], "screen": {...}|null}}` -> `{metrics}`. Send the **whole** current layout. Throttle to <= 10 requests/s, latest-wins (drop responses older than the newest request), one final call on drop. If it fails, keep the last good metrics and show a non-blocking banner.
 - **`PATCH /rooms/{id}/listener`**: 400 if the position is outside the room, 422 for malformed input. Facing is normalized by the server.
