@@ -13,7 +13,7 @@ Add the pairing screen to `webapp/` (the app created by `web-base`): the laptop 
 ## Deliverables
 1. A **Pair your iPhone** entry on the start screen / top bar (next to **Use demo room**) that opens `?pair`.
 2. `src/screens/Pair.tsx`: on entry `POST /sessions` -> large QR of `pair_url` and a countdown to `expires_at`. **QR only: do NOT show, render or mention the 6-character `code` anywhere in the UI (user decision 2026-10-25 01:17).** On expiry show **New QR code** (calls `POST /sessions` again). Handle API errors with a visible retry.
-3. `src/api/sessions.ts` (or in the existing client): typed `createSession()` and `getSession()` per `docs/API.md` and `webapp_context/02_api_reference.md`, with `sample_payloads/post_sessions.json` and `get_session_ready.json` as fixtures.
+3. `src/api/sessions.ts` (or reuse the types `web-base` put in `src/api/client.ts`): typed `createSession()` and `getSession()` per `docs/API.md` and `webapp_context/02_api_reference.md`, with `sample_payloads/post_sessions.json` and `get_session_ready.json` as fixtures.
 4. When the session is ready, read its `room_id`, load the room, set `?room=<id>&view=3d` and switch to the viewer. The viewer then starts `optimize` exactly like the demo-room button does (reuse that store action; do not duplicate it).
 5. Tests (vitest, mock `fetch` and timers): session create, polling cadence, stop on ready/unmount/expiry, "New QR code", error retry, URL switching, and that the `code` string never appears in the rendered output.
 6. Note for HANDOFF.md only (do not change them): the backend still returns `code` and the iOS app may still offer manual code entry; report whether `webapp_context/01` and `07` still mention the typed code so the orchestrator can update the docs.
