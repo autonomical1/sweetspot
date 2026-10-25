@@ -259,6 +259,7 @@ struct ARLayoutView: UIViewRepresentable {
     let scanSession: ARSession?
     let layout: Layout
     let roomWidthFeet: Double?
+    let roomFrame: RoomFrame?
     let sharedScanFrame: Bool
     @Binding var alignmentState: String
 
@@ -296,10 +297,18 @@ struct ARLayoutView: UIViewRepresentable {
         }
 
         if sharedScanFrame {
+            #if DEBUG
+            assert(checkRoomFrameVectors())
+            #endif
             context.coordinator.draw(
                 layout: layout,
-                transform: matrix_identity_float4x4
+                transform: roomFrame.map { worldTransform(for: $0) } ?? matrix_identity_float4x4
             )
+            if roomFrame == nil {
+                alignmentState = "Room frame missing: AR placement may be wrong"
+            } else {
+                alignmentState = "Aligned to scan"
+            }
         } else {
             alignmentState = "Tap north-west floor corner"
         }
@@ -318,6 +327,18 @@ struct ARLayoutView: UIViewRepresentable {
             context.coordinator.points.removeAll()
             uiView.scene.anchors.removeAll()
             alignmentState = "Tap north-west floor corner"
+        }
+
+        if sharedScanFrame {
+            context.coordinator.draw(
+                layout: layout,
+                transform: roomFrame.map { worldTransform(for: $0) } ?? matrix_identity_float4x4
+            )
+            if roomFrame == nil {
+                alignmentState = "Room frame missing: AR placement may be wrong"
+            } else if alignmentState != "Aligned to scan" {
+                alignmentState = "Aligned to scan"
+            }
         }
     }
 

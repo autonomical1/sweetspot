@@ -653,6 +653,7 @@ final class Flow: ObservableObject {
     @Published var materials: [MaterialResult] = []
     @Published var layout: Layout?
     @Published var roomDimensions: Dimensions?
+    @Published var roomFrame: RoomFrame?
     @Published var photoTargets: [PhotoTarget] = []
     @Published var photoIndex = 0
 
@@ -706,6 +707,7 @@ final class Flow: ObservableObject {
         scanSession = nil
         captured = nil
         currentScanID = nil
+        roomFrame = nil
     }
 
     func uploadScan() async {
@@ -764,6 +766,7 @@ final class Flow: ObservableObject {
             if saved.id != currentScanID { forgetScan() }
 
             roomID = room.room_id
+            roomFrame = room.frame
             UserDefaults.standard.set(room.room_id, forKey: "sweetspot.room_id")
             roomDimensions = room.dimensions ?? upload.size.map {
                 Dimensions(width: $0.width, length: $0.length, height: $0.height)
@@ -805,6 +808,7 @@ final class Flow: ObservableObject {
 
     private func adoptUploadedRoom(_ response: RoomResponse, scanID: UUID?) {
         roomID = response.room_id
+        roomFrame = response.frame
         UserDefaults.standard.set(response.room_id, forKey: "sweetspot.room_id")
         roomDimensions = response.dimensions
         materials = []
@@ -835,6 +839,7 @@ final class Flow: ObservableObject {
         do {
             let response = try await backend.demo(sessionID: sessionID)
             roomID = response.room_id
+            roomFrame = response.frame
             UserDefaults.standard.set(response.room_id, forKey: "sweetspot.room_id")
             roomDimensions = response.dimensions
                 ?? Dimensions(width: 12, length: 15, height: 9)
@@ -892,6 +897,7 @@ final class Flow: ObservableObject {
             )
 
             roomID = response.room_id
+            roomFrame = response.frame
             roomDimensions = response.dimensions
                 ?? Dimensions(width: width, length: length, height: height)
             showingOfflinePreview = false
@@ -907,6 +913,7 @@ final class Flow: ObservableObject {
 
     private func startPreview(width: Double, length: Double, height: Double) {
         roomID = "local-preview"
+        roomFrame = nil
         roomDimensions = Dimensions(width: width, length: length, height: height)
 
         layout = Layout(
@@ -1339,6 +1346,7 @@ struct ARLayoutScreen: View {
                     scanSession: flow.scanSession,
                     layout: layout,
                     roomWidthFeet: flow.roomDimensions?.width,
+                    roomFrame: flow.roomFrame,
                     sharedScanFrame: flow.scanSession != nil,
                     alignmentState: $alignment
                 )
