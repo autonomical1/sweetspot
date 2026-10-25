@@ -7,13 +7,13 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 3
-- last_checkpoint: 2026-10-24 19:52
+- last_checkpoint: 2026-10-24 20:10
 
 ## Next action
 Retry 2 for `integrate` (gpt-5.6-luna) and `products-adapter` (gpt-6-sol) was dispatched about 19:51 on the MAIN Codex account (CODEX_HOME unset), background `run-wave -Review`; the 4 remaining review findings are appended to their BRIEFs. `lint` is PASS + OK (`review`, merge-eligible). When it exits: read the summary; if both review OK -> GATE 5 `DISPATCH merge -All` (order lint, products-adapter, integrate) -> config.json test = `python -m ruff check . && python -m pytest -q` -> push -> server pull + `docker compose -f deploy/docker-compose.yml up -d --build` -> smoke.sh and `python tools/e2e.py https://144-202-27-51.sslip.io`. If a review is ISSUES a third time, interrupt the user (do not loop).
 
 ## Waiting on user
-Nothing right now. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` once products-adapter merges.
+Nothing right now (20:09: retry 2 integrate worker done exit 0 in 400 s with check PASS, review pending; products-adapter retry 2 worker still running). Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` once products-adapter merges.
 
 ## SerpApi integration (merged on master, adapter not built yet)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
