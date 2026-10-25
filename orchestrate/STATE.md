@@ -6,14 +6,14 @@
 - phase: integrate   # discover | spec | plan | build | integrate | polish | done
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
-- wave: 4
-- last_checkpoint: 2026-10-24 21:08
+- wave: 5
+- last_checkpoint: 2026-10-24 21:25
 
 ## Next action
-Wave 4 (products-spend) merged and deployed (demo-ok fb09764; master 274 tests + ruff; live demo room totals 465 / 1393 / 2185 USD at budgets 500 / 1500 / 4000; first products request after a deploy takes ~20 s while expansion fills the working DB, then 0.3 s). Nothing is running. Remaining project work: web app (teammate, webapp/ React + Vite), 3D model (teammate), real iOS scan (replace fixtures/roomplan_sample.json), DEMO.md rehearsal with failure drills, .tech domain, products catalog quality (non-English or odd listing titles such as a French "Videoprojecteur" projector pick; consider an English-title filter). Ask the user what to do next.
+Task `products-options` (wave 5, gpt-6-sol medium, main Codex account) is briefed and `ready` (orchestrate/tasks/products-options/BRIEF.md; docs/API.md section 4 updated with `alternatives` and variety rules). On GATE 3 approval: PowerShell (CODEX_HOME unset) `DISPATCH run-wave -Review` in background; PASS + OK -> `DISPATCH merge -All`, ruff + pytest, push, server redeploy, check live `GET /rooms/{id}/products?budget=1500` (alternatives present, varied models), then tell the web/iOS teammates about `alternatives` and `price_delta`. ISSUES -> one retry, then ask the user. Other remaining work: web app, 3D model, real iOS scan, DEMO.md rehearsal, .tech domain, catalog title quality (non-English listings).
 
 ## Waiting on user
-Nothing blocking. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py and that catalog.py now defaults to gemini-3.8-flash; tell the web and 3D teammates product items carry `dimensions` (feet) and `pair_with`.
+GATE 3: approve the products-options brief (go / change).
 
 ## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
