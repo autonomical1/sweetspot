@@ -73,7 +73,7 @@ def test_value_pick_and_second_pass(small_db):
     result = get_products({"speakers": [{"role": "C"}]}, 130)
     assert "Better" in result["items"][0]["title"] or "Premium" in result["items"][0]["title"]
     result = get_products({"speakers": [{"role": "C"}, {"role": "LFE"}]}, 130)
-    assert "Premium" in result["items"][0]["title"]
+    assert "Better" in result["items"][0]["title"]
 
 
 def test_second_pass_keeps_higher_value_pick(small_db):
@@ -87,6 +87,39 @@ def test_second_pass_keeps_higher_value_pick(small_db):
     result = get_products({"speakers": [{"role": "C"}, {"role": "LFE"}]}, 200)
     by_role = {item["role"]: item for item in result["items"]}
     assert by_role["C"]["title"] == "Good Bookshelf Speaker 100W"
+
+
+def test_front_floorstanding_count_does_not_expand_speakers(small_db, monkeypatch):
+    catalog.save_listings(small_db, "floorstanding options", "speaker", [
+        listing(f"Tower Floorstanding Speaker {power}W", price)
+        for power, price in [(80, 90), (100, 110), (120, 130)]
+    ])
+    calls = []
+
+    def fake(conn, category, price=None, specs=None, max_queries=5):
+        calls.append(category)
+        return 0
+
+    monkeypatch.setattr(catalog, "expand_catalog", fake)
+    monkeypatch.setenv("GEMINI_API_KEY", "fake")
+    monkeypatch.setenv("SERPAPI_KEY", "fake")
+    get_products({"speakers": [{"role": "C"}]}, 300)
+    assert "speaker" not in calls
+
+
+def test_second_pass_upgrades_pair_using_combined_leftover(small_db):
+    catalog.save_listings(small_db, "speaker pairs", "speaker", [
+        listing("Basic Bookshelf Speakers (Pair) 20W", 100, rating=3.0, reviews=1000),
+        listing("Premium Bookshelf Speakers (Pair) 300W", 260, rating=5.0, reviews=1000),
+    ])
+    catalog.save_listings(small_db, "bass", "subwoofer", [
+        listing("Bass Subwoofer 12 inch 300W", 40),
+    ])
+    result = get_products({"speakers": [{"role": "L"}, {"role": "R"}, {"role": "LFE"}]}, 300)
+    by_role = {item["role"]: item for item in result["items"]}
+    assert by_role["L"]["title"].startswith("Premium")
+    assert by_role["R"]["price"] == 0
+    assert result["total"] == 300
 
 
 def test_screen_alr_catalog_spec_increases_quality():

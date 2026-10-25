@@ -47,10 +47,11 @@ def _candidates(conn, category: str) -> list[dict]:
     return result
 
 
-def _best(rows: list[dict], role: str, cap: float, screen: dict | None, *, paired: bool = False) -> dict | None:
+def _best(rows: list[dict], role: str, cap: float, screen: dict | None, *, paired: bool = False,
+          value_share: float | None = None) -> dict | None:
     eligible = [row for row in rows if row["price"] <= cap + 0.001 and bool(PAIR.search(row["title"])) == paired
                 and not (role == "C" and "center channel" in row["title"].lower() and paired)]
-    return max(eligible, key=lambda row: value(row, role, cap, screen), default=None)
+    return max(eligible, key=lambda row: value(row, role, value_share or cap, screen), default=None)
 
 
 def _choice(rows: list[dict], roles: tuple[str, ...], cap: float, screen: dict | None) -> dict:
@@ -89,7 +90,8 @@ def _constraints(role: str, screen: dict | None) -> dict:
     if role in {"Ls", "Rs"}:
         return {"form_factor": "bookshelf"}
     if role in {"L", "R", "C"}:
-        return {"form_factor": "bookshelf"}
+        # The teammate search interface has no OR restriction for spec values.
+        return {}
     if role == "LFE":
         return {"driver_in": "8.."}
     if role == "projector":
@@ -131,6 +133,9 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
             matches = search.search(conn, category=category, price=f"..{shares[role]:.2f}",
                                     specs=constraints, limit=10000)
             valid_ids = {row["id"] for row in catalog[category]}
+            if role in {"L", "R", "C"}:
+                matches = [row for row in matches if row["specs"].get("form_factor")
+                           in {"bookshelf", "floorstanding"}]
             if sum(row["id"] in valid_ids for row in matches) < 3:
                 requests.setdefault(category, (shares[role], constraints))
     warnings = expand(path, requests, serpapi_key or os.getenv("SERPAPI_KEY")) if requests else []
@@ -142,18 +147,37 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
         cap = sum(shares[role] for role in group)
         picks[group] = _choice(catalog[_category(group[0])], group, cap, screen)
     total = sum(_cost(choice) for choice in picks.values())
-    for group in groups:
+    group_by_role = {role: group for group in groups for role in group}
+    for role in roles:
+        group = group_by_role[role]
         old = picks[group]
-        base_share = sum(shares[role] for role in group)
-        cap = min(budget - total + _cost(old), base_share + budget - total)
-        candidate = _choice(catalog[_category(group[0])], group, cap, screen)
-        if not candidate or _cost(candidate) > budget - total + _cost(old) + 0.001:
+        first = group[0]
+        is_pair = len(group) == 2 and len(old) == 2 and old.get(first) is old.get(group[1])
+        if role != first and is_pair:
             continue
-        old_value = _choice_value(old, group, base_share, screen)
-        new_value = _choice_value(candidate, group, base_share, screen)
-        if new_value > old_value + 0.001:
-            total += _cost(candidate) - _cost(old)
-            picks[group] = candidate
+        leftover = budget - total
+        base_share = sum(shares[member] for member in group)
+        options = []
+        rows = catalog[_category(role)]
+        if not is_pair:
+            single = _best(rows, role, shares[role] + leftover, screen, value_share=shares[role])
+            if single:
+                options.append({**old, role: single})
+        if len(group) == 2 and role == first:
+            pair = _best(rows, first, base_share + leftover, screen, paired=True, value_share=base_share)
+            if pair:
+                options.append({first: pair, group[1]: pair})
+        best = old
+        best_value = _choice_value(old, group, base_share, screen)
+        for candidate in options:
+            if _cost(candidate) > _cost(old) + leftover + 0.001:
+                continue
+            candidate_value = _choice_value(candidate, group, base_share, screen)
+            if candidate_value > best_value + 0.001:
+                best, best_value = candidate, candidate_value
+        if best is not old:
+            total += _cost(best) - _cost(old)
+            picks[group] = best
     selected = {role: row for choice in picks.values() for role, row in choice.items()}
     items = []
     for role in roles:
