@@ -1,0 +1,7 @@
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/Models.swift
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/BackendClient.swift
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/SweetspotApp.swift
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/ARLayoutView.swift
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/CaptureViews.swift
+Sweetspot_iOS_App/Resources/products.example.json
+orchestrate/tasks/ios-products-ui/HANDOFF.md
