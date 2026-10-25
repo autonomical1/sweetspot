@@ -1,0 +1,2 @@
+speakerplacer/*.py
+orchestrate/tasks/speakerplacer-multicore/HANDOFF.md
