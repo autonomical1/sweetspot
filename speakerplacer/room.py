@@ -20,6 +20,30 @@ def validate_polygon(polygon):
 
 def default_listener(polygon, facing="north"):
     p=validate_polygon(polygon); lo=p.min(axis=1); hi=p.max(axis=1)
+    rectangular=False
+    if p.shape[1]==4:
+        origin=p[:,0]; e1=p[:,1]-origin; e2=p[:,3]-origin
+        rectangular=(abs(float(e1@e2))<=1e-6*np.linalg.norm(e1)*np.linalg.norm(e2) and
+                     np.allclose(p[:,2],origin+e1+e2,atol=1e-6) and np.allclose(p[:,3],origin+e2,atol=1e-6))
+    if not rectangular:
+        # Use the polygon centroid, falling back to a tiny inward offset from
+        # an edge when a concave room's area centroid lies outside the room.
+        from matplotlib.path import Path
+        nxt=np.roll(p,-1,axis=1); cross=p[0]*nxt[1]-nxt[0]*p[1]
+        area2=float(np.sum(cross))
+        centroid=np.array([np.sum((p[0]+nxt[0])*cross),np.sum((p[1]+nxt[1])*cross)])/(3.*area2)
+        path=Path(p.T)
+        if path.contains_point(centroid): return centroid
+        vertex_mean=np.mean(p,axis=1)
+        if path.contains_point(vertex_mean): return vertex_mean
+        for i in range(p.shape[1]):
+            edge=p[:,(i+1)%p.shape[1]]-p[:,i]; length=float(np.linalg.norm(edge))
+            if length<=0: continue
+            inward=np.array([-edge[1],edge[0]])/length
+            for offset in (.01,.05,.15,.3):
+                candidate=(p[:,i]+p[:,(i+1)%p.shape[1]])/2.+offset*inward
+                if path.contains_point(candidate): return candidate
+        raise ValueError("could not find an interior listener position; provide --listener X Y")
     if facing=="north": return np.array([(lo[0]+hi[0])/2,lo[1]+(hi[1]-lo[1])/3])
     if facing=="south": return np.array([(lo[0]+hi[0])/2,hi[1]-(hi[1]-lo[1])/3])
     if facing=="east": return np.array([lo[0]+(hi[0]-lo[0])/3,(lo[1]+hi[1])/2])

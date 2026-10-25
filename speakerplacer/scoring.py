@@ -49,16 +49,19 @@ def score_terms(rir,fs,normal,source,listener):
 
 
 def rectangular_room_frame(room_polygon):
-    """Return origin, orthogonal room axes, and side lengths for a rectangle."""
+    """Return room axes; irregular convex rooms use a bounding-box acoustic proxy."""
     from .room import validate_polygon
     p=validate_polygon(room_polygon)
-    if p.shape[1]!=4: raise ValueError("modal scorer requires a four-corner rectangle")
-    origin=p[:,0]; e1=p[:,1]-origin; e2=p[:,3]-origin
-    lx=float(np.linalg.norm(e1)); ly=float(np.linalg.norm(e2))
-    if lx==0 or ly==0: raise ValueError("rectangle sides must be nonzero")
-    ux=e1/lx; uy=e2/ly
-    if abs(float(ux@uy))>1e-6: raise ValueError("modal scorer requires a rectangular polygon")
-    return origin,ux,uy,lx,ly
+    if p.shape[1]==4:
+        origin=p[:,0]; e1=p[:,1]-origin; e2=p[:,3]-origin
+        lx=float(np.linalg.norm(e1)); ly=float(np.linalg.norm(e2))
+        if lx>0 and ly>0:
+            ux=e1/lx; uy=e2/ly
+            if abs(float(ux@uy))<=1e-6 and np.allclose(p[:,2],origin+e1+e2,atol=1e-6):
+                return origin,ux,uy,lx,ly
+    lo=p.min(axis=1); hi=p.max(axis=1); lx=float(hi[0]-lo[0]); ly=float(hi[1]-lo[1])
+    if lx<=0 or ly<=0: raise ValueError("room must have nonzero width and length")
+    return lo,np.array([1.,0.]),np.array([0.,1.]),lx,ly
 
 
 def room_modes(room_polygon, band_hz=(30.,200.), c=343.):
@@ -72,6 +75,48 @@ def room_modes(room_polygon, band_hz=(30.,200.), c=343.):
             freq=(c/2.)*np.sqrt((n/lx)**2+(m/ly)**2)
             if band_hz[0] <= freq <= high: modes.append((float(freq),n,m))
     return sorted(modes)
+
+
+def room_modes_3d(room_polygon, height_m, band_hz=(20.,250.), c=343., coincidence_hz=1., coincidence_fraction=.02):
+    """Enumerate shoebox (n,m,l) modes and flag near-coincident frequencies."""
+    _,_,_,lx,ly=rectangular_room_frame(room_polygon)
+    if height_m<=0 or c<=0: raise ValueError("height and sound speed must be positive")
+    high=float(band_hz[1]); modes=[]
+    limits=(int(np.ceil(2*high*lx/c)),int(np.ceil(2*high*ly/c)),int(np.ceil(2*high*height_m/c)))
+    for n in range(limits[0]+1):
+        for m in range(limits[1]+1):
+            for l in range(limits[2]+1):
+                if n==m==l==0: continue
+                frequency=float(c/2.*np.sqrt((n/lx)**2+(m/ly)**2+(l/height_m)**2))
+                if band_hz[0]<=frequency<=high:
+                    mode_type="axial" if sum(value>0 for value in (n,m,l))==1 else "tangential" if sum(value>0 for value in (n,m,l))==2 else "oblique"
+                    modes.append({"n":n,"m":m,"l":l,"frequency_hz":frequency,"type":mode_type,"near_coincident":False,"coincident_with":[]})
+    modes.sort(key=lambda item:item["frequency_hz"])
+    for i,row in enumerate(modes):
+        matches=[]
+        for j,other in enumerate(modes):
+            if i==j: continue
+            delta=abs(row["frequency_hz"]-other["frequency_hz"])
+            if delta<=max(float(coincidence_hz),float(coincidence_fraction)*row["frequency_hz"]):
+                matches.append({"n":other["n"],"m":other["m"],"l":other["l"],"frequency_hz":other["frequency_hz"]})
+        row["near_coincident"]=bool(matches); row["coincident_with"]=matches
+    return modes
+
+
+def bonello_mode_counts(modes, band_hz=(20.,250.)):
+    """Count 3D modes in contiguous 1/3-octave bands for Bonello screening."""
+    low,high=map(float,band_hz)
+    if low<=0 or high<=low: raise ValueError("band_hz must be positive and increasing")
+    ratio=2.**(1./3.); centers=[]; center=low*ratio**.5
+    while center/ratio**.5<high:
+        centers.append(center); center*=ratio
+    half=ratio**.5
+    rows=[]
+    for center in centers:
+        count=sum(1 for mode in modes if center/half<=mode["frequency_hz"]<center*half)
+        rows.append({"center_hz":center,"mode_count":count})
+    nonempty=[row["mode_count"] for row in rows if row["mode_count"]>0]
+    return rows,all(b>=a for a,b in zip(nonempty,nonempty[1:]))
 
 
 def modal_step_for_damping(room_polygon, absorption, q_scale=20., requested_step_hz=1., band_hz=(30.,200.), floor_hz=.25):
@@ -89,7 +134,7 @@ def modal_step_for_damping(room_polygon, absorption, q_scale=20., requested_step
     return max(float(floor_hz),min(float(requested_step_hz),automatic))
 
 
-def modal_response(room_polygon, sources, listener, absorption=.2, band_hz=(30.,200.), step_hz=1., q_scale=20., c=343., source_gains_db=None):
+def modal_response(room_polygon, sources, listener, absorption=.2, band_hz=(30.,200.), step_hz=1., q_scale=20., c=343., source_gains_db=None, surface_absorption=None):
     """Complex coherent modal pressure versus frequency for same-signal sources.
 
     Q = q_scale / sqrt(absorption) is a configurable approximate damping map.
@@ -99,19 +144,29 @@ def modal_response(room_polygon, sources, listener, absorption=.2, band_hz=(30.,
     def local(point):
         delta=np.asarray(point,dtype=float)-origin
         return float(delta@ux),float(delta@uy)
-    lx_listener,ly_listener=local(listener)
+    listener_array=np.asarray(listener,dtype=float); was_single=listener_array.ndim==1
+    if was_single: listener_array=listener_array[None,:]
+    listener_points=np.asarray([local(point) for point in listener_array])
     source_points=[local(source) for source in sources]
     gains=np.ones(len(source_points)) if source_gains_db is None else 10.**(np.asarray(source_gains_db,dtype=float)/20.)
     modes=room_modes(room_polygon,band_hz,c)
     frequencies=np.arange(float(band_hz[0]),float(band_hz[1])+step_hz*.5,step_hz)
-    pressure=np.zeros(len(frequencies),dtype=complex)
+    pressure=np.zeros((len(listener_points),len(frequencies)),dtype=complex)
     q=q_scale/np.sqrt(max(float(absorption),.01))
+    wall_alpha=np.full(4,float(absorption)) if surface_absorption is None else np.asarray(surface_absorption,dtype=float)
+    if wall_alpha.shape!=(4,) or np.any((wall_alpha<0)|(wall_alpha>1)): raise ValueError("surface_absorption must contain four wall coefficients in [0,1]")
+    alpha_x=float(np.mean(wall_alpha[[1,3]])); alpha_y=float(np.mean(wall_alpha[[0,2]]))
     for f_nm,n,m in modes:
-        psi_l=np.cos(n*np.pi*lx_listener/lx)*np.cos(m*np.pi*ly_listener/ly)
+        psi_l=np.cos(n*np.pi*listener_points[:,0]/lx)*np.cos(m*np.pi*listener_points[:,1]/ly)
         psi_s=sum(gain*np.cos(n*np.pi*x/lx)*np.cos(m*np.pi*y/ly) for (x,y),gain in zip(source_points,gains))
-        numerator=psi_l*psi_s
-        pressure += numerator/(f_nm**2-frequencies**2+1j*frequencies*f_nm/q)
-    return frequencies,pressure
+        weights=[]; participating=[]
+        if n: weights.append((n/lx)**2); participating.append((n/lx)**2*alpha_x)
+        if m: weights.append((m/ly)**2); participating.append((m/ly)**2*alpha_y)
+        alpha_mode=(sum(participating)/sum(weights)) if participating else absorption
+        mode_q=q_scale/np.sqrt(max(float(alpha_mode),.01)) if surface_absorption is not None else q
+        numerator=psi_l[:,None]*psi_s
+        pressure += numerator/(f_nm**2-frequencies[None,:]**2+1j*frequencies[None,:]*f_nm/mode_q)
+    return frequencies,(pressure[0] if was_single else pressure)
 
 
 def modal_score(frequencies, pressure, null_db=10.):

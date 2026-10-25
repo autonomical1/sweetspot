@@ -14,6 +14,7 @@ from .candidates import Candidate
 from .optimize import _evaluate_group, _make_mirror, _wall_roles, _allowed, _valid_angle, _toe_grid, _imaging_terms, _weighted_imaging
 from .speaker_models import resolve_model
 from .speaker_models import DEFAULT_SPEAKER_MODELS, SpeakerModel
+from .room_acoustics import MaterialSet, room_metrics, band_rir_metrics, level_components, first_order_reflections
 
 
 def _type_spec(layout,name):
@@ -30,7 +31,7 @@ def _clone(spec,**kwargs):
 def _run(room,listener,specs,facing,absorption,simulator=None,**kwargs):
     return optimize_layout(room,listener,specs,facing,absorption,simulator=simulator or simulate_rir,**kwargs)
 
-def _spec_influence(room,listener,layout,facing,absorption,report,modal_q_scale,reference_spl_db,peak_headroom_db):
+def _spec_influence(room,listener,layout,facing,absorption,report,modal_q_scale,reference_spl_db,peak_headroom_db,room_height_m=2.4384,materials=None):
     """Perturb numeric fields on each role's default model and measure outputs."""
     cache={}
     def cached_sim(poly,source,mic,absorption=.2):
@@ -46,7 +47,7 @@ def _spec_influence(room,listener,layout,facing,absorption,report,modal_q_scale,
             models=dict(registry); models[model_id]=model
             return optimize_layout(room,listener,[local_spec],facing,absorption,top_n=1,simulator=cached_sim,
                 modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db,
-                refinement_sweeps=0,models=models)
+                refinement_sweeps=0,models=models,room_height_m=room_height_m,materials=materials)
         baseline=optimize(base_model).best_pair
         base_points=np.asarray([s["position_m"] for s in baseline["speakers"]]); base_toe=np.asarray([s.get("toe_in_deg",0.) for s in baseline["speakers"]])
         baseline_spl=float(np.mean([s["predicted_spl_db"] for s in baseline["speakers"]])); base_score=float(baseline["score_db"])
@@ -55,8 +56,8 @@ def _spec_influence(room,listener,layout,facing,absorption,report,modal_q_scale,
             if isinstance(value,bool) or not isinstance(value,(int,float)) or name=="model_id": continue
             if value is None:
                 report.append("{} / {}: informational only (unset)".format(spec.name,name)); continue
-            if name in ("height_m", "coverage_v_deg"):
-                report.append("{} / {}: informational only (2D model)".format(spec.name,name)); continue
+            if name in ("height_m", "coverage_v_deg", "mount_height_range_m"):
+                report.append("{} / {}: affects 3D height/aim selection; not the horizontal acoustic search".format(spec.name,name)); continue
             changed=set()
             for factor in (.8,1.2):
                 candidate_value=float(value)*factor if value else .2
@@ -69,7 +70,7 @@ def _spec_influence(room,listener,layout,facing,absorption,report,modal_q_scale,
                 trial_spl=float(np.mean([s["predicted_spl_db"] for s in trial["speakers"]]))
                 if abs(trial_spl-baseline_spl)>.01: changed.add("predicted SPL")
             report.append("{} / {}: {}".format(spec.name,name,", ".join(sorted(changed)) if changed else "informational only"))
-        for name in ("coverage_h_vs_freq","polar_table","on_axis_response","mount_height_range_m"):
+        for name in ("coverage_h_vs_freq","polar_table","on_axis_response"):
             value=getattr(base_model,name)
             note="unset" if value is None else ("2D model" if name=="mount_height_range_m" else "curve is model-specific")
             report.append("{} / {}: informational only ({})".format(spec.name,name,note))
@@ -104,11 +105,42 @@ def _spec_influence(room,listener,layout,facing,absorption,report,modal_q_scale,
 
 def _emit(lines,status,message): lines.append("{} {}".format(status,message))
 
-def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,output_dir="output",base_result=None,simulator=None,modal_q_scale=20.,reference_spl_db=85.,peak_headroom_db=20.):
+def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,output_dir="output",base_result=None,simulator=None,modal_q_scale=20.,reference_spl_db=85.,peak_headroom_db=20.,room_height_m=2.4384,materials=None,ear_height_m=1.097):
     """Run score spread, ablation, baselines, sweeps, convergence, and analytic checks."""
     out=Path(output_dir)/"validation"; out.mkdir(parents=True,exist_ok=True)
-    rng=random.Random(2026); report=["Physics validation report", "Room: {} x {} m; facing {}; absorption {:.2f}".format(*(np.ptp(room_polygon,axis=1)),facing,absorption)]
-    base=base_result or _run(room_polygon,listener,layout,facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+    materials=materials if materials is not None else MaterialSet()
+    environment=room_metrics(room_polygon,room_height_m,materials)
+    def environment_run(*args,**kwargs):
+        kwargs.setdefault("room_height_m",room_height_m); kwargs.setdefault("materials",materials)
+        return _run(*args,**kwargs)
+    rng=random.Random(2026); report=["Physics validation report", "Room: {} x {} x {} m; facing {}; absorption {:.2f}".format(*(np.ptp(room_polygon,axis=1)),room_height_m,facing,absorption)]
+    report.append("Materials (typical octave-band approximations): walls={}, floor={}, ceiling={}".format(materials.walls,materials.floor,materials.ceiling))
+    report.append("band Hz | mean alpha | Sabine RT60 s | Eyring RT60 s")
+    report.extend("{:.0f} | {:.3f} | {:.3f} | {:.3f}".format(f,a,s,e) for f,a,s,e in zip(environment["bands_hz"],environment["mean_absorption"],environment["sabine_rt60_s"],environment["eyring_rt60_s"]))
+    mode_freqs=np.unique(np.round(np.asarray([row[0] for row in room_modes(room_polygon,(30.,200.))]),8))
+    report.append("Schroeder frequency mean {:.1f} Hz; 30-200 Hz modal count {}; smallest mode gap {:.2f} Hz".format(
+        float(np.mean(environment["schroeder_hz"])),len(mode_freqs),float(np.diff(mode_freqs).min()) if len(mode_freqs)>1 else float("nan")))
+    base=base_result or environment_run(room_polygon,listener,layout,facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db,room_height_m=room_height_m,materials=materials)
+    for speaker in base.best_pair.get("speakers",[]):
+        model=resolve_model(speaker["model_id"]); distance=float(np.linalg.norm(np.asarray(speaker["position_m"])-listener))
+        band_index=0 if speaker["type"]=="bass" else 3
+        levels=level_components(model,distance,model.effective_power_w,environment,band_index)
+        report.append("{} {} {:.0f} Hz: direct {:.1f} dB, reverberant {:.1f} dB, total {:.1f} dB; critical distance {:.2f} m{}".format(
+            speaker["type"],speaker["model_id"],environment["bands_hz"][band_index],levels["direct_spl_db"],levels["reverberant_spl_db"],levels["total_spl_db"],levels["critical_distance_m"],
+            " (beyond critical distance)" if levels["warn_beyond_critical"] else ""))
+    if base.best_pair.get("speakers"):
+        first=base.best_pair["speakers"][0]
+        reflections=first_order_reflections(room_polygon,np.r_[first["position_m"],ear_height_m],
+            np.r_[listener,ear_height_m],room_height_m,absorption)
+        report.append("First-order paths for {} {}: surface | time ms | level relative to direct dB".format(first["type"],first["model_id"]))
+        report.extend("{} | {:.2f} | {:+.1f}".format(row["surface"],row["time_ms"],row["level_relative_db"]) for row in reflections)
+    if base.rir is not None:
+        try:
+            rir_rows=band_rir_metrics(base.rir,base.fs,direct_arrival(base.rir,base.fs))
+            report.append("RIR octave-band metrics (filtered): band Hz | C50 dB | C80 dB | D50 | RT60 measured s")
+            report.extend("{:.0f} | {:.2f} | {:.2f} | {:.3f} | {:.3f}".format(row["frequency_hz"],row["c50_db"],row["c80_db"],row["d50"],row["rt60_measured_s"]) for row in rir_rows)
+        except (ValueError,np.linalg.LinAlgError) as exc:
+            report.append("WARN: octave-band RIR metrics unavailable: {}".format(exc))
     for speaker in base.best_pair.get("speakers",[]):
         if speaker.get("warnings"):
             _emit(report,"WARN","selected {} {}: {}".format(speaker["type"],speaker["model_id"],", ".join(speaker["warnings"])))
@@ -116,7 +148,7 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
     if imaging_spec:
         costs=[]
         for enabled in (False,True):
-            start=time.perf_counter(); _run(room_polygon,listener,[_clone(imaging_spec,count=2 if imaging_spec.symmetric else 1)],facing,absorption,simulator,
+            start=time.perf_counter(); environment_run(room_polygon,listener,[_clone(imaging_spec,count=2 if imaging_spec.symmetric else 1)],facing,absorption,simulator,
                 modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db,directivity_on_reflections=enabled)
             costs.append(time.perf_counter()-start)
         _emit(report,"INFO","first-order reflection-directivity estimate enabled; runtime {:.3f}s vs {:.3f}s disabled ({:+.1f}%)".format(costs[1],costs[0],100.*(costs[1]-costs[0])/max(costs[0],1e-9)))
@@ -139,7 +171,7 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
     for spec in layout:
         if spec.angle_target_deg is None:
             weights=dict(spec.score_weights); weights["geometry"]=0.
-            trial=_run(room_polygon,listener,[_clone(spec,score_weights=weights)],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+            trial=environment_run(room_polygon,listener,[_clone(spec,score_weights=weights)],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
             pts=_positions(trial.best_pair); filter_rows.append((spec.name,"soft_no_geometry",pts,trial.best_pair["score_db"]))
             xy=np.array(pts)/.3048; ax.scatter(xy[:,0],xy[:,1],s=88,label="{} acoustic-only".format(spec.name),marker="X")
             continue
@@ -148,7 +180,7 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
                   ("soft",_clone(spec,angle_tol_deg=180.)),
                   ("soft_no_geometry",_clone(spec,angle_tol_deg=180.,score_weights=no_geometry))]
         for label,var in variants:
-            trial=_run(room_polygon,listener,[var],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+            trial=environment_run(room_polygon,listener,[var],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
             pts=_positions(trial.best_pair); filter_rows.append((spec.name,label,pts,trial.best_pair["score_db"]))
             xy=np.array(pts)/.3048
             marker={"hard":"o","wide":"s","soft":"^","soft_no_geometry":"X"}[label]
@@ -172,16 +204,24 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
         tolerances=(spec.angle_tol_deg,15.,20.) if spec.angle_target_deg is not None else (spec.angle_tol_deg,)
         for tolerance in tolerances:
             widened=_clone(spec,angle_tol_deg=tolerance)
-            reference=_run(room_polygon,listener,[widened],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+            reference=environment_run(room_polygon,listener,[widened],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
             eligible=[r for r in reference.candidate_scores if r["type"]==spec.name]
             reference_record=reference.best_pair
             for term in terms:
                 weights=dict(widened.score_weights); weights[term]=0.
-                trial=_run(room_polygon,listener,[_clone(widened,score_weights=weights)],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+                trial=environment_run(room_polygon,listener,[_clone(widened,score_weights=weights)],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
                 shift=_move_ft(_positions(reference_record),_positions(trial.best_pair)); ablation.append((spec.name,term,tolerance,shift))
                 dead=(shift<.05 and len(eligible)>=20)
                 window="±{:.0f}°".format(tolerance) if spec.angle_target_deg is not None else "all candidates"
                 _emit(report,"WARN" if dead else "PASS","{} ablate {} at {} ({} candidates): movement {:.2f} ft{}".format(spec.name,term,window,len(eligible),shift," (dead weight at adequate candidate count)" if dead else ""))
+    for spec in layout:
+        if spec.score_weights.get("headroom",0.)<=0: continue
+        no_headroom=dict(spec.score_weights); no_headroom["headroom"]=0.
+        trial=environment_run(room_polygon,listener,[_clone(spec,score_weights=no_headroom)],facing,absorption,simulator,
+                   modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+        selected=next((placement["best"] for placement in base.placements_by_type if placement["type"]==spec.name),None)
+        shift=_move_ft(_positions(selected),_positions(trial.best_pair)) if selected else float("nan")
+        _emit(report,"PASS" if shift>=.05 else "INFO","{} corrected headroom term changes answer by {:.2f} ft when enabled".format(spec.name,shift))
     fig,ax=plt.subplots(figsize=(11,4)); ax.bar(["{}\n{} {}".format(a,b,"±{}°".format(int(c)) if next(s for s in layout if s.name==a).angle_target_deg is not None else "all candidates") for a,b,c,_ in ablation],[d for *_,d in ablation]); ax.set_ylabel("Mean speaker movement (ft)"); ax.set_title("Score-term ablation across angle windows"); ax.tick_params(axis="x",labelrotation=45); fig.tight_layout(); fig.savefig(out/"ablation.png",dpi=160); plt.close(fig)
 
     # 4. Random candidate-layout and rule-of-thumb comparisons.
@@ -200,7 +240,7 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
                     attempts+=1
                     if not left_rows: break
                     row=rng.choice(left_rows); source=Candidate(np.asarray(row["position_m"]),np.asarray(row["normal"]),int(row["wall_index"]),.5)
-                    mirror=_make_mirror(room_polygon,source,listener,facing,spec.allowed_walls,.3,.05)
+                    mirror=_make_mirror(room_polygon,source,listener,facing,spec.allowed_walls,.3,.001)
                     if mirror is None or not _allowed(spec.allowed_walls,random_roles[mirror.wall_index]) or not _valid_angle(mirror,listener,facing,spec): continue
                     edge=room_polygon[:,(mirror.wall_index+1)%room_polygon.shape[1]]-room_polygon[:,mirror.wall_index]
                     model=resolve_model(spec.model_id or {"front":"generic_bookshelf_onwall","surround":"generic_surround_wide","bass":"generic_inwall_sub"}.get(spec.name,"generic_bookshelf_onwall"))
@@ -237,7 +277,7 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
             selected=[]; source_pair=[]
             for seed in seeds:
                 source=Candidate(np.asarray(seed["position_m"]),np.asarray(seed["normal"]),int(seed["wall_index"]),.5)
-                mirror=_make_mirror(room_polygon,source,listener,facing,spec.allowed_walls,.3,.05)
+                mirror=_make_mirror(room_polygon,source,listener,facing,spec.allowed_walls,.3,.001)
                 if mirror is None or not _allowed(spec.allowed_walls,wall_roles[mirror.wall_index]): continue
                 match=min(rows,key=lambda row:np.linalg.norm(row["position_m"]-mirror.position))
                 if spec.angle_target_deg is not None and abs(abs(match["angle_deg"])-spec.angle_target_deg)>spec.angle_tol_deg+1e-8: continue
@@ -269,7 +309,12 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
                 rule_by_type[spec.name]=float("nan"); rule_violations.append("{} has no eligible textbook pair".format(spec.name))
         else:
             selected=sorted(rows,key=lambda r:abs(abs(r.get("angle_deg",0.))-spec.angle_target_deg) if spec.angle_target_deg is not None else r["score_db"],reverse=False)[:spec.count]
-            rule_by_type[spec.name]=float(np.mean([r["score_db"] for r in selected])) if selected else float("nan")
+            score=float(np.mean([r["score_db"] for r in selected])) if selected else float("nan")
+            rule_by_type[spec.name]=score; rule_group_scores[spec.name]=score
+            if selected:
+                rule_terms_by_type[spec.name]=selected[0]["terms"]
+                positions=[np.asarray(row["position_m"],dtype=float) for row in selected]
+                rule_speaker_positions[spec.name]=positions; rule_points.extend(positions)
     _emit(report,"INFO","Per-role comparison (scores are dB-like; do not sum across unlike role metrics):")
     losing_types=[]; selected_metrics={}
     for spec in layout:
@@ -293,12 +338,15 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
     xs=np.linspace(lo[0],hi[0],5); ys=np.linspace(lo[1],hi[1],5); front_spec=next((s for s in layout if s.name=="front"),None); bass_spec=next((s for s in layout if s.name=="bass"),None)
     sweep=[]
     if front_spec and bass_spec:
-        sweep_front=_clone(front_spec,angle_tol_deg=max(30.,front_spec.angle_tol_deg))
+        # The standards layout represents L and R as separate count-one
+        # channel specs; the listener sweep needs a pair to measure spacing.
+        sweep_front=_clone(front_spec,count=2,symmetric=True,channel_name=None,
+                           angle_tol_deg=max(30.,front_spec.angle_tol_deg))
         for x in xs:
             for y in ys:
                 li=np.array([x,y])
                 try:
-                    rr=_run(room_polygon,li,[sweep_front,bass_spec],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+                    rr=environment_run(room_polygon,li,[sweep_front,bass_spec],facing,absorption,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
                     fp=next(t["best"]["speakers"] for t in rr.placements_by_type if t["type"]=="front"); bass_record=next(t for t in rr.placements_by_type if t["type"]=="bass"); bp=bass_record["best"]["speakers"]
                     sweep.append((x,y,float(np.linalg.norm(fp[0]["position_m"]-fp[1]["position_m"])/.3048),np.array([s["position_m"] for s in bp])/.3048,bass_record["best"]["wall_index"],bass_record["best"]["score_db"],bass_record["ranked"][1]["score_db"] if len(bass_record["ranked"])>1 else bass_record["best"]["score_db"]))
                 except ValueError: pass
@@ -320,7 +368,7 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
             else: distance=row[0]-room_polygon[0].min()
             distances.append(distance/.3048)
         axes[0].scatter(distances,[x[2] for x in sweep],c=[x[1]/.3048 for x in sweep],cmap="viridis",label="listener grid"); axes[0].set(xlabel="Distance from front wall (ft)",ylabel="Best front spacing (ft)",title="Front spacing across listener grid"); axes[0].legend()
-        bass_points=np.vstack([x[3] for x in sweep]); walls=np.repeat([x[4] for x in sweep],2); axes[1].plot(poly[0],poly[1],"k-",label="room boundary")
+        bass_points=np.vstack([x[3] for x in sweep]); subs_per_case=int(sweep[0][3].shape[0]); walls=np.repeat([x[4] for x in sweep],subs_per_case); axes[1].plot(poly[0],poly[1],"k-",label="room boundary")
         for wall in sorted(set(walls)): axes[1].scatter(bass_points[walls==wall,0],bass_points[walls==wall,1],s=32,label="wall {}".format(wall))
         axes[1].set(xlabel="x (ft)",ylabel="y (ft)",title="Bass location / selected wall map"); axes[1].legend()
     fig.tight_layout(); fig.savefig(out/"listener_sweep.png",dpi=160); plt.close(fig)
@@ -332,7 +380,7 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
         poly=make_room(length,width); li=default_listener(poly,facing)
         for alpha in absorptions:
             try:
-                rr=_run(poly,li,selected_specs,facing,alpha,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+                rr=environment_run(poly,li,selected_specs,facing,alpha,simulator,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
                 bass_modes=room_modes(poly,(30.,150.)); freqs=np.unique(np.round([m[0] for m in bass_modes],6)); smallest=min(np.diff(freqs),default=float("nan"))
                 scores={t["type"]:t["best"]["score_db"] for t in rr.placements_by_type}
                 room_rows.append((length,width,alpha,None,rr.best_pair["speakers"],scores,len(freqs),smallest))
@@ -363,14 +411,14 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
     if front:
         for order in (4,8,12,16):
             sim=lambda poly,src,li,absorption=.2,order=order:simulate_rir(poly,src,li,absorption=absorption,max_order=order)
-            rr=_run(room_polygon,listener,[front],facing,absorption,sim,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+            rr=environment_run(room_polygon,listener,[front],facing,absorption,sim,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
             conv.append(("order",order,_positions(rr.best_pair),rr.best_pair["score_db"]))
         for spacing in (.5,.25,.1):
-            rr=_run(room_polygon,listener,[front],facing,absorption,simulator,spacing_m=spacing,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+            rr=environment_run(room_polygon,listener,[front],facing,absorption,simulator,spacing_m=spacing,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
             conv.append(("spacing",spacing,_positions(rr.best_pair),rr.best_pair["score_db"]))
     if bass:
         for step in (.5,1.,2.):
-            rr=_run(room_polygon,listener,[bass],facing,absorption,simulator,modal_step_hz=step,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
+            rr=environment_run(room_polygon,listener,[bass],facing,absorption,simulator,modal_step_hz=step,modal_q_scale=modal_q_scale,reference_spl_db=reference_spl_db,peak_headroom_db=peak_headroom_db)
             conv.append(("bass_step",step,_positions(rr.best_pair),rr.best_pair["score_db"]))
     labels=["{} {}".format(a,b) for a,b,_,_ in conv]; ref=conv[0][2] if conv else []; moves=[_move_ft(ref,x[2]) for x in conv]
     _emit(report,"INFO","convergence baseline candidate spacing {:.2f} m; bass frequency step {:.2f} Hz; equivalence threshold 0.50 dB".format(baseline_spacing,baseline_bass_step))
@@ -419,7 +467,7 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
         ax.set_aspect("equal"); ax.set_title("Bass score along room perimeter"); fig.tight_layout(); fig.savefig(out/"bass_perimeter_heatmap.png",dpi=160); plt.close(fig)
     bass_best=next((pl["best"] for pl in base.placements_by_type if pl["type"]=="bass"),None)
     influence_start=len(report)
-    _spec_influence(room_polygon,listener,layout,facing,absorption,report,modal_q_scale,reference_spl_db,peak_headroom_db)
+    _spec_influence(room_polygon,listener,layout,facing,absorption,report,modal_q_scale,reference_spl_db,peak_headroom_db,room_height_m,materials)
     influence_summary=[line for line in report[influence_start:] if line.startswith(("generic_narrow_onwall:","generic_surround_wide:","generic_dipole_surround:","dipole listener-to-null", "F3 ","Sensitivity basis check"))]
     report.extend(["", "SUMMARY"])
     for spec in layout:
@@ -436,6 +484,26 @@ def run_validation(room_polygon,listener,layout,facing="north",absorption=.2,out
         response=np.asarray(bass_best["modal_response"]["response_db"]); swing=float(np.max(response)-np.min(response))
         report.append("Bass peak-to-dip response swing {:.2f} dB. Placement alone cannot flatten the response in a small room; equalization, treatment, or additional subwoofers may be needed.".format(swing))
     report.append("The modal model is 2D and omits floor-to-ceiling modes; those require a 3D room model.")
+    surround_spec=next((item for item in layout if item.name=="surround"),None)
+    surround_place=next((item["best"] for item in base.placements_by_type if item["type"]=="surround"),None)
+    if surround_spec is not None and surround_place:
+        speaker=surround_place["speakers"][0]; model=resolve_model(surround_spec.model_id or "generic_surround_wide")
+        point=Candidate(np.asarray(speaker["position_m"]),np.asarray(speaker["normal"]),int(speaker["wall_index"]),float(speaker.get("wall_t",.5)))
+        h,fs=(simulator or simulate_rir)(room_polygon,point.position,listener,absorption=absorption)
+        yaw_rows=[]
+        for yaw in range(-60,61,10):
+            terms=_imaging_terms(h,fs,point,listener,surround_spec,model,reference_spl_db,peak_headroom_db,float(yaw),room_polygon,True)
+            yaw_rows.append((yaw,_weighted_imaging(terms,surround_spec),terms))
+        chosen=max(yaw_rows,key=lambda row:row[1]); neutral=next(row for row in yaw_rows if row[0]==0); pinned=abs(chosen[0])==60
+        report.extend(["SURROUND YAW SWEEP at selected position (-60..+60°, 10° steps)","yaw | score | clarity | directivity | reflections | headroom"])
+        report.extend("{:+3d} | {:+.2f} | {:+.2f} | {:+.2f} | {:+.2f} | {:+.2f}".format(yaw,score,terms["clarity_db"],terms["off_axis_db"],terms["early_reflection_db"],terms["headroom_db"]) for yaw,score,terms in yaw_rows)
+        weights=surround_spec.score_weights
+        contributions={"clarity_db":weights.get("clarity",0.)*(chosen[2]["clarity_db"]-neutral[2]["clarity_db"]),
+            "off_axis_db":weights.get("off_axis",0.)*(chosen[2]["off_axis_db"]-neutral[2]["off_axis_db"]),
+            "early_reflection_db":weights.get("early_reflection",0.)*(chosen[2]["early_reflection_db"]-neutral[2]["early_reflection_db"]),
+            "headroom_db":weights.get("headroom",0.)*(chosen[2]["headroom_db"]-neutral[2]["headroom_db"])}
+        drivers=[name for name,value in sorted(contributions.items(),key=lambda item:abs(item[1]),reverse=True) if abs(value)>1e-9][:2]
+        _emit(report,"WARN" if pinned else "PASS","single-speaker surround yaw sweep optimum {:+d}°{}; score terms with the largest weighted changes relative to 0°: {}. The paired optimizer selects each side under mirrored-pair scoring.".format(chosen[0]," pins the ±60° bound" if pinned else " is inside the ±60° bound",", ".join(drivers) if drivers else "no score term changes"))
     report.append("Validation plots: {}".format(out))
     report_text="\n".join(report)
     (out/"report.txt").write_text(report_text+"\n",encoding="utf-8")
