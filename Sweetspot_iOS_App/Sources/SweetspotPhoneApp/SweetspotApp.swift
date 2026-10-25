@@ -1432,7 +1432,7 @@ struct ResultsScreen: View {
             }
             .buttonStyle(.borderedProminent)
 
-            if flow.layout != nil {
+            if flow.layout != nil && flow.roomID != "local-preview" {
                 Button("Shop this setup") { showingShop = true }
             }
         }
