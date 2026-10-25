@@ -7,35 +7,27 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 19
-- last_checkpoint: 2026-10-25 06:30
+- last_checkpoint: 2026-10-25 10:58
 
 ## Next action
-ios-qr-pairing and web-e2e are MERGED (demo-ok 77feaa0), master pushed, VPS redeployed and verified (smoke + e2e pass, `pair_url` uses sweetspotav.tech). Browser check in progress: Chrome tab 865081234 shows the QR at https://sweetspotav.tech/app/?pair (expires about 04:35; do not reload it). A background job tails the VPS API logs into the scratchpad file vps.log (task brn1biuho). When the user says they scanned: grep vps.log for the session/pairing and scan POSTs (POST /sessions/..., /rooms/scan), confirm the web page switches to the scanned room, then report. Later: ios-polish (brief has item 4, remove the "Found" rows) awaits the user's go. Cut by user: polygon-geometry, polygon-engine, plot2d-patch-depth. Remove leftover worktree dirs with `git worktree remove --force` (ios-qr-pairing, web-e2e). docs/API.md may still hold the polygon outline contract: check.
+The VPS was rebuilt (see Infrastructure). Finish it: (1) the user must correct the A record for sweetspotav.tech to 155.138.175.232 (all four authoritative nameservers still answer the typo 155.137.175.232 at 10:55); Caddy then issues the certificate by itself, so do NOT restart caddy. A background poll (task bx2douyfb) watches https://sweetspotav.tech/health. (2) Then deploy master 82ec29b to the VPS (it was cloned at 8878ec4; the merge only changes iOS Swift, so no backend redeploy is needed) and run smoke.sh + tools/e2e.py against https://sweetspotav.tech. (3) iOS tester builds ios-phone_context (82ec29b) and reports compile errors; one known risk: the `\(urlError, privacy: .private)` Logger line in BackendClient.swift may not compile (fallback `urlError.localizedDescription`). Cut by user: polygon-geometry, polygon-engine, plot2d-patch-depth; docs/API.md still lists POST /rooms/polygon (returns 405 on the server), trim it.
 
-## Pending deploy
-Commit 58b2928 (2D view, 2D/3D toggle and /app/plot2d/ removed; root redirects to /app/) is on local master only: NOT pushed or deployed. Deploy it AFTER the user's phone scan finishes (a redeploy would disturb the QR session), then run smoke.sh + tools/e2e.py.
+## Infrastructure (2026-10-25, old Vultr instance 144.202.27.51 was terminated, no backup)
+New VPS root@155.138.175.232 (Ubuntu 26.04, 4 CPU, 7 GB, swap). Docker 29.9.2 + Compose, ufw 22/80/443, stack in /srv/sweetspot (deploy-api-1, deploy-caddy-1, volume deploy_sweetspot_data). .env has DOMAIN=sweetspotav.tech, SITE_ADDRESS="sweetspotav.tech, 155-138-175-232.sslip.io", Gemini + SerpApi keys set by the user (api recreated with --no-deps). Smoke and e2e pass at https://155-138-175-232.sslip.io. Hardening: unattended-upgrades, fail2ban; nightly backup /usr/local/bin/sweetspot-backup.sh (03:30, keeps 7, same host). Docs updated and committed 01fa91c. Old rooms, scans, cached refinements and pairing sessions are lost. Open choices for the user: disable SSH password + root password login, off-box backups, Docker log rotation (needs a docker restart, do after the cert).
+
+## Merged and pushed today
+ios-error-audit merged 82ec29b (pushed to master and ios-phone_context); pair-side 3D fix cdf2bd4 and docs 01fa91c are on origin and on the new VPS. Earlier: mc-pool b202b4f, speakerplacer-speed cea05ab, ios-theme, ios-polish, ios-qr-pairing, web-e2e.
 
 ## Backlog (user requests)
-- Link handshake: DONE 451ed10 (deployed; iOS call needs the tester build).
-- 2D removal + Load room file removal are committed locally, deploy pending (see above). ios-polish running on account 3 (started 04:00 by user go).
-
-## Status 04:05
-Browser check done: QR pairing worked (session s_iXmgTRgbikI, scan uploaded as room r_IlRO9hSDK0g, web switched to it at once). Phone AR opened in manual-align mode with floating objects (see DECISIONS.md 04:02); needs ios-polish plus a follow-up task for session reuse. ios-polish RUNNING (account 3, started by user go). 7.1 optimize for the scan room was running on the VPS. Deploy of 58b2928 + Load-file removal still pending (do after the user finishes phone tests).
-
-## Status 04:45
-ios-polish MERGED + deployed (ddaea00; no Codex review, user wanted speed). Web recompute (preset picker) deployed ed7c039. Deploy note: restart caddy when deploy/Caddyfile changes. Next: iOS tester builds master (ios-polish + QR pairing; Swift never compiled), reports AR outline offset; follow-up task for scan-session reuse after history uploads and the phone-link handshake (see Backlog).
-
-## Status 06:00
-Deployed b685b16 (see DECISIONS.md: photo timeout fix, treatment patches, center model, progress bar, Seat POV removed). ios-theme RUNNING on account 3 (background job b8ncgrn0m, user auto-approved): when done run `check -Id ios-theme`, set `review`, `merge -Id ios-theme` (no Codex review), push master + master:ios-phone_context. Open: 3D engine timed out at 150 s on the large scan (now 360 s); L/R in the simplified layout sit close to the listener axis (stub geometry).
-
-## Status 06:30 (STOPPED by user: nothing is running)
-User said stop everything. mc-wire ABORTED (branch task/mc-wire kept, worktree removed; restart = set `ready` + `start -Id mc-wire -Model gpt-6-sol -Effort high` with CODEX_HOME=~/.codex-third). ios-error-audit finished, worker-done and its fast check ran (result not read; run `check -Id ios-error-audit`, read its HANDOFF, `merge -Id`, push) - NOT merged. Local master has one commit NOT pushed and NOT deployed: 3D pair-side fix (backend/app/engine3d.py enforce_pair_sides + refine fingerprint mapping=2 so old cached refinements are ignored) that fixes 7.1 Lrs/Rrs landing on the same side; deploy it with one `git pull && docker compose -f deploy/docker-compose.yml up -d --build` on the VPS. Merged earlier today: mc-pool b202b4f, speakerplacer-speed cea05ab (golden IDENTICAL, ~3-4x faster). Branch `ultrareview` created off master for the user's Claude ultrareview. Backlog: wire multicore (mc-wire), keep live AR session after history upload (iOS), AR guide colour question.
+- mc-wire ABORTED 06:30 (branch task/mc-wire kept; restart = set `ready` + `start -Id mc-wire -Model gpt-6-sol -Effort high` with CODEX_HOME=~/.codex-third).
+- Keep live AR session after history upload (iOS); AR guide colour question; L/R in the simplified layout close to the listener axis; 3D engine timeout now 360 s.
+- Branch `ultrareview` exists for the user's Claude ultrareview.
 
 ## Waiting on user
-The user decides what to restart (mc-wire, ios-error-audit merge, deploy of the pair fix).
+Fix the A record (155.138.175.232). Decide: SSH lockdown, off-box backups, whether to restart mc-wire.
 
 ## Context
 - Codex: account 1 depleted, account 2 parked, account 3 (`~/.codex-third`) in use. Check is fast (ruff + tools/smoke_tests.py + webapp tests if node_modules).
 - iOS teammate is only builder/tester; user and orchestrator write all Swift (branch ios-phone_context first, then master). Swift never compiled; expect compile-error fix tasks.
-- Web: teammate frontend/ adopted as webapp/, all web code on master. Pairing is QR only, per scan. Master has local commits ahead of origin until the push in step 3.
+- Nothing is running except the DNS/cert poll. Worktree dir C:/Users/neelm/Desktop/sweetspot-wt/ios-error-audit can be removed with `git worktree remove --force`.
 - Handover notes: memory/HANDOVER-2026-10-25-0335.md.
