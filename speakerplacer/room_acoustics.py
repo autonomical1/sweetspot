@@ -116,7 +116,16 @@ def boundary_gain_for_mount(mount_type: str, placement_mode: str="wall") -> floa
 def level_components(model, distance_m: float, power_w: float, metrics: dict, band_index: int,
                      off_axis_deg: float=0., boundary_gain_db: float | None=None) -> dict[str,float]:
     """Direct + reverberant SPL using sensitivity normalized to 1 W at 1 m."""
-    r=max(float(distance_m),1e-6); q=directivity_q(model,off_axis_deg)
+    q=directivity_q(model,off_axis_deg)
+    gain_db=model.gain_db(off_axis_deg)
+    return _level_components_with_polar(model,distance_m,power_w,metrics,band_index,
+                                        boundary_gain_db,q,gain_db)
+
+
+def _level_components_with_polar(model, distance_m, power_w, metrics, band_index,
+                                 boundary_gain_db, q, gain_db):
+    """Evaluate one band with the angle-dependent polar terms already calculated."""
+    r=max(float(distance_m),1e-6)
     absorption=float(metrics["mean_absorption"][band_index]); room_constant=float(metrics["room_constant_m2"][band_index])
     lw=model.sensitivity_1w_1m_db+10.*log10(max(float(power_w),1e-9))+10.*log10(4.*pi)
     # Sensitivity is already on-axis SPL at 1 m; multiplying the direct ray by
@@ -125,7 +134,7 @@ def level_components(model, distance_m: float, power_w: float, metrics: dict, ba
     # the model's polar only as an off-axis correction.
     boundary_gain=boundary_gain_for_mount(model.mount_type) if boundary_gain_db is None else float(boundary_gain_db)
     boundary_power=10.**(boundary_gain/10.)
-    direct_power=boundary_power/(4.*pi*r*r)*10.**(float(model.gain_db(off_axis_deg))/10.)
+    direct_power=boundary_power/(4.*pi*r*r)*10.**(float(gain_db)/10.)
     reverberant_power=4./max(room_constant,1e-9)
     direct=lw+10.*log10(max(direct_power,1e-15))
     reverberant=lw+10.*log10(max(reverberant_power,1e-15))

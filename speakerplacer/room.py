@@ -1,4 +1,5 @@
 """Room polygon construction and coordinate helpers."""
+from functools import lru_cache
 import numpy as np
 FT_TO_M = 0.3048
 
@@ -13,10 +14,16 @@ def make_room(length_ft: float, width_ft: float) -> np.ndarray:
 
 def validate_polygon(polygon):
     p=np.asarray(polygon,dtype=float)
-    if p.ndim!=2 or p.shape[0]!=2 or p.shape[1]<3 or not np.isfinite(p).all(): raise ValueError("polygon must be a finite 2xN array, N >= 3")
+    if p.ndim!=2 or p.shape[0]!=2 or p.shape[1]<3: raise ValueError("polygon must be a finite 2xN array, N >= 3")
+    _check_polygon_values(p.shape[1],p.tobytes())
+    return p
+
+@lru_cache(maxsize=256)
+def _check_polygon_values(count, values):
+    p=np.frombuffer(values,dtype=float).reshape(2,count)
+    if not np.isfinite(p).all(): raise ValueError("polygon must be a finite 2xN array, N >= 3")
     area=.5*np.sum(p[0]*np.roll(p[1],-1)-p[1]*np.roll(p[0],-1))
     if area<=1e-10: raise ValueError("polygon must be non-degenerate and counterclockwise")
-    return p
 
 def default_listener(polygon, facing="north"):
     p=validate_polygon(polygon); lo=p.min(axis=1); hi=p.max(axis=1)

@@ -8,15 +8,27 @@ import os
 import sys
 from typing import Any
 
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib import cm, colors
-from matplotlib.ticker import FuncFormatter
-from matplotlib.widgets import Button, CheckButtons
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import numpy as np
 
 from .room import validate_polygon
+
+
+matplotlib = plt = cm = colors = FuncFormatter = Button = CheckButtons = Poly3DCollection = None
+
+
+def _load_plotting() -> None:
+    """Keep the geometry used by the optimizer independent of plotting imports."""
+    global matplotlib, plt, cm, colors, FuncFormatter, Button, CheckButtons, Poly3DCollection
+    if plt is not None:
+        return
+    import matplotlib as mpl
+    import matplotlib.pyplot as pyplot
+    from matplotlib import cm as color_maps, colors as color_tools
+    from matplotlib.ticker import FuncFormatter as tick_formatter
+    from matplotlib.widgets import Button as plot_button, CheckButtons as check_buttons
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection as poly_collection
+    matplotlib, plt, cm, colors = mpl, pyplot, color_maps, color_tools
+    FuncFormatter, Button, CheckButtons, Poly3DCollection = tick_formatter, plot_button, check_buttons, poly_collection
 
 
 FT = 0.3048
@@ -373,6 +385,7 @@ def pose_for_speaker(layout: dict[str, Any], speaker: dict[str, Any]) -> BoxPose
 
 
 def _lighten(color: str, amount: float) -> tuple[float, float, float]:
+    _load_plotting()
     rgb = np.array(colors.to_rgb(color))
     return tuple(rgb * (1. - amount) + amount)
 
@@ -382,6 +395,7 @@ def _camera_azim(facing: str) -> float:
 
 
 def interactive_backend_available() -> bool:
+    _load_plotting()
     backend = matplotlib.get_backend().lower()
     if any(name in backend for name in ("agg", "pdf", "svg", "ps", "cairo", "template", "inline")):
         return False
@@ -394,6 +408,7 @@ def plot_model_comparison_3d(first: Any, second: Any, model_ids: list[str], mode
                             output_dir: str | Path="output", room_height_m: float=2.4384,
                             ear_height_m: float=1.097, role: str | None=None) -> Path:
     """Save a side-by-side 3D comparison of model-specific position and aim."""
+    _load_plotting()
     from pathlib import Path
     import matplotlib.pyplot as plt
     from matplotlib.ticker import FuncFormatter
@@ -430,6 +445,7 @@ class Viewer3D:
                  elev: float | None = None, azim: float | None = None,
                  show_coverage: bool = False, show_candidates: bool = False,
                  reflection_index: int | None = None):
+        _load_plotting()
         self.layout = layout
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
