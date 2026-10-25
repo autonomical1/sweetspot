@@ -42,3 +42,11 @@ VERDICT: ISSUES
 backend/app/refine.py:249 â€” Refinement invokes `run_scene` without `fast=False`; `engine3d.run_scene` therefore uses `--fast`, violating the required full-search refinement.
 Also: do NOT create .pytest_* / --basetemp directories inside the repo (the sandbox user owns them and the orchestrator cannot read or delete them). If pytest needs a temp dir, use the default or one under the system temp. Add a test that refine passes fast=False.
 
+
+
+## RETRY 2 (second review VERDICT: ISSUES) - fix both, keep the full suite green
+VERDICT: ISSUES
+backend/app/refine.py:285 Listener/material fingerprint validation and result save are not atomic; an update between the check and line 307 can leave a stale refined layout applied, violating stale-result protection.
+backend/app/refine.py:92 Interrupted jobs are repaired only when the status endpoint is called; after restart, `GET /layout` alone can return `stage: "refining"` forever although no job exists.
+Fix guidance: make the fingerprint validation and the result save one atomic step under the same lock (re-check inside the lock); repair interrupted jobs also on read paths (GET /layout and at startup), not only in the status endpoint. Add tests for both. Do NOT create .pytest_* dirs in the repo.
+

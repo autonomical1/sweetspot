@@ -4,6 +4,7 @@
 Add the pairing screen to `webapp/` (the app created by `web-base`): the laptop shows a QR code only (no typed code), polls the session, and flips to the viewer by itself when the phone has uploaded a scan.
 
 ## Design decisions this brief encodes
+- The QR encodes `pair_url` **verbatim** (`https://<domain>/pair/<session_id>`), not the bare session id: the iOS app parses the last path component and rejects QR text without `pair` in the path (BackendClient.swift). Do not call any server-side QR/PNG endpoint; none exists and none is wanted.
 - QR is generated **client-side** with `qrcode.react` (bundled by Vite, no CDN, no external service). The orchestrator installs `qrcode.react` (and `zustand`) into `webapp/package.json` + lockfile BEFORE this task runs; workers have no network. If it is missing, stub a minimal text fallback and say so in HANDOFF.md.
 - Routing by query string on the single page `/app/`: `/app/?pair` opens the pairing screen, `/app/?room=<id>&view=3d` opens the viewer (webapp_context/05). Use `URLSearchParams` + `history.pushState`, no router library.
 - Poll **only** `GET /sessions/{id}` every 1.5 s while the pairing screen is open; stop polling on unmount, on ready, and when the tab is hidden. Nothing else is polled.
