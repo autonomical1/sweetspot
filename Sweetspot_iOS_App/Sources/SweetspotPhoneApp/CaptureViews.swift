@@ -4,7 +4,7 @@ import PhotosUI
 import UIKit
 
 struct PairQRScanner: UIViewControllerRepresentable {
-    let onCode: (String) -> Void
+    let onCode: (String) -> Bool
     func makeUIViewController(context: Context) -> DataScannerViewController {
         let scanner = DataScannerViewController(recognizedDataTypes: [.barcode(symbologies: [.qr])], qualityLevel: .balanced,
             recognizesMultipleItems: false, isHighFrameRateTrackingEnabled: false, isPinchToZoomEnabled: false,
@@ -15,12 +15,12 @@ struct PairQRScanner: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: DataScannerViewController, context: Context) {}
     func makeCoordinator() -> Coordinator { Coordinator(onCode: onCode) }
     final class Coordinator: NSObject, DataScannerViewControllerDelegate {
-        let onCode: (String) -> Void
+        let onCode: (String) -> Bool
         weak var scanner: DataScannerViewController?
-        init(onCode: @escaping (String) -> Void) { self.onCode = onCode }
+        init(onCode: @escaping (String) -> Bool) { self.onCode = onCode }
         func dataScanner(_ dataScanner: DataScannerViewController, didAdd addedItems: [RecognizedItem], allItems: [RecognizedItem]) {
             guard let item = addedItems.first, case .barcode(let barcode) = item, let value = barcode.payloadStringValue else { return }
-            dataScanner.stopScanning(); onCode(value)
+            if onCode(value) { dataScanner.stopScanning() }
         }
     }
 }

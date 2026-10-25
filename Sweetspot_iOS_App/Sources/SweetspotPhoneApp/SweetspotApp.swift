@@ -42,7 +42,6 @@
 //    }
 //
 //    init() {
-//        sessionID = UserDefaults.standard.string(forKey: "sweetspot.session_id")
 //        roomID = UserDefaults.standard.string(forKey: "sweetspot.room_id")
 //    }
 //
@@ -108,19 +107,6 @@
 //            Showing a local preview; uploads and pairing need the backend.
 //            """
 //            startPreview(width: 12, length: 15, height: 9)
-//        }
-//    }
-//
-//    func pair(code: String) async {
-//        isWorking = true
-//        defer { isWorking = false }
-//
-//        do {
-//            let response = try await backend.pair(code: code)
-//            sessionID = response.session_id
-//            UserDefaults.standard.set(response.session_id, forKey: "sweetspot.session_id")
-//        } catch {
-//            self.error = error.localizedDescription
 //        }
 //    }
 //
@@ -303,12 +289,6 @@
 //                    destination: RectangleEntry(flow: flow)
 //                )
 //
-//                CodeEntry(flow: flow)
-//
-//                if let sessionID = flow.sessionID {
-//                    Label("Connected · \(sessionID)", systemImage: "link")
-//                }
-//
 //                if let error = flow.error {
 //                    Text(error)
 //                        .foregroundStyle(.red)
@@ -348,69 +328,6 @@
 //            Button("OK", role: .cancel) { flow.error = nil }
 //        } message: {
 //            Text(flow.error ?? "")
-//        }
-//    }
-//}
-//
-//struct CodeEntry: View {
-//    @ObservedObject var flow: Flow
-//    @State private var code = ""
-//    @State private var showScanner = false
-//
-//    var body: some View {
-//        VStack {
-//            HStack {
-//                TextField("Desktop code", text: $code)
-//                    .textInputAutocapitalization(.characters)
-//                    .textFieldStyle(.roundedBorder)
-//
-//                Button("Connect") {
-//                    Task {
-//                        await flow.pair(
-//                            code: code.trimmingCharacters(in: .whitespaces)
-//                        )
-//                    }
-//                }
-//                .disabled(code.count < 6)
-//            }
-//
-//            if DataScannerViewController.isSupported {
-//                Button("Scan desktop QR") {
-//                    showScanner = true
-//                }
-//                .sheet(isPresented: $showScanner) {
-//                    ZStack {
-//                        PairQRScanner { value in
-//                            do {
-//                                flow.sessionID = try sessionID(from: value)
-//                                UserDefaults.standard.set(
-//                                    flow.sessionID,
-//                                    forKey: "sweetspot.session_id"
-//                                )
-//                                showScanner = false
-//                            } catch {
-//                                flow.error = error.localizedDescription
-//                            }
-//                        }
-//                        .ignoresSafeArea()
-//
-//                        RoundedRectangle(cornerRadius: 18)
-//                            .stroke(.green, lineWidth: 3)
-//                            .frame(width: 290, height: 210)
-//                            .overlay(alignment: .bottom) {
-//                                Text("Center the desktop QR code in the box")
-//                                    .font(.callout)
-//                                    .padding(8)
-//                                    .background(.black.opacity(0.7))
-//                                    .foregroundStyle(.white)
-//                                    .clipShape(Capsule())
-//                                    .offset(y: 42)
-//                            }
-//                            .allowsHitTesting(false)
-//                    }
-//                    .ignoresSafeArea()
-//                }
-//            }
 //        }
 //    }
 //}
@@ -659,6 +576,7 @@ final class Flow: ObservableObject {
     @Published var computeElapsedSeconds = 0
     @Published var roomID: String?
     @Published var sessionID: String?
+    @Published var needsPairing = false
     @Published fileprivate var phase: FlowPhase = .home
     @Published var selectedBase = "5.1"
     @Published var selectedHeight = "None"
@@ -711,7 +629,7 @@ final class Flow: ObservableObject {
     }
 
     init() {
-        sessionID = UserDefaults.standard.string(forKey: "sweetspot.session_id")
+        UserDefaults.standard.removeObject(forKey: "sweetspot.session_id")
         roomID = UserDefaults.standard.string(forKey: "sweetspot.room_id")
         let savedBudget = UserDefaults.standard.double(forKey: "sweetspot.budget")
         if (100...20000).contains(savedBudget) { budget = savedBudget }
@@ -829,6 +747,11 @@ final class Flow: ObservableObject {
         roomFrame = nil
     }
 
+    func startScan() {
+        sessionID = nil
+        needsPairing = true
+    }
+
     func uploadScan() async {
         guard let captured else { return }
         isWorking = true
@@ -907,27 +830,21 @@ final class Flow: ObservableObject {
         }
     }
 
-    /// Uploads scan JSON. If the stored desktop pairing has expired
-    /// (sessions last 30 minutes), clears it and uploads unpaired.
+    /// Uploads scan JSON for the current QR pairing.
     private func uploadDTO(_ data: Data) async throws -> RoomResponse {
         do {
             return try await backend.upload(dto: data, sessionID: sessionID, budget: budget)
         } catch BackendError.http(let status, let detail)
-            where sessionID != nil && (status == 410 || detail.contains("session")) {
-
+            where sessionID != nil && (status == 410 || detail.localizedCaseInsensitiveContains("session")) {
             sessionID = nil
-            UserDefaults.standard.removeObject(forKey: "sweetspot.session_id")
-
-            let response = try await backend.upload(dto: data, sessionID: nil, budget: budget)
-            error = """
-            The desktop pairing had expired, so the scan was uploaded without it. \
-            Pair again to see this room on the desktop.
-            """
-            return response
+            phase = .home
+            needsPairing = true
+            throw BackendError.expiredPairing
         }
     }
 
     private func adoptUploadedRoom(_ response: RoomResponse, scanID: UUID?) {
+        sessionID = nil
         roomID = response.room_id
         roomFrame = response.frame
         UserDefaults.standard.set(response.room_id, forKey: "sweetspot.room_id")
@@ -943,7 +860,7 @@ final class Flow: ObservableObject {
             history.recordUpload(
                 scanID: scanID,
                 roomID: response.room_id,
-                sessionID: response.session_id ?? sessionID,
+                sessionID: nil,
                 dimensions: response.dimensions
             )
         }
@@ -955,12 +872,13 @@ final class Flow: ObservableObject {
     }
 
     func useDemo() async {
+        sessionID = nil
         forgetScan()
         isWorking = true
         defer { isWorking = false }
 
         do {
-            let response = try await backend.demo(sessionID: sessionID)
+            let response = try await backend.demo(sessionID: nil)
             roomID = response.room_id
             roomFrame = response.frame
             UserDefaults.standard.set(response.room_id, forKey: "sweetspot.room_id")
@@ -977,19 +895,6 @@ final class Flow: ObservableObject {
             Showing a local preview; uploads and pairing need the backend.
             """
             startPreview(width: 12, length: 15, height: 9)
-        }
-    }
-
-    func pair(code: String) async {
-        isWorking = true
-        defer { isWorking = false }
-
-        do {
-            let response = try await backend.pair(code: code)
-            sessionID = response.session_id
-            UserDefaults.standard.set(response.session_id, forKey: "sweetspot.session_id")
-        } catch {
-            self.error = error.localizedDescription
         }
     }
 
@@ -1062,6 +967,7 @@ final class Flow: ObservableObject {
     }
 
     func makeRectangle(width: Double, length: Double, height: Double) async {
+        sessionID = nil
         forgetScan()
         isWorking = true
         defer { isWorking = false }
@@ -1071,7 +977,7 @@ final class Flow: ObservableObject {
                 width: width,
                 length: length,
                 height: height,
-                sessionID: sessionID,
+                sessionID: nil,
                 budget: budget
             )
 
@@ -1225,7 +1131,7 @@ struct HomeView: View {
 
                 if RoomCaptureSession.isSupported {
                     Button("Start room scan") {
-                        flow.phase = .scan
+                        flow.startScan()
                     }
                     .buttonStyle(.borderedProminent)
                 }
@@ -1242,12 +1148,6 @@ struct HomeView: View {
                     destination: RectangleEntry(flow: flow)
                 )
 
-                CodeEntry(flow: flow)
-
-                if let sessionID = flow.sessionID {
-                    Label("Connected · \(sessionID)", systemImage: "link")
-                }
-
                 if let error = flow.error {
                     Text(error)
                         .foregroundStyle(.red)
@@ -1261,6 +1161,7 @@ struct HomeView: View {
                     set: { if !$0 { flow.phase = .home } }
                 )
             ) {
+                Group {
                 switch flow.phase {
                 case .scan:
                     ScanScreen(flow: flow)
@@ -1277,7 +1178,20 @@ struct HomeView: View {
                 case .home:
                     EmptyView()
                 }
+                }
+                .safeAreaInset(edge: .top) {
+                    if flow.sessionID != nil {
+                        Label("Linked to desktop", systemImage: "link")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(.regularMaterial)
+                    }
+                }
             }
+        }
+        .fullScreenCover(isPresented: $flow.needsPairing) {
+            PairScreen(flow: flow)
         }
         .alert(
             "Sweetspot",
@@ -1293,65 +1207,63 @@ struct HomeView: View {
     }
 }
 
-struct CodeEntry: View {
+struct PairScreen: View {
     @ObservedObject var flow: Flow
-    @State private var code = ""
-    @State private var showScanner = false
 
     var body: some View {
-        VStack {
-            HStack {
-                TextField("Desktop code", text: $code)
-                    .textInputAutocapitalization(.characters)
-                    .textFieldStyle(.roundedBorder)
-
-                Button("Connect") {
-                    Task {
-                        await flow.pair(
-                            code: code.trimmingCharacters(in: .whitespaces)
-                        )
-                    }
-                }
-                .disabled(code.count < 6)
-            }
-
+        Group {
             if DataScannerViewController.isSupported {
-                Button("Scan desktop QR") {
-                    showScanner = true
-                }
-                .sheet(isPresented: $showScanner) {
-                    ZStack {
-                        PairQRScanner { value in
-                            do {
-                                flow.sessionID = try sessionID(from: value)
-                                UserDefaults.standard.set(
-                                    flow.sessionID,
-                                    forKey: "sweetspot.session_id"
-                                )
-                                showScanner = false
-                            } catch {
-                                flow.error = error.localizedDescription
-                            }
+                ZStack {
+                    PairQRScanner { value in
+                        do {
+                            flow.sessionID = try sessionID(from: value)
+                            flow.needsPairing = false
+                            flow.phase = .scan
+                            return true
+                        } catch {
+                            flow.error = error.localizedDescription
+                            return false
                         }
-                        .ignoresSafeArea()
-
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(.green, lineWidth: 3)
-                            .frame(width: 290, height: 210)
-                            .overlay(alignment: .bottom) {
-                                Text("Center the desktop QR code in the box")
-                                    .font(.callout)
-                                    .padding(8)
-                                    .background(.black.opacity(0.7))
-                                    .foregroundStyle(.white)
-                                    .clipShape(Capsule())
-                                    .offset(y: 42)
-                            }
-                            .allowsHitTesting(false)
                     }
                     .ignoresSafeArea()
+
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(.green, lineWidth: 3)
+                        .frame(width: 290, height: 210)
+                        .overlay(alignment: .bottom) {
+                            Text("Center the desktop QR code in the box")
+                                .font(.callout)
+                                .padding(8)
+                                .background(.black.opacity(0.7))
+                                .foregroundStyle(.white)
+                                .clipShape(Capsule())
+                                .offset(y: 42)
+                        }
+                        .allowsHitTesting(false)
                 }
+                .ignoresSafeArea()
+            } else {
+                Text("A camera that supports QR scanning is required to start a room scan.")
+                    .multilineTextAlignment(.center)
+                    .padding()
             }
+        }
+        .navigationTitle("Scan desktop QR")
+        .overlay(alignment: .topTrailing) {
+            Button("Close") { flow.needsPairing = false }
+                .padding()
+                .background(.regularMaterial)
+        }
+        .alert(
+            "Sweetspot",
+            isPresented: Binding(
+                get: { flow.error != nil },
+                set: { if !$0 { flow.error = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { flow.error = nil }
+        } message: {
+            Text(flow.error ?? "")
         }
     }
 }

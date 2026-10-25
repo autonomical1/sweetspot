@@ -1,11 +1,11 @@
 # 03: Pairing and guided photos
 
 ## Pairing flow (desktop shows the QR, phone scans)
-1. Web page calls `POST /sessions` and shows a QR for `https://<domain>/pair/<session_id>` plus a 6-character code, then polls `GET /sessions/{id}`.
-2. App "Connect to desktop" opens a QR scanner. On a result, extract `session_id` (last path component) and keep it in app state. Sessions expire after 30 minutes.
-3. Scan, upload etc. (files 01/02). The upload carries `session_id`; the web page flips to the viewer by itself.
-4. If scanning fails or the camera is unavailable: text field for the 6-character code -> `POST /sessions/by-code`.
-5. Allow "Skip pairing" (standalone use, `session_id` omitted). Skip is also the demo fallback.
+1. Web page calls `POST /sessions`, shows a QR for `https://<domain>/pair/<session_id>`, then polls `GET /sessions/{id}`.
+2. Tap "Start room scan" on the phone. The QR scanner opens first; scan the desktop QR to keep the `session_id` in memory for this scan. Sessions expire after 30 minutes. A camera that supports QR scanning is required.
+3. Complete the room scan and upload it. The upload carries `session_id`; the web page flips to the viewer by itself. After a successful upload, the app clears `session_id`, so the next room scan starts at the QR scanner again.
+4. If the session expires, the app returns to the QR scanner with an expiry message. Scan the new QR shown on the web page, then scan and upload the room. Invalid QR links keep the scanner open.
+5. "Use demo room" and "Enter room dimensions" remain phone-only shortcuts without pairing.
 
 Do not use universal links or custom URL schemes (needs entitlements and `apple-app-site-association`; not worth the time).
 
@@ -14,27 +14,8 @@ Do not use universal links or custom URL schemes (needs entitlements and `apple-
 
 **VERIFY** (from memory): `recognizedDataTypes: [.barcode(symbologies: [.qr])]`, and `RecognizedItem.barcode(let b)` with `b.payloadStringValue`.
 
-```swift
-struct QRScanner: UIViewControllerRepresentable {
-    let onCode: (String) -> Void
-    func makeUIViewController(context: Context) -> DataScannerViewController {
-        let vc = DataScannerViewController(recognizedDataTypes: [.barcode(symbologies: [.qr])],
-                                           qualityLevel: .balanced, recognizesMultipleItems: false,
-                                           isHighFrameRateTrackingEnabled: false, isPinchToZoomEnabled: false,
-                                           isGuidanceEnabled: true, isHighlightingEnabled: true)
-        Task { @MainActor in
-            try? vc.startScanning()
-            for await items in vc.recognizedItems {
-                for case .barcode(let b) in items { if let s = b.payloadStringValue { onCode(s); return } }
-            }
-        }
-        return vc
-    }
-    func updateUIViewController(_ vc: DataScannerViewController, context: Context) {}
-}
-func sessionID(fromQR s: String) -> String? { URL(string: s)?.lastPathComponent }
-```
-Fallback if DataScanner is unavailable: `AVCaptureMetadataOutput` with `.qr`. Do not spend long on it; the typed code is the real fallback.
+The implementation uses `PairQRScanner` in `CaptureViews.swift` and validates the HTTPS `/pair/<session_id>` path with `sessionID(from:)` in `BackendClient.swift`. A rejected QR leaves scanning active.
+If `DataScannerViewController.isSupported` is false, show a message that a QR-capable camera is required for a room scan.
 
 ## Guided photos
 **Purpose:** Gemini classifies each surface's material from one photo. Quality of the photo matters more than quantity: about 6 photos, about 90 s total.

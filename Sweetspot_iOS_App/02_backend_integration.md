@@ -12,9 +12,8 @@ Authoritative contract: `docs/API.md`. This file lists only what the iPhone app 
 ## Endpoints used by the app
 
 ### Pairing
-- The **web page** creates the session (`POST /sessions`) and shows a QR encoding `https://<domain>/pair/<session_id>` plus a 6-character code.
-- App: parse the QR URL, take the last path component as `session_id`. Optional check: `GET /sessions/{id}` -> `{"session_id","status":"waiting|ready|expired","room_id":null|str}`; 404 or `expired` -> show "code expired, refresh the page".
-- Typed fallback: `POST /sessions/by-code` `{"code":"A7K2QF"}` -> `{"session_id":"s_..."}`.
+- The **web page** creates the session (`POST /sessions`) and shows a QR encoding `https://<domain>/pair/<session_id>`.
+- "Start room scan" opens the phone's QR scanner before RoomPlan. The app parses the QR URL and keeps the last path component as `session_id` in memory for this scan. A 410 or session error on upload returns to the QR scanner with an expiry message. The backend's `POST /sessions/by-code` endpoint remains available to other clients; the iOS app does not call it.
 
 ### Upload the scan
 `POST /rooms`
@@ -23,7 +22,7 @@ Authoritative contract: `docs/API.md`. This file lists only what the iPhone app 
   "session_id": "s_abc123",
   "budget": 1500.0 }
 ```
-`session_id` and `budget` optional. Response: backend Room JSON (`docs/API.md` section 1) with `room_id`. **Store `room_id`.** Uploading with `session_id` is what makes the laptop jump to the 3D viewer.
+`session_id` and `budget` optional in the API. The iOS room-scan flow sends its QR session, then clears it after a successful upload. Response: backend Room JSON (`docs/API.md` section 1) with `room_id`. **Store `room_id`.** Uploading with `session_id` is what makes the laptop jump to the 3D viewer.
 
 ### Photos
 1. `GET /rooms/{room_id}/photo-targets` -> `[{"surface_id","kind","label"}, ...]` (about 6 entries; **proposed endpoint, backend is adding it**; until live, hardcode: the 4 largest walls by `dimensions.x * dimensions.y` using their DTO `id`, plus `"floor"` and `"ceiling"`).
@@ -81,7 +80,7 @@ func uploadPhoto(roomID: String, surfaceID: String, jpeg: Data) async throws {
 ## Rules the backend relies on
 1. Send the DTO exactly as specified; never edit transforms or dimensions.
 2. For scanned rooms, backend surface ids are the RoomPlan UUID strings (plus synthetic `"floor"` and `"ceiling"`). Tag photos with those strings.
-3. Keep one `session_id` through the whole flow.
+3. Keep the QR `session_id` for one room scan and clear it after upload.
 4. The scan DTO is raw meters (values like 300 or 3000 mean a stray cm/mm conversion); everything the backend returns is feet.
 
 ## Developing before the backend is deployed
