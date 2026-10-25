@@ -236,7 +236,7 @@ final class RoomPlanCaptureCoordinator: NSObject, RoomCaptureViewDelegate {
               view.bounds.width > 1,
               view.bounds.height > 1 else {
             guard attemptsRemaining > 0 else {
-                onError("The room scan view did not get a usable screen size.")
+                onError("Couldn't start the scan. Please try again.")
                 return
             }
 
@@ -284,7 +284,7 @@ final class RoomPlanCaptureCoordinator: NSObject, RoomCaptureViewDelegate {
         error: (any Error)?
     ) -> Bool {
         if let error {
-            onError("RoomPlan could not process the scan: \(error.localizedDescription)")
+            onError("Couldn't process the scan. Please try again.")
             return false
         }
         return true
@@ -295,12 +295,12 @@ final class RoomPlanCaptureCoordinator: NSObject, RoomCaptureViewDelegate {
         error: (any Error)?
     ) {
         if let error {
-            onError("RoomPlan failed to finish the scan: \(error.localizedDescription)")
+            onError("Couldn't finish the scan. Please try again.")
             return
         }
 
         guard let arSession else {
-            onError("The scan finished, but its AR session was unavailable.")
+            onError("Couldn't finish the scan. Please try again.")
             return
         }
 

@@ -57,7 +57,7 @@ struct ARLayoutView: UIViewRepresentable {
             context.coordinator.draw(layout: layout,
                 transform: roomFrame.map { worldTransform(for: $0) } ?? matrix_identity_float4x4)
             if roomFrame == nil {
-                alignmentState = "Room frame missing: AR placement may be wrong"
+                alignmentState = "Alignment unavailable"
             } else {
                 alignmentState = "Aligned to scan"
             }
@@ -104,7 +104,7 @@ struct ARLayoutView: UIViewRepresentable {
                 transform: roomFrame.map { worldTransform(for: $0) } ?? matrix_identity_float4x4
             )
             if roomFrame == nil {
-                alignmentState = "Room frame missing: AR placement may be wrong"
+                alignmentState = "Alignment unavailable"
             } else if alignmentState != "Aligned to scan" {
                 alignmentState = "Aligned to scan"
             }

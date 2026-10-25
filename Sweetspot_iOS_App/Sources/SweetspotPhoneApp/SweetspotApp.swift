@@ -671,7 +671,7 @@ final class Flow: ObservableObject {
 
     func loadProducts(force: Bool = false) async {
         guard let roomID, roomID != "local-preview", layout != nil else {
-            productsError = "Compute a server layout to shop this setup."
+            productsError = "Build your layout before shopping."
             return
         }
         if !force && productsLoaded && productsRoomID == roomID && productsBudget == budget { return }
@@ -691,13 +691,15 @@ final class Flow: ObservableObject {
                   self.roomID == roomID,
                   budget == requestedBudget else { return }
             productItems = response.items
-            productWarnings = response.warnings ?? []
+            productWarnings = (response.warnings ?? []).isEmpty
+                ? []
+                : ["Some recommendations may be unavailable."]
             productsRoomID = roomID
             productsBudget = requestedBudget
             productsLoaded = true
         } catch {
             guard productsRequestToken == requestToken else { return }
-            productsError = error.localizedDescription
+            productsError = backend.userMessage(for: error)
         }
     }
 
@@ -733,7 +735,7 @@ final class Flow: ObservableObject {
             currentScanID = try history.add(room).id
         } catch {
             currentScanID = nil
-            self.error = "Could not save scan: \(error.localizedDescription)"
+            self.error = "Couldn't save the scan. Please try again."
         }
     }
 
@@ -770,7 +772,7 @@ final class Flow: ObservableObject {
             phase = .photos
             await loadPhotoTargets(roomID: response.room_id)
         } catch {
-            self.error = error.localizedDescription
+            self.error = backend.userMessage(for: error)
         }
     }
 
@@ -794,7 +796,7 @@ final class Flow: ObservableObject {
             phase = .photos
             await loadPhotoTargets(roomID: response.room_id)
         } catch {
-            self.error = error.localizedDescription
+            self.error = backend.userMessage(for: error)
         }
     }
 
@@ -828,12 +830,9 @@ final class Flow: ObservableObject {
             showingOfflinePreview = false
             phase = .form
         } catch BackendError.http(404, _) {
-            error = """
-            Room \(upload.roomID) is no longer on the server. \
-            Use "Upload again" to create a new room from this scan.
-            """
+            error = "That room isn't available any more. Upload the scan again."
         } catch {
-            self.error = error.localizedDescription
+            self.error = backend.userMessage(for: error)
         }
     }
 
@@ -897,10 +896,7 @@ final class Flow: ObservableObject {
             showingOfflinePreview = false
             phase = .form
         } catch {
-            self.error = """
-            Backend unavailable (\(error.localizedDescription)). \
-            Showing a local preview; uploads and pairing need the backend.
-            """
+            self.error = backend.userMessage(for: error)
             startPreview(width: 12, length: 15, height: 9)
         }
     }
@@ -948,7 +944,7 @@ final class Flow: ObservableObject {
                 try await classificationTask.value
             } catch {
                 guard !Task.isCancelled else { return }
-                processingError = error.localizedDescription
+                processingError = backend.userMessage(for: error)
                 classificationFailed = true
                 return
             }
@@ -965,7 +961,7 @@ final class Flow: ObservableObject {
             resetProducts()
             phase = .ar
         } catch {
-            processingError = error.localizedDescription
+            processingError = backend.userMessage(for: error)
         }
     }
 
@@ -998,10 +994,7 @@ final class Flow: ObservableObject {
             showingOfflinePreview = false
             phase = .form
         } catch {
-            self.error = """
-            Backend unavailable (\(error.localizedDescription)). \
-            Showing a local preview for the entered room.
-            """
+            self.error = backend.userMessage(for: error)
             startPreview(width: width, length: length, height: height)
         }
     }
@@ -1069,7 +1062,7 @@ final class Flow: ObservableObject {
     func uploadPhoto(surfaceID: String, image: UIImage) async {
         guard !isClassifying, !isUploadingPhoto else { return }
         guard let roomID, let jpeg = image.sweetspotJPEG() else {
-            error = "Could not prepare photo."
+            error = "Couldn't prepare that photo. Please try again."
             return
         }
         isUploadingPhoto = true
@@ -1083,7 +1076,7 @@ final class Flow: ObservableObject {
             )
             photoIndex += 1
         } catch {
-            self.error = error.localizedDescription
+            self.error = backend.userMessage(for: error)
         }
     }
 
@@ -1140,7 +1133,7 @@ struct HomeView: View {
                 .sweetspotCard()
 
                 if flow.isWorking {
-                    ProgressView("Contacting Sweetspot backend…")
+                    ProgressView("Connecting to Sweetspot…")
                 }
 
                 if RoomCaptureSession.isSupported {
@@ -1243,7 +1236,7 @@ struct PairScreen: View {
                             flow.phase = .scan
                             return true
                         } catch {
-                            flow.error = error.localizedDescription
+                            flow.error = flow.backend.userMessage(for: error)
                             return false
                         }
                     }

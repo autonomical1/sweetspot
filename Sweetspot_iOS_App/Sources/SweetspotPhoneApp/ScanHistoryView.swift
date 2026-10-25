@@ -81,7 +81,7 @@ struct SavedScanRow: View {
             }
 
             if let upload = scan.latestUpload {
-                Label("Room \(upload.roomID)", systemImage: "checkmark.icloud")
+                Label("Uploaded", systemImage: "checkmark.icloud")
                     .font(.caption)
                     .foregroundStyle(Theme.success)
             } else {
@@ -126,16 +126,8 @@ struct SavedScanDetail: View {
                 }
                 .listRowBackground(Theme.card)
 
-                Section("Backend") {
+                Section("Upload") {
                     if let upload = scan.latestUpload {
-                        idRow("Room ID", upload.roomID)
-
-                        if let sessionID = upload.sessionID {
-                            idRow("Session ID", sessionID)
-                        } else {
-                            LabeledContent("Session ID", value: "Not paired")
-                        }
-
                         LabeledContent(
                             "Uploaded",
                             value: upload.uploadedAt.formatted(date: .abbreviated, time: .shortened)
@@ -155,9 +147,6 @@ struct SavedScanDetail: View {
                     Section("Earlier uploads") {
                         ForEach(Array(scan.uploads.dropLast().reversed())) { upload in
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(upload.roomID)
-                                    .font(.body.monospaced())
-                                    .textSelection(.enabled)
                                 Text(upload.uploadedAt.formatted(date: .abbreviated, time: .shortened))
                                     .font(.caption)
                                     .foregroundStyle(Theme.secondaryText)
@@ -182,7 +171,7 @@ struct SavedScanDetail: View {
                     .buttonStyle(SweetspotPrimaryButtonStyle())
 
                     if flow.isWorking {
-                        ProgressView("Contacting Sweetspot backend…")
+                        ProgressView("Connecting to Sweetspot…")
                     }
 
                     if history.fileExists(for: scan) {
@@ -192,7 +181,7 @@ struct SavedScanDetail: View {
                     }
                 } footer: {
                     if scan.latestUpload != nil {
-                        Text("Upload again creates a new room from this scan. The earlier room stays on the server.")
+                        Text("Upload again creates a fresh room from this scan. The earlier result stays available.")
                     }
                 }
                 .disabled(flow.isWorking)
