@@ -177,9 +177,13 @@ def optimize(room: Room, options: dict) -> dict:
             return result
 
         result = engine.run_optimize(room, options)
+        if preset == "2.1":
+            result["layout"]["speakers"] = [speaker for speaker in result["layout"]["speakers"]
+                                            if speaker["role"] in {"L", "R", "LFE"}]
+            result["metrics"] = engine.run_score(room, result["layout"])["metrics"]
         result["layout"].update(stage="quick", preset=preset, standard=standard)
         result["layout_version"] = version
-        if preset != "5.1":
+        if preset not in {"5.1", "2.1"}:
             warning = f"quick preview is 5.1 only; waiting for the 3D {preset} result"
             warnings = result.setdefault("metrics", {}).setdefault("warnings", [])
             if warning not in warnings:
