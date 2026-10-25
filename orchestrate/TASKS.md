@@ -35,12 +35,12 @@
 status: todo | ready | running | review | done | blocked | cut
 
 Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as \| ; ids are lowercase-with-dashes; pass tasks to `review` after a wave; mark unwanted tasks `cut`/`blocked` before `merge -All`.
-| web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | review | check PASS b241634; 2nd review ISSUES (client.ts:122 501 message) - awaiting user |
-| web-pairing | QR-only pairing screen (POST /sessions, QR via qrcode.react, poll, flip to viewer) | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written; QR only, no typed code |
+| web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | done | merged 02:42 (501 message patched by orchestrator; src/lib un-ignored) |
+| web-pairing | QR-only pairing screen (POST /sessions, QR via qrcode.react, poll, flip to viewer) | gpt-5.6-terra | medium | web-base | 14 | ready | Gate 3 OK by user 02:40, account 1 |
 | ios-qr-pairing | iOS: remove typed code, QR scan first and per scan, clear session after upload | gpt-6-sol | medium |  | 13 | blocked | worker done e929b8a, review OK; HOLD: do not merge or integrate until the web app works (user 02:10); check must be re-run (my pytest kill gave testExit -1) |
-| web-adapter | Draw backend layout in the 3D scene (feet->m adapter, all roles, screen, projector, patches, reflections) | gpt-6-sol | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
-| web-view2d | 2D plan view ported from web/plot2d into webapp | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
-| web-panels | Layout/Acoustics/Shop/Room panels + extra API calls | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
-| web-deploy | Docker multi-stage build of webapp into web/, smoke checks, DEPLOY.md | gpt-5.6-terra | medium |  | 14 | todo | Brief written, batch Gate 3 |
+| web-adapter | Draw backend layout in the 3D scene (feet->m adapter, all roles, screen, projector, patches, reflections) | gpt-6-sol | medium | web-base | 14 | ready | Gate 3 OK by user 02:40, account 1 |
+| web-view2d | 2D plan view ported from web/plot2d into webapp | gpt-5.6-terra | medium | web-base | 14 | ready | Gate 3 OK by user 02:40, account 1 |
+| web-panels | Layout/Acoustics/Shop/Room panels + extra API calls | gpt-5.6-terra | medium | web-base | 14 | ready | Gate 3 OK by user 02:40, account 1 |
+| web-deploy | Docker multi-stage build of webapp into web/, smoke checks, DEPLOY.md | gpt-5.6-terra | medium |  | 14 | ready | Gate 3 OK by user 02:40, account 1 |
 | web-drag | Drag-to-rescore, 2D/3D toggle, refine polling | gpt-6-sol | medium | web-adapter,web-view2d | 15 | todo | Brief written, batch Gate 3 |
 | web-e2e | jsdom flow tests, backend contract test, tools/e2e web checks | gpt-5.6-luna | medium | web-drag,web-panels,web-pairing,web-deploy | 16 | todo | Brief written, batch Gate 3 |
