@@ -15,7 +15,7 @@ def _parts_cached(raw_title: str, raw_brand: str) -> tuple[str, tuple[str, ...]]
     title = title.replace("2.0", " ")
     # Model codes can be split by sellers with punctuation or a space before
     # their final letters (R1280-DB, R1280 DB, R1280DB).
-    title = re.sub(r"(?<=[a-z0-9])[-./_](?=[a-z0-9])", "", title)
+    title = re.sub(r"(?<=[a-z0-9])[^a-z0-9\s](?=[a-z0-9])", "", title)
     title = re.sub(r"\b([a-z]+\d+)\s+([a-z]{1,2})\b", r"\1\2", title)
     words = [word for word in re.findall(r"[a-z]+\d*[a-z\d]*|\d+[a-z]+[a-z\d]*", title)
              if word not in DROP]
