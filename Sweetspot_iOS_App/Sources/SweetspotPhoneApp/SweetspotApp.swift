@@ -647,6 +647,8 @@ final class Flow: ObservableObject {
     @Published var error: String?
     @Published var showingOfflinePreview = false
     @Published var isWorking = false
+    @Published var isComputing = false
+    @Published var computeElapsedSeconds = 0
     @Published var roomID: String?
     @Published var sessionID: String?
     @Published var phase: AppPhase = .home
@@ -963,11 +965,25 @@ final class Flow: ObservableObject {
     }
 
     func compute() async {
-        guard let roomID else { return }
+        guard let roomID, !isComputing else { return }
 
         if roomID == "local-preview" {
             phase = .ar
             return
+        }
+
+        isComputing = true
+        error = nil
+        computeElapsedSeconds = 0
+        let clock = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                self?.computeElapsedSeconds += 1
+            }
+        }
+        defer {
+            clock.cancel()
+            isComputing = false
         }
 
         do {
@@ -1528,6 +1544,21 @@ struct ResultsScreen: View {
                 Task { await flow.compute() }
             }
             .buttonStyle(.borderedProminent)
+            .disabled(flow.isComputing)
+
+            if flow.isComputing {
+                ProgressView("Computing your speaker layout…")
+                Text(
+                    "\(flow.computeElapsedSeconds) s elapsed. The first layout can " +
+                    "take up to a minute. Please wait, you do not need to tap again."
+                )
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            }
+
+            if let error = flow.error {
+                Text(error).font(.footnote).foregroundStyle(.red)
+            }
 
             if flow.layout != nil && flow.roomID != "local-preview" {
                 Button("Shop this setup") { showingShop = true }
