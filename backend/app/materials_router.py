@@ -1,8 +1,11 @@
 """Photo upload and material application endpoints."""
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+import os
 
-from . import materials, store
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
+
+from . import gemini_limits, materials, store
 
 router = APIRouter()
 
@@ -45,7 +48,19 @@ def apply_materials(room_id: str, body: dict | None = None) -> dict:
         {"surface_id": surface_id, "image_bytes": path.read_bytes(), "mime": "image/jpeg"}
         for surface_id, path in photos.items() if surface_id in valid_ids
     ]
-    results = materials.classify_materials(inputs) if inputs else []
+    backend = os.getenv("MATERIALS_BACKEND", "gemini")
+    key = gemini_limits.photo_key(room_id, inputs, backend)
+    # GeminiClassifier returns unknown without a key; that path never calls the API.
+    limited_backend = backend if inputs and (backend != "gemini" or os.getenv("GEMINI_API_KEY")) else "mock"
+    try:
+        results, status = gemini_limits.limits.execute(
+            room_id, key, limited_backend,
+            lambda: materials.classify_materials(inputs) if inputs else [],
+        )
+    except HTTPException as exc:
+        if exc.status_code == 429:
+            return JSONResponse(status_code=429, content=exc.detail, headers=exc.headers)
+        raise
     surfaces = {surface.id: surface for surface in room.surfaces}
     response = []
     for result in results:
@@ -58,4 +73,14 @@ def apply_materials(room_id: str, body: dict | None = None) -> dict:
         response.append({**result, "applied": applied})
     if response:
         store.save_room(room)
-    return {"surfaces": response}
+    return {"surfaces": response, "status": status}
+
+
+@router.get("/rooms/{room_id}/materials/status")
+def materials_status(room_id: str) -> dict:
+    _room(room_id)
+    try:
+        photos = store.list_photos(room_id)
+    except store.NotFound:
+        raise HTTPException(404, "room not found") from None
+    return {**gemini_limits.limits.status(room_id), "photos": len(photos)}
