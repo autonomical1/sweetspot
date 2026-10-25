@@ -7,7 +7,7 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 7
-- last_checkpoint: 2026-10-24 22:10
+- last_checkpoint: 2026-10-24 23:50
 
 ## Next action
 dispatch status: `products-options` RUNNING (account 2; merge normally when check + review pass, then redeploy together with ios-real-scan which is merged but not deployed). `ios-products-ui` worker-done check PASS after retry 1; needs `review -Id ios-products-ui`, but first append the user's 22:00 decision to its brief/retry: the shop is a PUSHED navigation screen, not a sheet (may need a small follow-up run). `ios-ar-frame` done (on ios-phone_context).
@@ -45,4 +45,5 @@ iOS RULE (user): all iOS changes are committed to branch `ios-phone_context`. Do
 - Known gaps: speakerplacer has no center model (adapter places C geometrically); Gemini model is gemini-3.8-flash (2.5 retired), credits added and verified; no .tech domain yet.
 - Tooling gotchas: dispatcher shell resolves `bash` to the WSL launcher (system32\bash.EXE, exit 127): tests must not require it; first account-2 Codex run triggers ~10 UAC prompts (one-time); Codex sandbox leaves locked `.<task>-run/` dirs (git-excluded); worker timeoutSec 1800; `run-wave` only starts `ready` tasks; commit DECISIONS.md before `dispatch merge`; never force-push; Bash-tool heredocs with long markdown fail: use the Write tool; `MSYS_NO_PATHCONV=1` for `git show rev:path`.
 - Codex accounts (user rule): with 2+ tasks, spread workers across account 1 (CODEX_HOME unset) and account 2 (CODEX_HOME=~/.codex-second) using parallel `start -Id` calls, then `review -Id`; run-wave alone uses one account.
+- Codex UAC: stagger worker starts across the two accounts (start one, wait ~30 s until its first command ran, then start the next) because both accounts share the sandbox users; fallback idea: `[windows] sandbox = "unelevated"` in both config.toml (user decision pending).
 - Models per user: gpt-6-sol / gpt-5.6-luna default, gpt-5.6-terra when the user asks, gpt-6-astra only for the hardest.
