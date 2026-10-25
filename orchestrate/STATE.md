@@ -7,19 +7,19 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 3
-- last_checkpoint: 2026-10-24 20:22
+- last_checkpoint: 2026-10-24 21:05
 
 ## Next action
-Retry 2 finished 20:20 on the main Codex account: integrate and products-adapter PASS checks, reviews ISSUES a third time (new, smaller findings each round). Do NOT loop: apply the user's decision. Findings: integrate tools/e2e.py:200-201 scan step copies optimize warnings into top-level `warnings` while `metrics.warnings` is kept, so each prints twice; products-adapter products/recommend.py:139 expansion counts pair listings as matches even when `_best` cannot use them for C or an unpaired L/Ls (three unusable pairs suppress needed expansion), and products/expand.py:28 on timeout the daemon thread leaves env `SERPAPI_KEY` overwritten (concurrent requests inherit another caller's key): pass the key explicitly instead of mutating os.environ. Recommended: orchestrator patches all three on the branches (small), `check -Id`, then merge. Then GATE 5: `DISPATCH merge -All` (order lint, products-adapter, integrate; override needed for ISSUES reviews: `merge -Id`) -> config.json test = `python -m ruff check . && python -m pytest -q` -> push -> server pull + `docker compose -f deploy/docker-compose.yml up -d --build` -> smoke.sh and `python tools/e2e.py https://144-202-27-51.sslip.io`.
+Wave 3 merged (lint, products-adapter, integrate; demo-ok at 54bb9b1); master verified: `python -m ruff check . && python -m pytest -q` = 273 passed; config.json test now includes ruff. Push master, then on the server: `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build` (keys already in /srv/sweetspot/.env), then `bash deploy/smoke.sh https://144-202-27-51.sslip.io` and `python tools/e2e.py https://144-202-27-51.sslip.io`; verify live Gemini model name (gemini-2.5-flash) via materials and live SerpApi expansion. Then GATE 6 prep: integration phase leftovers = web app (webapp/, teammate), real iOS scan, DEMO.md rehearsal.
 
 ## Waiting on user
-Decision on the third ISSUES round for integrate (1 nit) and products-adapter (2 edge cases): orchestrator patches and merges (recommended), or a third Codex retry. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` once products-adapter merges.
+Nothing blocking. Later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items carry `dimensions` (feet, listing-parsed or default) and `pair_with` for AR; 3D model teammate can read the same room/layout JSON.
 
-## SerpApi integration (merged on master, adapter not built yet)
+## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
 - docs/API.md section 4 rewritten with the user's decisions (DB first, expansion if fewer than 3 matches, filters, role mapping, front-weighted value pick, pairs with pair_with, specs + dimensions in feet). Tell the teammate their files moved (1a, user approved).
 
-## Wave 3 (run 1 done 19:46: all three failed only on a WSL-bash test, fixed on master; rechecks PASS)
+## Wave 3 (done 21:00: lint, integrate, products-adapter merged)
 - products-adapter: brief encodes the value formula (q = rating + spec parts; maximise q - 0.35 price/share), dimension parsing + defaults, deadline-bound expansion thread (PRODUCTS_EXPAND_DEADLINE_S=20).
 - lint: ruff.toml + ruff==0.17.2 already committed on master by the orchestrator (about 150 findings, mostly tools/validate_dto.py and backend/tests/contract/). Worker fixes findings behaviour-preserving.
 - integrate: tools/e2e.py (run_e2e(client) + CLI), backend/tests/e2e (in-process + live-marked), DEMO.md with failure drills. Must itself pass ruff.
