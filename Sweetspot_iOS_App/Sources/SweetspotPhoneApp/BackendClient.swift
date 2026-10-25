@@ -200,6 +200,15 @@ struct BackendClient {
         )
     }
 
+    /// Tells the backend this phone scanned the session's QR, so the web page can show it as linked.
+    func link(sessionID: String) async throws {
+        let _: LinkResponse = try await request(
+            "sessions/\(sessionID)/link",
+            method: "POST",
+            timeout: 8
+        )
+    }
+
     func rectangle(
         width: Double,
         length: Double,

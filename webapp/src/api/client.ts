@@ -10,7 +10,7 @@ export interface SessionResponse {
 
 export interface SessionStatus {
   session_id: string;
-  status: 'waiting' | 'ready' | 'expired';
+  status: 'waiting' | 'linked' | 'ready' | 'expired';
   room_id: string | null;
 }
 

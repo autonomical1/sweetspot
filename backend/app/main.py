@@ -66,6 +66,15 @@ def create_app() -> FastAPI:
             raise HTTPException(404, "session not found")
         return {key: item[key] for key in ("session_id", "status", "room_id")}
 
+    @application.post("/sessions/{session_id}/link")
+    def link_session(session_id: str) -> dict:
+        outcome = sessions.link(session_id)
+        if outcome == "missing":
+            raise HTTPException(404, "session not found")
+        if outcome == "expired":
+            raise HTTPException(410, "session expired")
+        return {"session_id": session_id, "status": outcome}
+
     @application.post("/sessions/by-code")
     def session_by_code(body: CodeRequest) -> dict:
         item = sessions.by_code(body.code)

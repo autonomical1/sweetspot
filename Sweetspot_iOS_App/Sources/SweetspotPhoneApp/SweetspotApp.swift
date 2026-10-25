@@ -1216,7 +1216,9 @@ struct PairScreen: View {
                 ZStack {
                     PairQRScanner { value in
                         do {
-                            flow.sessionID = try sessionID(from: value)
+                            let scanned = try sessionID(from: value)
+                            flow.sessionID = scanned
+                            Task { try? await flow.backend.link(sessionID: scanned) }
                             flow.needsPairing = false
                             flow.phase = .scan
                             return true

@@ -141,7 +141,8 @@ Backend implementations behind one interface: Gemini API (default, `GEMINI_API_K
 |---|---|---|
 | `GET /health` | | `{"ok": true}` |
 | `POST /sessions` | | `{"session_id","code","expires_at","pair_url"}` (`code` is 6 chars, `pair_url` = `https://<DOMAIN>/pair/{session_id}`) |
-| `GET /sessions/{id}` | | `{"session_id","status":"waiting\|ready\|expired","room_id":null\|str}` |
+| `GET /sessions/{id}` | | `{"session_id","status":"waiting\|linked\|ready\|expired","room_id":null\|str}` (`linked` = the phone scanned the QR, no room yet; `ready` = a room was uploaded) |
+| `POST /sessions/{id}/link` | | `{"session_id","status":"linked"}` (phone calls it right after scanning the QR; 404 unknown, 410 expired; idempotent) |
 | `POST /sessions/by-code` | `{"code"}` | `{"session_id"}` |
 | `POST /rooms/rect` | `{"width","length","height?","listener?","facing?","budget?","session_id?"}` | Room JSON (section 1) |
 | `POST /rooms` | Room JSON or `{"captured_room": {DTO}, "session_id?","budget?","listener?"}` (iOS export; optional `listener` = `{position,facing}` in **scan world meters**, overrides sofa detection; the converter maps it into the room frame) | Room JSON (scanned: normalized, with `frame` and `warnings`) |

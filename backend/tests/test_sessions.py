@@ -16,6 +16,10 @@ def test_lifecycle(monkeypatch):
     assert client.get(url).json()["status"] == "waiting"
     assert client.post("/sessions/by-code", json={"code": item["code"].lower()}).json()["session_id"] == item["session_id"]  # noqa: E501  # preserve behavior while retaining the existing expression
     assert client.post("/sessions/by-code", json={"code": "NOPE"}).status_code == 404
+    assert client.post(f"{url}/link").json() == {"session_id": item["session_id"], "status": "linked"}
+    assert client.get(url).json()["status"] == "linked"
+    assert client.post("/sessions/s_missing/link").status_code == 404
     tick[0] += 1800
     assert client.get(url).json()["status"] == "expired"
+    assert client.post(f"{url}/link").status_code == 410
     assert client.post("/sessions/by-code", json={"code": item["code"]}).status_code == 404

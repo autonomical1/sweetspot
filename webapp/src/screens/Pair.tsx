@@ -5,7 +5,7 @@ import { createSession, getSession, type PairingSession } from '../api/sessions'
 import './Pair.css';
 
 const POLL_INTERVAL_MS = 1_500;
-type State = 'creating' | 'waiting' | 'expired' | 'error';
+type State = 'creating' | 'waiting' | 'linked' | 'expired' | 'error';
 
 function secondsRemaining(expiresAt: string, now: number): number {
   return Math.max(0, Math.ceil((Date.parse(expiresAt) - now) / 1_000));
@@ -48,6 +48,8 @@ export function Pair({ onBack }: { onBack: () => void }) {
       if (status.status === 'ready' && status.roomId) {
         sessionRef.current = null;
         navigateToRoom(status.roomId);
+      } else if (status.status === 'linked') {
+        setState(current => current === 'waiting' ? 'linked' : current);
       } else if (status.status === 'expired') {
         sessionRef.current = null;
         setState('expired');
@@ -97,6 +99,7 @@ export function Pair({ onBack }: { onBack: () => void }) {
     <section className="pair-card" aria-live="polite">
       <p className="pair-eyebrow">SWEETSPOT SETUP</p><h1>Pair your iPhone</h1>
       {state === 'creating' && <p className="pair-status">Creating your QR code…</p>}
+      {state === 'linked' && <p className="pair-status pair-linked" role="status">iPhone connected. Scan your room in the app; it will appear here when the scan finishes.</p>}
       {state === 'waiting' && session && <>
         <div className="pair-qr" aria-label="QR code for pairing your iPhone"><QRCodeSVG value={session.pairUrl} size={280} level="M" includeMargin /></div>
         <p className="pair-status">Scan this QR code with the Sweetspot app.</p>

@@ -69,7 +69,9 @@
 //    let dimensions: Dimensions?
 //}
 //struct Dimensions: Decodable { let width, length, height: Double }
-//struct SessionResponse: Decodable { let session_id: String }
+//struct LinkResponse: Decodable { let status: String }
+
+struct SessionResponse: Decodable { let session_id: String }
 //struct PhotoTarget: Decodable, Identifiable { let surface_id, kind, label: String; var id: String { surface_id } }
 //struct MaterialsResponse: Decodable { let surfaces: [MaterialResult] }
 //struct MaterialResult: Decodable, Identifiable { let surface_id, material: String; let confidence: Double; var id: String { surface_id } }
