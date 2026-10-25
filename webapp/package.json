@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --configLoader runner",
     "typecheck": "tsc -b",
-    "build": "tsc -b && vite build",
-    "test": "vitest run"
+    "build": "tsc -b && vite build --configLoader runner",
+    "test": "vitest run --configLoader runner"
   },
   "dependencies": {
     "qrcode.react": "^4.2.0",
