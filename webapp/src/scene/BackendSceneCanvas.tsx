@@ -3,6 +3,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { fitModel, loadModel } from './modelLoader';
 import type { Props } from './RoomCanvas';
+import { sceneMetersToFeet } from '../interaction/coordinates';
+import { ftToM } from '../lib/units';
+import { useAppStore } from '../store';
 import type { Point, SceneModel } from './adapter/layoutToScene';
 
 type SceneProps = Props & { model: SceneModel; showReflections?: boolean };
@@ -204,6 +207,46 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
     const root = new THREE.Group(); scene.add(root);
     const ray = new THREE.Raycaster();
     let down: [number, number] | null = null;
+    // Dragging a speaker slides it across the floor plane at its own height instead of orbiting the camera.
+    let dragging: { role: string; height: number; pointerId: number } | null = null;
+    const pointerAt = (e: PointerEvent) => {
+      const bounds = renderer.domElement.getBoundingClientRect();
+      ray.setFromCamera(new THREE.Vector2((e.clientX - bounds.left) / bounds.width * 2 - 1, -(e.clientY - bounds.top) / bounds.height * 2 + 1), camera);
+    };
+    const speakerAt = (e: PointerEvent): string | null => {
+      pointerAt(e);
+      const hit = ray.intersectObject(root, true)[0];
+      for (let node: THREE.Object3D | null = hit?.object ?? null; node; node = node.parent) {
+        for (const [key, group] of state.current?.groups ?? []) if (key.startsWith('speaker:') && group.object === node) return key.slice('speaker:'.length);
+      }
+      return null;
+    };
+    const dragStart = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      const role = speakerAt(e);
+      const speaker = role ? useAppStore.getState().layout?.speakers.find(item => item.role === role) : undefined;
+      if (!role || !speaker) return;
+      dragging = { role, height: ftToM(speaker.position[1]), pointerId: e.pointerId };
+      orbit.enabled = false;
+      renderer.domElement.setPointerCapture(e.pointerId);
+      onSelectRef.current(role);
+    };
+    const dragMove = (e: PointerEvent) => {
+      if (!dragging || e.pointerId !== dragging.pointerId) return;
+      const room = useAppStore.getState().room;
+      if (!room) return;
+      pointerAt(e);
+      const point = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -dragging.height), new THREE.Vector3());
+      if (!point) return;
+      const [x, , z] = sceneMetersToFeet([point.x, point.y, point.z], room);
+      const speaker = useAppStore.getState().layout?.speakers.find(item => item.role === dragging?.role);
+      if (speaker) useAppStore.getState().moveSpeaker(dragging.role, [x, speaker.position[1], z]);
+    };
+    const dragEnd = (e: PointerEvent) => {
+      if (!dragging || e.pointerId !== dragging.pointerId) return;
+      dragging = null; down = null; orbit.enabled = true;
+      useAppStore.getState().finishDrag();
+    };
     const pointerDown = (e: PointerEvent) => { down = [e.clientX, e.clientY]; };
     const pointerUp = (e: PointerEvent) => {
       if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
@@ -215,11 +258,12 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
       while (node && !node.userData.selectId) node = node.parent;
       onSelectRef.current(node?.userData.selectId ?? null);
     };
-    renderer.domElement.addEventListener('pointerdown', pointerDown); renderer.domElement.addEventListener('pointerup', pointerUp);
+    renderer.domElement.addEventListener('pointerdown', dragStart, true); renderer.domElement.addEventListener('pointermove', dragMove); renderer.domElement.addEventListener('pointercancel', dragEnd);
+    renderer.domElement.addEventListener('pointerdown', pointerDown); renderer.domElement.addEventListener('pointerup', dragEnd, true); renderer.domElement.addEventListener('pointerup', pointerUp);
     const observer = new ResizeObserver(() => { camera.aspect = el.clientWidth / Math.max(el.clientHeight, 1); camera.updateProjectionMatrix(); renderer.setSize(el.clientWidth, el.clientHeight); }); observer.observe(el);
     const s: SceneState = { scene, camera, renderer, orbit, root, ray, groups: new Map(), frame: 0, observer };
     const draw = () => { s.frame = requestAnimationFrame(draw); orbit.update(); renderer.render(scene, camera); }; draw(); state.current = s;
-    return () => { cancelAnimationFrame(s.frame); observer.disconnect(); renderer.domElement.removeEventListener('pointerdown', pointerDown); renderer.domElement.removeEventListener('pointerup', pointerUp); s.groups.forEach(({ object }) => dispose(object)); orbit.dispose(); renderer.dispose(); renderer.domElement.remove(); state.current = null; };
+    return () => { cancelAnimationFrame(s.frame); observer.disconnect(); renderer.domElement.removeEventListener('pointerdown', dragStart, true); renderer.domElement.removeEventListener('pointermove', dragMove); renderer.domElement.removeEventListener('pointercancel', dragEnd); renderer.domElement.removeEventListener('pointerup', dragEnd, true); renderer.domElement.removeEventListener('pointerdown', pointerDown); renderer.domElement.removeEventListener('pointerup', pointerUp); s.groups.forEach(({ object }) => dispose(object)); orbit.dispose(); renderer.dispose(); renderer.domElement.remove(); state.current = null; };
   }, []);
   useEffect(() => {
     const s = state.current; if (!s) return;
