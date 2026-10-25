@@ -141,6 +141,79 @@ def test_material_change_supersedes_running_job(data_dir, monkeypatch):
     assert client.get(root + "/layout").json()["layout"]["stage"] == "quick"
 
 
+def test_room_write_cannot_pass_final_check_before_refined_save(data_dir, monkeypatch):
+    monkeypatch.setenv("ENGINE3D_BACKEND", "auto")
+    monkeypatch.setenv("ENGINE_BACKEND", "stub")
+    checking, allow_check = threading.Event(), threading.Event()
+    writer_started, writer_done = threading.Event(), threading.Event()
+    monkeypatch.setattr(engine3d, "run_scene", lambda *args, **kwargs: _scene("layout_5.1.json"))
+    original_fingerprint = refine._fingerprint
+
+    def paused_fingerprint(room, preset, standard):
+        if threading.current_thread().name == "engine3d-refine":
+            checking.set()
+            assert allow_check.wait(3)
+        return original_fingerprint(room, preset, standard)
+
+    monkeypatch.setattr(refine, "_fingerprint", paused_fingerprint)
+    client = TestClient(create_app())
+    root = _room(client)
+    assert client.post(root + "/optimize", json={}).status_code == 200
+    assert checking.wait(2)
+    room_id = root.rsplit("/", 1)[1]
+
+    def change_material():
+        writer_started.set()
+        room = store.load_room(room_id)
+        room.surfaces[0].material = "curtain"
+        store.save_room(room)
+        writer_done.set()
+
+    writer = threading.Thread(target=change_material, daemon=True)
+    writer.start()
+    assert writer_started.wait(1)
+    assert not writer_done.wait(0.05)
+    allow_check.set()
+    assert _wait(client, root, "done")["state"] == "done"
+    assert writer_done.wait(2)
+    writer.join(timeout=2)
+
+
+def test_layout_read_repairs_interrupted_job_after_restart(data_dir, monkeypatch):
+    monkeypatch.setenv("ENGINE3D_BACKEND", "off")
+    monkeypatch.setenv("ENGINE_BACKEND", "stub")
+    client = TestClient(create_app())
+    root = _room(client)
+    quick = client.post(root + "/optimize", json={}).json()
+    room_id = root.rsplit("/", 1)[1]
+    quick["layout"]["stage"] = "refining"
+    store.save_layout(room_id, quick)
+    store.save_optimize_status(room_id, refine._status("running", started_at="2026-01-01T00:00:00+00:00"))
+    refine._statuses.pop(refine._key(room_id), None)
+
+    layout = client.get(root + "/layout").json()
+    assert layout["layout"]["stage"] == "quick"
+    assert layout["metrics"]["warnings"].count("3D refinement failed: server restarted") == 1
+    assert store.load_optimize_status(room_id)["state"] == "failed"
+
+
+def test_start_repairs_interrupted_job_with_worker_disabled(data_dir, monkeypatch):
+    monkeypatch.setenv("ENGINE3D_BACKEND", "off")
+    monkeypatch.setenv("ENGINE_BACKEND", "stub")
+    client = TestClient(create_app())
+    root = _room(client)
+    quick = client.post(root + "/optimize", json={}).json()
+    room_id = root.rsplit("/", 1)[1]
+    quick["layout"]["stage"] = "refining"
+    store.save_layout(room_id, quick)
+    store.save_optimize_status(room_id, refine._status("queued"))
+    refine._statuses.pop(refine._key(room_id), None)
+
+    refine.start()
+    assert store.load_layout(room_id)["layout"]["stage"] == "quick"
+    assert store.load_optimize_status(room_id)["state"] == "failed"
+
+
 def test_second_optimize_replaces_running_result(data_dir, monkeypatch):
     monkeypatch.setenv("ENGINE3D_BACKEND", "auto")
     monkeypatch.setenv("ENGINE_BACKEND", "stub")

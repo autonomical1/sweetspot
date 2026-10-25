@@ -220,7 +220,7 @@ def score(room_id: str, body: LayoutRequest) -> dict:
 def get_layout(room_id: str) -> dict:
     _room(room_id)
     try:
-        result = store.load_layout(room_id)
+        result = refine.latest_layout(room_id)
     except Exception:
         raise HTTPException(500, "stored layout is invalid") from None
     if result is None:

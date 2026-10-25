@@ -4,11 +4,14 @@ import os
 import re
 import secrets
 import tempfile
+import threading
 from pathlib import Path
 
 from .schemas import Room
 
 _SAFE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+# Room writes and refinement's final room check/layout save share this lock.
+room_layout_lock = threading.RLock()
 
 
 class NotFound(KeyError):
@@ -38,14 +41,16 @@ def _room_path(room_id: str) -> Path:
 
 
 def save_room(room: Room) -> None:
-    _room_path(room.room_id).write_text(room.model_dump_json(indent=2), encoding="utf-8")
+    with room_layout_lock:
+        write_json_atomic(_room_path(room.room_id), room.model_dump(mode="json"))
 
 
 def load_room(room_id: str) -> Room:
-    p = _room_path(room_id)
-    if not p.exists():
-        raise NotFound(room_id)
-    return Room.model_validate_json(p.read_text(encoding="utf-8"))
+    with room_layout_lock:
+        p = _room_path(room_id)
+        if not p.exists():
+            raise NotFound(room_id)
+        return Room.model_validate_json(p.read_text(encoding="utf-8"))
 
 
 def save_layout(room_id: str, result: dict) -> None:

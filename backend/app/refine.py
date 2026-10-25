@@ -85,20 +85,34 @@ def _set_status(key: tuple[str, str], value: dict) -> None:
     store.save_optimize_status(key[1], value)
 
 
+def _repair_interrupted_locked(room_id: str) -> dict:
+    key = _key(room_id)
+    value = _statuses.get(key) or store.load_optimize_status(room_id) or _status()
+    if key not in _statuses and value["state"] in {"queued", "running"}:
+        value = _status("failed", value["preset"], value["standard"],
+                        started_at=value["started_at"], error="server restarted")
+        current = store.load_layout(room_id)
+        if current and current.get("layout", {}).get("stage") == "refining":
+            current["layout"]["stage"] = "quick"
+            warnings = current.setdefault("metrics", {}).setdefault("warnings", [])
+            warning = "3D refinement failed: server restarted"
+            if warning not in warnings:
+                warnings.append(warning)
+            store.save_layout(room_id, current)
+        _set_status(key, value)
+    return value
+
+
+def latest_layout(room_id: str) -> dict | None:
+    """Repair persisted in-flight state before serving a layout after restart."""
+    with _lock, store.room_layout_lock:
+        _repair_interrupted_locked(room_id)
+        return store.load_layout(room_id)
+
+
 def status(room_id: str) -> dict:
-    with _lock:
-        key = _key(room_id)
-        value = _statuses.get(key) or store.load_optimize_status(room_id) or _status()
-        if key not in _statuses and value["state"] in {"queued", "running"}:
-            value = _status("failed", value["preset"], value["standard"],
-                            started_at=value["started_at"], error="server restarted")
-            _set_status(key, value)
-            current = store.load_layout(room_id)
-            if current and current.get("layout", {}).get("stage") == "refining":
-                current["layout"]["stage"] = "quick"
-                current.setdefault("metrics", {}).setdefault("warnings", []).append(
-                    "3D refinement failed: server restarted")
-                store.save_layout(room_id, current)
+    with _lock, store.room_layout_lock:
+        value = _repair_interrupted_locked(room_id)
         result = value.copy()
         if result["state"] == "running" and result["started_at"]:
             started = datetime.fromisoformat(result["started_at"])
@@ -108,6 +122,7 @@ def status(room_id: str) -> dict:
 
 def start() -> None:
     global _worker, _stopping
+    repair_interrupted()
     if os.getenv("ENGINE3D_BACKEND", "auto") == "off":
         return
     with _wake:
@@ -115,6 +130,17 @@ def start() -> None:
             _stopping = False
             _worker = threading.Thread(target=_work, name="engine3d-refine", daemon=True)
             _worker.start()
+
+
+def repair_interrupted() -> None:
+    """Repair persisted jobs whose worker disappeared with the previous process."""
+    rooms_dir = store.data_dir() / "rooms"
+    if not rooms_dir.exists():
+        return
+    with _lock, store.room_layout_lock:
+        for path in rooms_dir.glob("*.optimize.json"):
+            room_id = path.name.removesuffix(".optimize.json")
+            _repair_interrupted_locked(room_id)
 
 
 def stop() -> None:
@@ -130,10 +156,11 @@ def optimize(room: Room, options: dict) -> dict:
 
     room_id = room.room_id
     key = _key(room_id)
-    snapshot = room.model_dump(mode="json")
     preset, standard = options["preset"], options["standard"]
-    fingerprint = _fingerprint(snapshot, preset, standard)
-    with _wake:
+    with _wake, store.room_layout_lock:
+        room = store.load_room(room_id)
+        snapshot = room.model_dump(mode="json")
+        fingerprint = _fingerprint(snapshot, preset, standard)
         previous = store.load_layout(room_id) or {}
         version = int(previous.get("layout_version", 0)) + 1
         _queue_items = [job for job in _queue if job.key == key]
@@ -280,7 +307,7 @@ def _work() -> None:
             failure = None
         except Exception as exc:
             failure = _safe_reason(exc)
-        with _wake:
+        with _wake, store.room_layout_lock:
             current = store.load_layout(job.key[1])
             room = store.load_room(job.key[1]).model_dump(mode="json")
             active = (current is not None and current.get("layout_version") == job.version
