@@ -37,13 +37,13 @@ status: todo | ready | running | review | done | blocked | cut
 Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as \| ; ids are lowercase-with-dashes; pass tasks to `review` after a wave; mark unwanted tasks `cut`/`blocked` before `merge -All`.
 | web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | done | merged 02:42 (501 message patched by orchestrator; src/lib un-ignored) |
 | web-pairing | QR-only pairing screen (POST /sessions, QR via qrcode.react, poll, flip to viewer) | gpt-5.6-terra | medium | web-base | 14 | done | Gate 3 OK by user 02:40, account 1 |
-| ios-qr-pairing | iOS: remove typed code, QR scan first and per scan, clear session after upload | gpt-6-sol | medium |  | 13 | review | hold lifted by user 03:36; Swift merge conflicts with master resolved by orchestrator, check PASS 03:55 |
+| ios-qr-pairing | iOS: remove typed code, QR scan first and per scan, clear session after upload | gpt-6-sol | medium |  | 13 | done | merged and deployed 2026-10-25 (master 77feaa0) |
 | web-adapter | Draw backend layout in the 3D scene (feet->m adapter, all roles, screen, projector, patches, reflections) | gpt-6-sol | medium | web-base | 14 | done | Gate 3 OK by user 02:40, account 1 |
 | web-view2d | 2D plan view ported from web/plot2d into webapp | gpt-5.6-terra | medium | web-base | 14 | done | Gate 3 OK by user 02:40, account 1 |
 | web-panels | Layout/Acoustics/Shop/Room panels + extra API calls | gpt-5.6-terra | medium | web-base | 14 | done | Gate 3 OK by user 02:40, account 1 |
 | web-deploy | Docker multi-stage build of webapp into web/, smoke checks, DEPLOY.md | gpt-5.6-terra | medium |  | 14 | done | merged 03:00 by hand (tests 0; reviews off) |
 | web-drag | Drag-to-rescore, 2D/3D toggle, refine polling | gpt-6-sol | medium | web-adapter,web-view2d | 15 | done | merged 03:35 by hand (47 web tests); wiring via document pointer events in App.tsx - verify in browser |
-| web-e2e | jsdom flow tests, backend contract test, tools/e2e web checks | gpt-5.6-luna | medium | web-drag,web-panels,web-pairing,web-deploy | 16 | review | check PASS 04:05 |
+| web-e2e | jsdom flow tests, backend contract test, tools/e2e web checks | gpt-5.6-luna | medium | web-drag,web-panels,web-pairing,web-deploy | 16 | done | merged and deployed 2026-10-25 (master 77feaa0) |
 | backend-2-1 | Add 2.1 preset (L,R,LFE) to optimize, quick layout and products | gpt-6-sol | medium |  | 15 | done | User decisions 02:52: 2.1/5.1/7.1 + none/.2/.4, no .6; account 1 |
 | ios-flow | iOS: scan -> photos -> form (budget, 2.1/5.1/7.1 + height) -> loader -> AR; remove Compute button | gpt-6-sol | medium |  | 15 | done | merged 03:45 via ios-phone_context (Swift unbuilt, needs Xcode build + device test) |
 | ios-polish | iOS+backend wording: config descriptions, no 'Gemini' in user text, AR alignment aids (outline, tracking, manual align) | gpt-6-sol | medium | ios-flow | 16 | todo | Brief written 03:15; queued (Codex 1 low), starts after ios-flow merges |
