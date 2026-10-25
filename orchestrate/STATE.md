@@ -1,4 +1,4 @@
-# STATE (orchestrator-only; REWRITE IN FULL at every checkpoint, keep only currently-true facts)
+﻿# STATE (orchestrator-only; REWRITE IN FULL at every checkpoint, keep only currently-true facts)
 
 - project: Sweetspot
 - started: 2026-10-24 13:21
@@ -7,15 +7,14 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 11
-- last_checkpoint: 2026-10-25 00:28
+- last_checkpoint: 2026-10-25 00:45
 
 ## Next action
-State at 00:28 (real clock); nothing is merging in the main tree. MERGED today: engine3d-core (b95d880), domain-rename (971fdda), ios-phone_context (with ios-materials-wait) into master (bdc50a2, pushed). RUNNING: (1) `engine3d-wire` on CODEX ACCOUNT 2 (user requirement; gpt-6-sol high; started 00:21; background job bg1yfo7m4 runs start then review): staged quick/refined 3D layouts. When it exits: read result + review; PASS + OK -> merge as a BACKGROUND job (verify the process is alive; commit state files first), ruff + pytest, push, DEPLOY to the VPS (cold start ~25 s; warm up with one optimize + one products request), then smoke.sh + e2e.py against https://sweetspotav.tech; ISSUES -> one retry on account 2, a second ISSUES -> ask the user. (2) `docs-demo` and `docs-webspec` on CODEX ACCOUNT 1 (user accepts UAC prompts; their sandbox helper launches were cancelled earlier, so workers may have stalled): docs-webspec's worker ended exit 0 after 577 s with NO commits (its check is running at 00:28; expect "no changes": rerun it with `start -Id docs-webspec` once docs-demo ends and the user is at the machine to approve prompts); docs-demo is still working. Each gets a Codex review; docs only, merge when OK. Paused: products-theater (resume its review after engine3d-wire), polygon tasks, plot2d-patch-depth. Codex account 1 resets at 1 am. Follow-ups after engine3d-wire: docs/ENGINE_INTEGRATION_AUDIT.md rows 16-19 (plot2d, iOS, web specs, docs). LESSON: run `dispatch merge`/`check` ONLY as background jobs and verify the process is alive.
-
+RESUMED 00:37 on CODEX ACCOUNT 2 (00:43: docs-webspec worker done, review next; docs-demo queued behind it; engine3d-wire running its full suite; products-theater check running) (account 1 unused). Background jobs running: (a) engine3d-wire start gpt-6-sol high + review; (b) docs-webspec then docs-demo, gpt-5.6-luna medium, each with review; (c) products-theater check + review. When each finishes: PASS + VERDICT OK -> set `review` in TASKS.md, then merge ONE at a time as a background job (engine3d-wire first). After engine3d-wire merges: ruff + pytest, push, deploy to the VPS, smoke + e2e against https://sweetspotav.tech, confirm `stage` quick -> refined live. After products-theater merges: run tools/expand_catalog.py on the VPS, copy the DB back, widen PRODUCT_ROLES, deploy. ISSUES -> one retry on account 2; a second ISSUES -> ask the user. Still paused by the user: polygon-geometry, polygon-engine, plot2d-patch-depth. Handover notes: memory/HANDOVER-2026-10-25-0035.md.
 - iOS team (user, 2026-10-25 00:10): the iOS teammate is ONLY the builder/tester from now on; the user and the orchestrator write all Swift (branch ios-phone_context first, then master). The Swift has never been compiled: expect compile-error fix tasks from pasted Xcode output; ask the teammate to `git pull` before building and to report errors instead of pushing edits.
 
 ## Waiting on user
-Nothing blocking. The staged engine design is confirmed. The engine and SerpApi teammates are done (integration is on the user and orchestrator). Later: build ios-phone_context in Xcode (needs a FULL room scan); tell the iOS and web teammates about the new roles and fields once engine3d-wire lands.
+Nothing blocking. The user is switching to a fresh session after the pause above. Later: the iOS teammate builds ios-phone_context in Xcode (needs a FULL room scan); optional decision: Codex sandbox unelevated to end UAC prompts.
 
 ## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
