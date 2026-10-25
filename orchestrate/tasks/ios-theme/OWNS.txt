@@ -1,0 +1,3 @@
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/*.swift
+Sweetspot_iOS_App/SweetspotPhoneApp.xcodeproj/project.pbxproj
+orchestrate/tasks/ios-theme/HANDOFF.md

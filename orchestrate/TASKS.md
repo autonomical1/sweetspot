@@ -47,3 +47,4 @@ Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as
 | backend-2-1 | Add 2.1 preset (L,R,LFE) to optimize, quick layout and products | gpt-6-sol | medium |  | 15 | done | User decisions 02:52: 2.1/5.1/7.1 + none/.2/.4, no .6; account 1 |
 | ios-flow | iOS: scan -> photos -> form (budget, 2.1/5.1/7.1 + height) -> loader -> AR; remove Compute button | gpt-6-sol | medium |  | 15 | done | merged 03:45 via ios-phone_context (Swift unbuilt, needs Xcode build + device test) |
 | ios-polish | iOS+backend wording: config descriptions, no 'Gemini' in user text, AR alignment aids (outline, tracking, manual align) | gpt-6-sol | medium | ios-flow | 16 | done | merged and deployed (backend wording); Swift awaits iOS tester |
+| ios-theme | iOS minimalist UI matching the web theme (tokens, Theme.swift, restyle all screens) | gpt-6-sol | medium |  | 17 | ready | user asked 2026-10-25 and auto-approved (no Gate 3) |
