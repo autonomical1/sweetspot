@@ -32,3 +32,14 @@ docs/API.md section 4 (authoritative; all of it), products/recommend.py, product
 
 ## Out of scope
 Teammate files, seed DB contents, backend/app/**, tests/contract/**, docs, deploy, web/iOS. Put unsettled choices under `## Design questions` in HANDOFF.md.
+
+
+## RETRY 1 (review VERDICT: ISSUES at 00:47) - fix ALL of these, keep tests passing
+VERDICT: ISSUES
+products/recommend.py:343-365 â€” TV selection removes the mount role without recalculating budget shares, leaving its 0.5 share unused and violating the specified relative shares.
+products/recommend.py:230-257 â€” TV candidates are not filtered to at least 90% of the layout-screen diagonal, so undersized TVs can appear as alternatives.
+products/recommend.py:161-162 â€” Projectors may cost 2.05Ã— their share, violating the required 2Ã— per-item cap.
+products/recommend.py:466-470 â€” Compatibility failure removes the projector and mount but leaves the screen, producing neither valid display option (projector+screen or TV).
+products/theater.py:28-29 â€” Bundle detection misses 5.1 titles containing generic â€œsystemâ€ or â€œpackageâ€ without the word â€œspeaker,â€ contrary to the required detection rule.
+Note on finding 3: follow the strict 2x per-item cap (no 2.05x). If the cheapest projector then exceeds the cap at low budgets, omit the projector and offer the TV option / list it under ## Design questions in HANDOFF.md; do not loosen the cap.
+
