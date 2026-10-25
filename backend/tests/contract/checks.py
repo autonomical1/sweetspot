@@ -7,6 +7,7 @@ from backend.app.schemas import LayoutResult, Room
 
 MATERIALS = {"drywall", "glass", "brick", "carpet", "hardwood", "tile", "curtain", "unknown"}
 ROLES = {"L", "R", "C", "LFE", "Ls", "Rs"}
+REFINED_ROLES = ROLES | {"Lss", "Rss", "Lrs", "Rrs", "Ltf", "Rtf", "Ltr", "Rtr", "Ltm", "Rtm", "LFE2"}
 PRODUCT_ROLES = ROLES | {"screen", "projector"}
 BANDS = {"125", "250", "500", "1000", "2000", "4000"}
 
@@ -61,6 +62,8 @@ def assert_valid_layout_result(obj: Any, room: Any = None, full_51: bool = True)
     roles = [speaker.role for speaker in speakers]
     if full_51:
         assert set(roles) == ROLES and len(roles) == 6, "layout must contain six unique 5.1 roles"
+    else:
+        assert set(roles) <= REFINED_ROLES, "layout contains an unsupported role"
     assert len(roles) == len(set(roles)), "speaker roles must be unique"
     room_model = Room.model_validate(room) if room is not None else None
     if room_model:

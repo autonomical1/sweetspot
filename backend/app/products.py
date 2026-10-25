@@ -6,6 +6,13 @@ from .stubs import products_stub
 
 
 def run_products(layout: dict, budget: float) -> dict:
+    layout = {**layout, "speakers": [
+        {**speaker, "role": {"Lss": "Ls", "Rss": "Rs"}.get(speaker.get("role"), speaker.get("role"))}
+        for speaker in layout.get("speakers", [])
+        if speaker.get("role") in {"L", "R", "C", "LFE", "Ls", "Rs", "Lss", "Rss"}
+        and not (speaker.get("role") in {"Lss", "Rss"}
+                 and any(other.get("role") == {"Lss": "Ls", "Rss": "Rs"}[speaker["role"]]
+                         for other in layout.get("speakers", [])))]}
     backend = products_stub
     if os.getenv("PRODUCTS_BACKEND", "auto") != "stub":
         try:

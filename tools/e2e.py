@@ -61,7 +61,8 @@ def _warnings(payload: Any) -> list[str]:
     return warnings
 
 
-def run_e2e(client: Any, *, budget: float = 1500.0) -> list[StepResult]:
+def run_e2e(client: Any, *, budget: float = 1500.0, wait_refined: float = 0,
+            preset: str = "5.1") -> list[StepResult]:
     """Run the complete demo API flow against an httpx-compatible client."""
     results: list[StepResult] = []
     state: dict[str, Any] = {}
@@ -88,7 +89,9 @@ def run_e2e(client: Any, *, budget: float = 1500.0) -> list[StepResult]:
         return results
     if not step("photos and materials", lambda: _materials(client, state)):
         return results
-    if not step("optimize and saved layout", lambda: _optimize(client, state)):
+    if not step("optimize and saved layout", lambda: _optimize(client, state, preset)):
+        return results
+    if wait_refined and not step("refined", lambda: _refined(client, state, wait_refined, preset)):
         return results
     if not step("score and moved speaker", lambda: _score(client, state)):
         return results
@@ -143,18 +146,42 @@ def _materials(client: Any, state: dict[str, Any]) -> Any:
     return result
 
 
-def _optimize(client: Any, state: dict[str, Any]) -> Any:
+def _optimize(client: Any, state: dict[str, Any], preset: str = "5.1") -> Any:
     room_id = state["room_id"]
-    result = _require(client.post(f"/rooms/{room_id}/optimize", json={}))
+    result = _require(client.post(f"/rooms/{room_id}/optimize", json={"options": {"preset": preset}}))
     speakers = result["layout"]["speakers"]
     roles = {speaker["role"] for speaker in speakers}
-    assert len(speakers) == 6, speakers
-    assert roles == {"L", "R", "C", "LFE", "Ls", "Rs"}, roles
+    if result["layout"].get("stage") == "refined" and preset == "7.1.4":
+        expected = {"L", "R", "C", "LFE", "Lss", "Rss", "Lrs", "Rrs", "Ltf", "Rtf", "Ltr", "Rtr"}
+    else:
+        expected = {"L", "R", "C", "LFE", "Ls", "Rs"}
+    assert len(speakers) == len(expected) and roles == expected, speakers
     assert "metrics" in result
+    assert result["layout"].get("stage") in (None, "quick", "refined"), result
     saved = _require(client.get(f"/rooms/{room_id}/layout"))
-    assert saved == result, "saved layout differs from optimize response"
+    assert saved["layout"]["speakers"] == result["layout"]["speakers"], "saved layout differs"
     state["layout"] = result["layout"]
     return result
+
+
+def _refined(client: Any, state: dict[str, Any], wait_s: float, preset: str) -> Any:
+    root = f"/rooms/{state['room_id']}"
+    deadline = time.monotonic() + wait_s
+    while time.monotonic() < deadline:
+        status = _require(client.get(root + "/optimize/status"))
+        if status["state"] == "done":
+            result = _require(client.get(root + "/layout"))
+            assert result["layout"]["stage"] == "refined", result
+            expected = ({"L", "R", "C", "LFE", "Lss", "Rss", "Lrs", "Rrs",
+                         "Ltf", "Rtf", "Ltr", "Rtr"} if preset == "7.1.4"
+                        else {"L", "R", "C", "LFE", "Ls", "Rs"})
+            assert {speaker["role"] for speaker in result["layout"]["speakers"]} == expected, result
+            state["layout"] = result["layout"]
+            return result
+        if status["state"] in {"failed", "superseded"}:
+            raise AssertionError(f"3D refinement {status['state']}: {status.get('error')}")
+        time.sleep(min(0.5, max(0, deadline - time.monotonic())))
+    raise AssertionError(f"3D refinement did not finish within {wait_s}s")
 
 
 def _score(client: Any, state: dict[str, Any]) -> Any:
@@ -231,10 +258,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("base_url")
     parser.add_argument("--budget", type=float, default=1500.0)
     parser.add_argument("--timeout", type=float, default=60.0)
+    parser.add_argument("--wait-refined", type=float, default=0.0, metavar="SECONDS")
+    parser.add_argument("--preset", choices=("5.1", "7.1.4"), default="5.1")
     parser.add_argument("--json", action="store_true", dest="json_output")
     args = parser.parse_args(argv)
     with httpx.Client(base_url=args.base_url.rstrip("/"), timeout=args.timeout) as client:
-        results = run_e2e(client, budget=args.budget)
+        results = run_e2e(client, budget=args.budget, wait_refined=args.wait_refined, preset=args.preset)
     _print_results(results, json_output=args.json_output)
     return 1 if any(result.status == "FAIL" for result in results) else 0
 

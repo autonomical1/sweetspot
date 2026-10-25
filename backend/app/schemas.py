@@ -6,7 +6,8 @@ from pydantic import BaseModel, Field
 Vec3 = list[float]
 SurfaceKind = Literal["wall", "floor", "ceiling", "door", "window", "opening"]
 Material = Literal["drywall", "glass", "brick", "carpet", "hardwood", "tile", "curtain", "unknown"]
-Role = Literal["L", "R", "C", "LFE", "Ls", "Rs"]
+Role = Literal["L", "R", "C", "LFE", "Ls", "Rs", "Lss", "Rss", "Lrs", "Rrs",
+               "Ltf", "Rtf", "Ltr", "Rtr", "Ltm", "Rtm", "LFE2"]
 
 
 class Dimensions(BaseModel):
@@ -62,6 +63,15 @@ class Speaker(BaseModel):
     role: Role
     position: Vec3
     aim: Vec3
+    yaw_deg: float | None = None
+    pitch_deg: float | None = None
+    size: dict[str, float] | None = None
+    mount: Literal["on_wall", "in_wall", "on_ceiling", "floor", "stand"] | None = None
+    model_id: str | None = None
+    distance_ft: float | None = None
+    receiver_delay_ms: float | None = None
+    receiver_trim_db: float | None = None
+    compliance: dict | None = None
 
 
 class Screen(BaseModel):
@@ -74,6 +84,11 @@ class Screen(BaseModel):
 class Layout(BaseModel):
     speakers: list[Speaker]
     screen: Screen | None = None
+    preset: str | None = None
+    standard: str | None = None
+    stage: Literal["quick", "refining", "refined"] | None = None
+    seats: list[dict] | None = None
+    projector: dict | None = None
 
 
 class LayoutResult(BaseModel):

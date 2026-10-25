@@ -3,11 +3,15 @@ import json
 import os
 import re
 import secrets
+import tempfile
+import threading
 from pathlib import Path
 
 from .schemas import Room
 
 _SAFE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+# Room writes and refinement's final room check/layout save share this lock.
+room_layout_lock = threading.RLock()
 
 
 class NotFound(KeyError):
@@ -37,26 +41,47 @@ def _room_path(room_id: str) -> Path:
 
 
 def save_room(room: Room) -> None:
-    _room_path(room.room_id).write_text(room.model_dump_json(indent=2), encoding="utf-8")
+    with room_layout_lock:
+        write_json_atomic(_room_path(room.room_id), room.model_dump(mode="json"))
 
 
 def load_room(room_id: str) -> Room:
-    p = _room_path(room_id)
-    if not p.exists():
-        raise NotFound(room_id)
-    return Room.model_validate_json(p.read_text(encoding="utf-8"))
+    with room_layout_lock:
+        p = _room_path(room_id)
+        if not p.exists():
+            raise NotFound(room_id)
+        return Room.model_validate_json(p.read_text(encoding="utf-8"))
 
 
 def save_layout(room_id: str, result: dict) -> None:
     _safe(room_id)
     p = data_dir() / "rooms" / f"{room_id}.layout.json"
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    write_json_atomic(p, result)
+
+
+def write_json_atomic(path: Path, value: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                                     prefix=f".{path.name}.", suffix=".tmp", delete=False) as handle:
+        json.dump(value, handle, indent=2)
+        temporary = Path(handle.name)
+    temporary.replace(path)
 
 
 def load_layout(room_id: str) -> dict | None:
     p = data_dir() / "rooms" / f"{_safe(room_id)}.layout.json"
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
+def save_optimize_status(room_id: str, status: dict) -> None:
+    path = data_dir() / "rooms" / f"{_safe(room_id)}.optimize.json"
+    write_json_atomic(path, status)
+
+
+def load_optimize_status(room_id: str) -> dict | None:
+    path = data_dir() / "rooms" / f"{_safe(room_id)}.optimize.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
 def save_photo(room_id: str, surface_id: str, data: bytes) -> Path:
