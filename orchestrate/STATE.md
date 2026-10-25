@@ -7,19 +7,19 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 3
-- last_checkpoint: 2026-10-24 19:30
+- last_checkpoint: 2026-10-24 19:55
 
 ## Next action
-Wave 3 (lint, integrate, products-adapter) was dispatched 19:18 on Codex account 2 (CODEX_HOME=~/.codex-second) via background `run-wave -Review`. When it exits: read the summary lines, set PASS tasks to `review` in TASKS.md, show GATE 4 (summary + reviews + open design questions). If the dispatcher died with the session: `DISPATCH status`, then rerun `run-wave -Review` with the same CODEX_HOME. Then GATE 5 merge order lint, products-adapter, integrate -> config.json test = `python -m ruff check . && python -m pytest -q` -> push -> server pull + `docker compose -f deploy/docker-compose.yml up -d --build` -> smoke.sh and `python tools/e2e.py https://144-202-27-51.sslip.io`.
+Wave 3 retry 1 is running (dispatched about 19:55, Codex account 2, background `run-wave -Review`) for `integrate` and `products-adapter` (3 valid review findings each, appended to their BRIEFs). `lint` is PASS + VERDICT OK and set to `review` (merge-eligible). When the retry exits: read summary lines; any master-vs-branch drift needs `merge master` into the worktrees and `check -Id`. Then GATE 4/5: `DISPATCH merge -All` (order lint, products-adapter, integrate) -> config.json test = `python -m ruff check . && python -m pytest -q` -> push -> server pull + `docker compose -f deploy/docker-compose.yml up -d --build` (keys are now in the server .env) -> smoke.sh and `python tools/e2e.py https://144-202-27-51.sslip.io`. A second failure of either task interrupts the user.
 
 ## Waiting on user
-Nothing right now (wave running). Pending for later: user adds GEMINI_API_KEY and SERPAPI_KEY to /srv/sweetspot/.env (never through chat); tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items now carry `dimensions` for AR once products-adapter merges.
+Nothing right now. Pending for later: tell the SerpApi teammate their files moved to products/catalog.py and search.py; tell the web teammate products items now carry `dimensions` for AR once products-adapter merges.
 
 ## SerpApi integration (merged on master, adapter not built yet)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
 - docs/API.md section 4 rewritten with the user's decisions (DB first, expansion if fewer than 3 matches, filters, role mapping, front-weighted value pick, pairs with pair_with, specs + dimensions in feet). Tell the teammate their files moved (1a, user approved).
 
-## Wave 3 (running since 19:18; 19:30: integrate worker finished exit 0 in 432 s, its check/review pending; lint and products-adapter workers still running their final test runs)
+## Wave 3 (run 1 done 19:46: all three failed only on a WSL-bash test, fixed on master; rechecks PASS)
 - products-adapter: brief encodes the value formula (q = rating + spec parts; maximise q - 0.35 price/share), dimension parsing + defaults, deadline-bound expansion thread (PRODUCTS_EXPAND_DEADLINE_S=20).
 - lint: ruff.toml + ruff==0.17.2 already committed on master by the orchestrator (about 150 findings, mostly tools/validate_dto.py and backend/tests/contract/). Worker fixes findings behaviour-preserving.
 - integrate: tools/e2e.py (run_e2e(client) + CLI), backend/tests/e2e (in-process + live-marked), DEMO.md with failure drills. Must itself pass ruff.
@@ -40,5 +40,5 @@ Nothing right now (wave running). Pending for later: user adds GEMINI_API_KEY an
 - When products/ lands: contract tests (real products only under -m live); the adapter loads `products` automatically.
 - When the real iOS scan arrives: replace fixtures/roomplan_sample.json, run tools/validate_dto.py and the roomplan tests.
 - Known gaps: speakerplacer has no center model (adapter places C geometrically); Gemini model name gemini-2.5-flash unverified; no .tech domain yet.
-- Tooling gotchas: Codex sandbox leaves locked `.<task>-run/` dirs (git-excluded); worker timeoutSec 1800; `run-wave` only starts `ready` tasks; commit DECISIONS.md before `dispatch merge`; never force-push; Bash-tool heredocs with long markdown fail: use the Write tool; `MSYS_NO_PATHCONV=1` for `git show rev:path`.
+- Tooling gotchas: dispatcher shell resolves `bash` to the WSL launcher (system32\bash.EXE, exit 127): tests must not require it; first account-2 Codex run triggers ~10 UAC prompts (one-time); Codex sandbox leaves locked `.<task>-run/` dirs (git-excluded); worker timeoutSec 1800; `run-wave` only starts `ready` tasks; commit DECISIONS.md before `dispatch merge`; never force-push; Bash-tool heredocs with long markdown fail: use the Write tool; `MSYS_NO_PATHCONV=1` for `git show rev:path`.
 - Models per user: gpt-6-sol / gpt-5.6-luna default, gpt-5.6-terra when the user asks, gpt-6-astra only for the hardest.
