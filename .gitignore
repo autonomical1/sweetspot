@@ -244,3 +244,8 @@ webapp/dist/
 xcuserdata/
 
 .pytest_*/
+
+# webapp build output (served from web/ at /app/)
+/web/index.html
+/web/assets/
+/web/models/
