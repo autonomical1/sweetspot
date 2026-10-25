@@ -37,3 +37,9 @@ Database facts (products/av_prices.db, 2,866 listings): tables `listings` (categ
 
 ## Out of scope
 Editing teammate files or the seed DB, backend/app/** (the existing loader is enough; if it is not, report it), docs, deploy, thumbnails, fetching new data, the web/iOS apps. Put unsettled choices (weights, value formula, dimension defaults) under `## Design questions` in HANDOFF.md.
+
+## Retry 1: review findings to fix (all valid)
+- products/expand.py:18 an explicit `serpapi_key` argument must take precedence over env `SERPAPI_KEY` (use it for the expansion even when the env var is set; do not mutate global env permanently).
+- products/recommend.py:141 the second (leftover-upgrade) pass must compare the same price-to-performance value (`q - 0.35 * price/share`) as the first pass, not raw quality, so it never replaces a pick with a worse-value one; add a test where the pricier higher-quality item has worse value and is NOT chosen.
+- products/value.py:53 screen ALR bonus must read the catalog's spec name `ambient_light_rejecting` (catalog.py RULES), not `alr`; add a test with a listing carrying that spec.
+Keep ruff and the full suite green.

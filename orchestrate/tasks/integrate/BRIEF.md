@@ -33,3 +33,9 @@ docs/API.md section 6 (endpoints, errors), docs/TESTING.md sections 2 (L4/L5) an
 
 ## Out of scope
 Changing backend endpoints or fixtures (if the API disagrees with docs/API.md, report it in HANDOFF.md instead of patching), deploy/*, smoke.sh, web app, iOS. Put unsettled choices under `## Design questions` in HANDOFF.md.
+
+## Retry 1: review findings to fix (all valid)
+- tools/e2e.py:53 warning extraction must also read `metrics.warnings` (optimize and score responses), printing each as a WARN line.
+- tools/e2e.py:139 the optimize step must verify there are exactly six speakers whose roles are exactly {L,R,C,LFE,Ls,Rs} (no duplicates).
+- tools/e2e.py:152 the score step must move the speaker whose `role == "L"`, not the first speaker in the list (order is not guaranteed).
+Add or extend tests for each (fake client responses). Keep `ruff check tools/e2e.py backend/tests/e2e` and the full suite green.

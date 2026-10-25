@@ -58,3 +58,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 19:07] Products budget: front-weighted split (C3 L2 R2 LFE2 Ls1 Rs1 screen/projector 1), pick best price-to-performance within each share, leftover second pass, omitted roles get warnings - user (5a)
 - [2026-10-24 19:07] Product items gain optional seller, specs (parsed spec dict) and dimensions in feet (for AR sizing); thumbnail null, source google_shopping - user (6)
 - [2026-10-24 19:18] Gate 3 approved: wave 3 (lint, integrate, products-adapter) dispatched on Codex account 2 - user
+- [2026-10-24 19:35] Wave 3: all three failed only on test_smoke_script_has_valid_bash_syntax (bash resolved to the WSL launcher in the dispatcher shell, exit 127); orchestrator made that test skip in that case on master and merged master into the branches; rechecks PASS. Reviews: lint OK, integrate 3 valid issues, products-adapter 3 valid issues -> retry 1 each - orchestrator
