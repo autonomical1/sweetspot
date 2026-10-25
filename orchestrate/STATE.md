@@ -7,7 +7,7 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 16
-- last_checkpoint: 2026-10-25 06:00
+- last_checkpoint: 2026-10-25 06:45
 
 ## Next action
 ios-qr-pairing and web-e2e are MERGED (demo-ok 77feaa0), master pushed, VPS redeployed and verified (smoke + e2e pass, `pair_url` uses sweetspotav.tech). Browser check in progress: Chrome tab 865081234 shows the QR at https://sweetspotav.tech/app/?pair (expires about 04:35; do not reload it). A background job tails the VPS API logs into the scratchpad file vps.log (task brn1biuho). When the user says they scanned: grep vps.log for the session/pairing and scan POSTs (POST /sessions/..., /rooms/scan), confirm the web page switches to the scanned room, then report. Later: ios-polish (brief has item 4, remove the "Found" rows) awaits the user's go. Cut by user: polygon-geometry, polygon-engine, plot2d-patch-depth. Remove leftover worktree dirs with `git worktree remove --force` (ios-qr-pairing, web-e2e). docs/API.md may still hold the polygon outline contract: check.
@@ -27,6 +27,9 @@ ios-polish MERGED + deployed (ddaea00; no Codex review, user wanted speed). Web 
 
 ## Status 06:00
 Deployed b685b16 (see DECISIONS.md: photo timeout fix, treatment patches, center model, progress bar, Seat POV removed). ios-theme RUNNING on account 3 (background job b8ncgrn0m, user auto-approved): when done run `check -Id ios-theme`, set `review`, `merge -Id ios-theme` (no Codex review), push master + master:ios-phone_context. Open: 3D engine timed out at 150 s on the large scan (now 360 s); L/R in the simplified layout sit close to the listener axis (stub geometry).
+
+## Status 06:45
+Running: speakerplacer-speed (Codex account 3, background job bncv351zg; golden check tools/golden_speakerplacer.py must stay IDENTICAL; baseline 31/28/75 s). When done: `check -Id speakerplacer-speed`, `merge -Id`, deploy, then set speakerplacer-multicore `ready` and start it the same way. Deploy needs `restart caddy` only if the Caddyfile changes. iOS tester: pull master (ios-theme + fixes 9f266f2).
 
 ## Waiting on user
 Say whether to read the AR session-reuse code now, and when phone tests are finished so the web deploy can go out.
