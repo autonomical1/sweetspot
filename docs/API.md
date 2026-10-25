@@ -89,7 +89,9 @@ def get_products(layout: dict, budget: float, *, serpapi_key: str | None = None)
 #                "specs": {name: str},          # parsed listing specs, e.g. {"power_w": "100W", "form_factor": "bookshelf"}
 #                "dimensions": {"width": ft, "height": ft, "depth": ft,
 #                               "source": "listing|default"} | None,   # for AR sizing; feet like everything else
-#                "pair_with": "L|R|Ls|Rs" | None}],                     # set on both roles covered by one (Pair) listing
+#                "pair_with": "L|R|Ls|Rs" | None,                       # set on both roles covered by one (Pair) listing
+#                "alternatives": [{"title","price","link","seller","thumbnail": null,"source",
+#                                  "specs","dimensions","price_delta": float}]}],  # up to 3 swap candidates per item
 #     "warnings": [str]}   # optional: omitted roles, expansion skipped/timed out, stale data
 ```
 Files: `products/catalog.py` and `products/search.py` (teammate code: SerpApi fetcher, spec parser, SQLite search, Gemini catalog expansion; edit only with their agreement), `products/av_prices.db` (seed price database, committed), `products/__init__.py` exports `get_products` (backend-owned recommender in new modules under `products/`).
@@ -98,6 +100,8 @@ Behaviour (decided 2026-10-24, see DECISIONS.md):
 - Listings considered: newest fetch per query, `category_ok = 1`, condition `new`, non-empty link, price not below 25% of the median price of the same query's listings.
 - Roles -> categories: L R C Ls Rs -> `speaker` (fronts prefer floorstanding/bookshelf, surrounds bookshelf), LFE -> `subwoofer`; `layout.screen` set -> `screen` (`projection_screen`, diagonal near the layout screen size) and `projector`; no screen -> `projector` only.
 - Budget: front-weighted shares C 3, L 2, R 2, LFE 2, Ls 1, Rs 1, screen 1, projector 1; per role pick the best price-to-performance listing within its share, then a second pass upgrades with the leftover. `total <= budget` always; a role that cannot be filled is omitted with a warning.
+- Alternatives (decided 2026-10-24): every item carries `alternatives`, up to 3 other listings for the same role (a different model, same filters), ordered by price ascending, with `price_delta` = alternative price minus the pick's price (negative = cheaper). Only alternatives that keep the whole list within budget if swapped in (`total - pick + alternative <= budget`) are listed; include at least one cheaper and one pricier when they exist. The second role of a pair listing (R, Rs; price 0) has `alternatives: []`: swap the pair through the first role (L, Ls), whose alternatives are pair listings that cover both roles.
+- Variety (decided 2026-10-24): the front stage L, R and C is one matched model family (C uses the same brand and series as L/R when such a listing exists, otherwise its own best pick). The surround pair (Ls, Rs) must be a different model from the fronts when an eligible different model exists with quality within 15% of the best eligible one; otherwise the same model is allowed. LFE, screen and projector pick independently.
 - Pairs: one listing whose title says pair covers L+R (or Ls+Rs): first role carries the price, second role gets price 0, same title/link, both `pair_with` each other.
 - Expansion: when a role's constraints match fewer than 3 listings and both `GEMINI_API_KEY` and `SERPAPI_KEY` are set, run the teammate expansion (Gemini finds products, SerpApi fetches, stored in the working DB), at most once per category per request and within `PRODUCTS_EXPAND_DEADLINE_S` (default 20 s) total; past the deadline it continues in the background and the response uses what the DB has, with a warning. No keys -> DB only, with a warning.
 - Never raises for data problems; `backend/app/products.py` still falls back to `backend/app/stubs/products_stub.py` on import failure or exception.

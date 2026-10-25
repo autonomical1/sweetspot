@@ -12,6 +12,7 @@
 | engine-adapter | Adapter: teammate speakerplacer -> backend optimize/score contract + acoustics.py (reflections, patches, modes, score) | gpt-5.6-terra | high | | 3 | done | owns backend/app/{engine_speakerplacer,acoustics}.py + tests; user asked for terra |
 | products-adapter | products.get_products on the teammate SQLite catalog: filters, role mapping, front-weighted value pick, pairs, specs + dimensions, deadline-bound Gemini+SerpApi expansion, tests | gpt-6-sol | medium | | 3 | done | owns new products/*.py modules + backend/tests/products/**; teammate catalog.py/search.py/db read-only |
 | products-spend | Recommender spends the budget: PRICE_PENALTY 0.15, greedy upgrade loop (quality gain per dollar), 2x share cap per role, tests on seed catalog | gpt-6-sol | medium | products-adapter | 4 | done | owns products/recommend.py, products/value.py, backend/tests/products/** |
+| products-options | Matched fronts + different surround model (model_key), up to 3 swap alternatives per item with price_delta, tests | gpt-6-sol | medium | products-spend | 5 | ready | owns products/variety.py, recommend.py, value.py, backend/tests/products/** |
 | lint | ruff for our Python code: ruff.toml (py312, line 120, E F W I B UP, exclude speakerplacer + its tests), fix findings, gate merges with ruff check | gpt-5.6-luna | medium | | 3 | done | owns ruff.toml + lint fixes in backend/, tools/, conftest.py; orchestrator updates config.json test cmd and requirements |
 
 status: todo | ready | running | review | done | blocked | cut
