@@ -1,1 +1,5 @@
-"""Product catalog (SerpApi + Gemini) and the backend get_products() contract (docs/API.md section 4)."""
+"""Budgeted recommendations from the local shopping catalog."""
+
+from .recommend import get_products
+
+__all__ = ["get_products"]
