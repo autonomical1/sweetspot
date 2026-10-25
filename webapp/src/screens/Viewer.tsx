@@ -79,6 +79,7 @@ export function Viewer({ roomId, initialView, navigate }: Props) {
 
   return <main className="app-shell">
     <Topbar loading={stage === 'loading'} viewMode={viewMode} onDemo={() => void demo()} onPair={() => navigate('?pair')}
+      onOpenRoom={id => navigate(`?room=${encodeURIComponent(id)}&view=${viewMode}`)}
       onView={chooseView} onImport={file => void importJson(file)} onExport={exportJson} />
     {error && <div className="api-error" role="alert">{error} <button onClick={() => roomId ? void loadRoom(roomId) : void demo()}>Retry</button></div>}
     <div className="workspace">
