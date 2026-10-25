@@ -242,3 +242,5 @@ webapp/dist/
 .DS_Store
 *.xcuserstate
 xcuserdata/
+
+.pytest_*/

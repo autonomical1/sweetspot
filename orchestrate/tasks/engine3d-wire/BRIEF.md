@@ -35,3 +35,10 @@ docs/API.md sections 2, 2a, 3 and 6 (authoritative), docs/ENGINE_INTEGRATION_AUD
 
 ## Out of scope
 Polygon rooms, products roles (products-theater later), plot2d, iOS, web, docs, deploy config, teammate engine code. Put unsettled choices under `## Design questions` in HANDOFF.md.
+
+
+## RETRY 1 (review VERDICT: ISSUES) - fix, keep full suite green
+VERDICT: ISSUES
+backend/app/refine.py:249 â€” Refinement invokes `run_scene` without `fast=False`; `engine3d.run_scene` therefore uses `--fast`, violating the required full-search refinement.
+Also: do NOT create .pytest_* / --basetemp directories inside the repo (the sandbox user owns them and the orchestrator cannot read or delete them). If pytest needs a temp dir, use the default or one under the system temp. Add a test that refine passes fast=False.
+
