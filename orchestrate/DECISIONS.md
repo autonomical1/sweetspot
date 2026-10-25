@@ -57,3 +57,4 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 19:07] Products pairs: one (Pair) listing covers L+R or Ls+Rs, second role gets a 0 USD 'included in pair' item - user (4a)
 - [2026-10-24 19:07] Products budget: front-weighted split (C3 L2 R2 LFE2 Ls1 Rs1 screen/projector 1), pick best price-to-performance within each share, leftover second pass, omitted roles get warnings - user (5a)
 - [2026-10-24 19:07] Product items gain optional seller, specs (parsed spec dict) and dimensions in feet (for AR sizing); thumbnail null, source google_shopping - user (6)
+- [2026-10-24 19:18] Gate 3 approved: wave 3 (lint, integrate, products-adapter) dispatched on Codex account 2 - user
