@@ -35,7 +35,7 @@
 status: todo | ready | running | review | done | blocked | cut
 
 Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as \| ; ids are lowercase-with-dashes; pass tasks to `review` after a wave; mark unwanted tasks `cut`/`blocked` before `merge -All`.
-| web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | running | RETRY 1 after review ISSUES (02:10), account 1 |
+| web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | review | check PASS b241634; 2nd review ISSUES (client.ts:122 501 message) - awaiting user |
 | web-pairing | QR-only pairing screen (POST /sessions, QR via qrcode.react, poll, flip to viewer) | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written; QR only, no typed code |
 | ios-qr-pairing | iOS: remove typed code, QR scan first and per scan, clear session after upload | gpt-6-sol | medium |  | 13 | blocked | worker done e929b8a, review OK; HOLD: do not merge or integrate until the web app works (user 02:10); check must be re-run (my pytest kill gave testExit -1) |
 | web-adapter | Draw backend layout in the 3D scene (feet->m adapter, all roles, screen, projector, patches, reflections) | gpt-6-sol | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
