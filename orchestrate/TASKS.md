@@ -28,16 +28,16 @@
 | ios-materials-wait | iOS: waiting-on-Gemini progress UI, block repeat taps, status polling, 429 countdown and one retry (lands on ios-phone_context) | gpt-6-sol | medium |  | 8 | done | review OK; landed on ios-phone_context ee91b4c (pushed); master gets the branch after engine3d-core merges |
 | engine3d-core | Run the new 3D speakerplacer headless (engine3d.run_scene) and map schema-2 output into our layout (to_layout), fixtures + tests | gpt-6-sol | high |  | 10 | done | PASS (patched); merge re-running in background since 00:12 |
 | domain-rename | Replace sslip.io references with sweetspotav.tech in DEPLOY.md, .env.example, webapp_context/README.md (sslip.io stays only as the documented fallback); fix stale deploy notes | gpt-5.6-luna | medium |  | 11 | done | worker PASS + review OK; merge in progress 00:21 |
-| engine3d-wire | Staged quick/refined 3D layouts: refine job + cache + status, widened roles/schema, /score for new roles, stub preset, products loader, contract tests, e2e/smoke, parity + validate slow tests | gpt-6-sol | high | engine3d-core | 11 | running | RETRY 2 started 01:24 on account 2 (user OK) |
+| engine3d-wire | Staged quick/refined 3D layouts: refine job + cache + status, widened roles/schema, /score for new roles, stub preset, products loader, contract tests, e2e/smoke, parity + validate slow tests | gpt-6-sol | high | engine3d-core | 11 | done | merged 02:07 with test gate skipped (user); follow-ups: refine.py:301 7.1.4 score, refine.py:146 stop() |
 | docs-demo | Refresh DEMO.md (domain, warm-up, products, Gemini limits, staged 3D marked planned, drills) | gpt-5.6-luna | medium |  | 12 | blocked | 2nd review ISSUES 01:15 (staged flow described as live); HOLD until engine3d-wire is deployed |
 | docs-webspec | Update webapp_context 01-04,06 for new roles, stage/status, size, alternatives, Gemini limits (LIVE vs PLANNED) | gpt-5.6-luna | medium |  | 12 | blocked | 2nd review ISSUES 01:15 (staged flow described as live); HOLD until engine3d-wire is deployed |
 
 status: todo | ready | running | review | done | blocked | cut
 
 Columns are read by the scripts: keep exactly 8 columns; write a literal pipe as \| ; ids are lowercase-with-dashes; pass tasks to `review` after a wave; mark unwanted tasks `cut`/`blocked` before `merge -All`.
-| web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | running | Gate 3 OK by user 01:35, account 2 |
+| web-base | Rename teammate frontend/ to webapp/, /app/ base, split code into modules, API client, store, ft-in format, demo-room button, tests | gpt-6-sol | medium |  | 13 | running | RETRY 1 after review ISSUES (02:10), account 1 |
 | web-pairing | QR-only pairing screen (POST /sessions, QR via qrcode.react, poll, flip to viewer) | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written; QR only, no typed code |
-| ios-qr-pairing | iOS: remove typed code, QR scan first and per scan, clear session after upload | gpt-6-sol | medium |  | 13 | running | Gate 3 OK by user 01:35, account 2 |
+| ios-qr-pairing | iOS: remove typed code, QR scan first and per scan, clear session after upload | gpt-6-sol | medium |  | 13 | blocked | worker done e929b8a, review OK; HOLD: do not merge or integrate until the web app works (user 02:10); check must be re-run (my pytest kill gave testExit -1) |
 | web-adapter | Draw backend layout in the 3D scene (feet->m adapter, all roles, screen, projector, patches, reflections) | gpt-6-sol | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
 | web-view2d | 2D plan view ported from web/plot2d into webapp | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
 | web-panels | Layout/Acoustics/Shop/Room panels + extra API calls | gpt-5.6-terra | medium | web-base | 14 | todo | Brief written, batch Gate 3 |
