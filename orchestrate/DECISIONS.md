@@ -51,3 +51,9 @@ Format: `- [YYYY-MM-DD HH:MM] decision - why - who (user|orchestrator)`  (add li
 - [2026-10-24 18:55] Wave 3 order (a): orchestrator commits ruff.toml + ruff==0.17.2 pin first, lint and integrate run in parallel, merge lint then integrate, then lint-gate the test command - user
 - [2026-10-24 18:55] Wave 3 runs on the second Codex account (CODEX_HOME=~/.codex-second, the codex2 profile) because account 1 is at 21% - user
 - [2026-10-24 18:55] ruff.toml allows FastAPI File/Form/Query/Body/Depends defaults (B008) and excludes .*-run sandbox dirs - orchestrator
+- [2026-10-24 19:07] SerpApi integration: teammate main.py/price.py/av_prices.db move into products/ (catalog.py, search.py, av_prices.db), only the import line changes - user (1a)
+- [2026-10-24 19:07] Products request path: database first; if fewer than 3 matches for a role's constraints, live Gemini+SerpApi expansion (time-capped, keys required, otherwise DB-only + warning) - user (2b)
+- [2026-10-24 19:07] Products listing filter: condition new, category_ok, has link, drop price outliers below 25% of the per-query median - user (3)
+- [2026-10-24 19:07] Products pairs: one (Pair) listing covers L+R or Ls+Rs, second role gets a 0 USD 'included in pair' item - user (4a)
+- [2026-10-24 19:07] Products budget: front-weighted split (C3 L2 R2 LFE2 Ls1 Rs1 screen/projector 1), pick best price-to-performance within each share, leftover second pass, omitted roles get warnings - user (5a)
+- [2026-10-24 19:07] Product items gain optional seller, specs (parsed spec dict) and dimensions in feet (for AR sizing); thumbnail null, source google_shopping - user (6)

@@ -10,6 +10,7 @@
 | integrate | tools/e2e.py, backend/tests/e2e, demo script, failure-drill checklist | gpt-5.6-luna | medium | core-api,materials,roomplan | 3 | ready | owns tools/e2e.py, backend/tests/e2e/**, DEMO.md |
 | plot2d | Top-down 2D plot page served at /app/plot2d/ (SVG, drag speakers, live score, products) | gpt-6-sol | medium | | 2 | done | owns web/plot2d/**, backend/tests/test_plot2d.py; user-requested dev tool + demo fallback |
 | engine-adapter | Adapter: teammate speakerplacer -> backend optimize/score contract + acoustics.py (reflections, patches, modes, score) | gpt-5.6-terra | high | | 3 | done | owns backend/app/{engine_speakerplacer,acoustics}.py + tests; user asked for terra |
+| products-adapter | products.get_products on the teammate SQLite catalog: filters, role mapping, front-weighted value pick, pairs, specs + dimensions, deadline-bound Gemini+SerpApi expansion, tests | gpt-6-sol | medium | | 3 | ready | owns new products/*.py modules + backend/tests/products/**; teammate catalog.py/search.py/db read-only |
 | lint | ruff for our Python code: ruff.toml (py312, line 120, E F W I B UP, exclude speakerplacer + its tests), fix findings, gate merges with ruff check | gpt-5.6-luna | medium | | 3 | ready | owns ruff.toml + lint fixes in backend/, tools/, conftest.py; orchestrator updates config.json test cmd and requirements |
 
 status: todo | ready | running | review | done | blocked | cut

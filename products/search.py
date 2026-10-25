@@ -229,7 +229,7 @@ def search_with_expansion(conn, category=None, price=None, specs=None, min_resul
             print(f"  Only {len(rows)} match(es) in the database (wanted {min_results}). "
                   f"Asking Gemini for more '{category}' products...")
             try:
-                import main as catalog  # lazy import: main.py never imports price.py
+                from . import catalog  # lazy import: catalog.py never imports search.py
                 saved = catalog.expand_catalog(conn, category, price, specs, max_queries=max_queries)
             except Exception as exc:
                 print(f"  Could not expand the catalog: {exc}")

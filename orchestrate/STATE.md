@@ -7,15 +7,20 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 3
-- last_checkpoint: 2026-10-24 18:56
+- last_checkpoint: 2026-10-24 19:20
 
 ## Next action
-On GATE 3 approval run wave 3 on the second Codex account: PowerShell `$env:CODEX_HOME="$HOME\.codex-second"; powershell -NoProfile -File "$HOME/.claude/skills/orchestrate/scripts/dispatch.ps1" run-wave -Review` (background). Then GATE 4 -> GATE 5 merge lint first, then integrate -> set config.json test to `python -m ruff check . && python -m pytest -q` -> push -> server `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build` -> `bash deploy/smoke.sh https://144-202-27-51.sslip.io` and `python tools/e2e.py https://144-202-27-51.sslip.io`.
+On GATE 3 approval run wave 3 (3 tasks) on the second Codex account: PowerShell `$env:CODEX_HOME="$HOME\.codex-second"; powershell -NoProfile -File "$HOME/.claude/skills/orchestrate/scripts/dispatch.ps1" run-wave -Review` (background). Then GATE 4 -> GATE 5 merge order lint, products-adapter, integrate -> set config.json test to `python -m ruff check . && python -m pytest -q` -> push -> server `cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build` -> `bash deploy/smoke.sh https://144-202-27-51.sslip.io` and `python tools/e2e.py https://144-202-27-51.sslip.io`.
 
 ## Waiting on user
-1. GATE 3: approve the wave-3 briefs (orchestrate/tasks/lint/BRIEF.md, orchestrate/tasks/integrate/BRIEF.md), both gpt-5.6-luna medium on account 2? 2. User adds GEMINI_API_KEY and SERPAPI_KEY to /srv/sweetspot/.env (never through chat); not done yet. 3. Web app (webapp/, React + Vite) starts after the SerpApi teammate delivers products/.
+1. GATE 3: approve wave-3 briefs orchestrate/tasks/{lint,integrate,products-adapter}/BRIEF.md (lint + integrate gpt-5.6-luna medium, products-adapter gpt-6-sol medium, all on account 2). 2. User adds GEMINI_API_KEY and SERPAPI_KEY to /srv/sweetspot/.env (never through chat); not done yet. 3. Web app (webapp/, React + Vite) starts soon; needs products `dimensions` for AR (tell the web teammate after products-adapter merges).
+
+## SerpApi integration (merged on master, adapter not built yet)
+- origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
+- docs/API.md section 4 rewritten with the user's decisions (DB first, expansion if fewer than 3 matches, filters, role mapping, front-weighted value pick, pairs with pair_with, specs + dimensions in feet). Tell the teammate their files moved (1a, user approved).
 
 ## Wave 3 (ready, not started)
+- products-adapter: brief encodes the value formula (q = rating + spec parts; maximise q - 0.35 price/share), dimension parsing + defaults, deadline-bound expansion thread (PRODUCTS_EXPAND_DEADLINE_S=20).
 - lint: ruff.toml + ruff==0.17.2 already committed on master by the orchestrator (about 150 findings, mostly tools/validate_dto.py and backend/tests/contract/). Worker fixes findings behaviour-preserving.
 - integrate: tools/e2e.py (run_e2e(client) + CLI), backend/tests/e2e (in-process + live-marked), DEMO.md with failure drills. Must itself pass ruff.
 - Codex: account 1 at 21%; account 2 = CODEX_HOME=~/.codex-second (PowerShell profile function codex2). Dispatch inherits CODEX_HOME from the calling shell.
