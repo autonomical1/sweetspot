@@ -316,7 +316,7 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
   }, [model, selectedId, showReflections, walls, ceiling]);
   useEffect(() => {
     const s = state.current; if (!s) return;
-    s.orbit.enabled = true; s.camera.up.set(0, 1, 0);
+    s.camera.up.set(0, 1, 0);
     if (topView) { s.camera.position.set(0, Math.max(model.room.width, model.room.length) * 1.25, .001); s.orbit.target.set(0, 0, 0); }
     else if (s.camera.position.distanceToSquared(new THREE.Vector3(0, 0, 0)) < 1) s.camera.position.set(model.room.width, model.room.height * 1.7, model.room.length);
     s.orbit.update();
