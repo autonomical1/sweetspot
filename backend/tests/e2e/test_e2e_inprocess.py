@@ -117,3 +117,32 @@ def test_score_moves_the_left_speaker_by_role():
     assert moved["speakers"][0]["position"][0] == original["R"]
     left = next(speaker for speaker in moved["speakers"] if speaker["role"] == "L")
     assert left["position"][0] == original["L"] + 1.0
+
+
+class ScanClient:
+    def post(self, path, **kwargs):
+        if path == "/rooms":
+            return FakeResponse(200, {"room_id": "r_scan", "frame": {"yaw_deg": 0}, "warnings": ["scan warning"]})
+        return FakeResponse(200, {"layout": {"speakers": [{"role": "L"}]}, "metrics": {"warnings": ["metric warning"]}})
+
+
+def test_scan_step_keeps_room_and_metrics_warnings():
+    result = e2e._scan(ScanClient(), {})
+    assert result["warnings"] == ["scan warning", "metric warning"]
+
+
+class ProductsClient:
+    def get(self, path, **kwargs):
+        return FakeResponse(200, {
+            "budget": 1500.0,
+            "total": 10.0,
+            "items": [{
+                "role": "L", "title": "Stub speaker", "price": 10.0,
+                "link": "https://example.test", "source": "stub",
+            }],
+        })
+
+
+def test_products_step_reports_distinct_sources():
+    result = e2e._products(ProductsClient(), {"room_id": "r_products"}, 1500.0)
+    assert result["_step_detail"] == "ok source=stub"

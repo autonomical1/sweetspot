@@ -71,7 +71,9 @@ def run_e2e(client: Any, *, budget: float = 1500.0) -> list[StepResult]:
         try:
             payload = action()
             warnings = _warnings(payload)
-            detail = "ok" if not warnings else "; ".join(warnings)
+            detail = payload.get("_step_detail", "ok") if isinstance(payload, dict) else "ok"
+            if warnings:
+                detail = f"{detail}; {'; '.join(warnings)}"
             results.append(StepResult(name, "PASS", (time.perf_counter() - started) * 1000, detail, warnings))
             return True
         except Exception as exc:
@@ -184,7 +186,9 @@ def _products(client: Any, state: dict[str, Any], budget: float) -> Any:
     assert result["total"] <= budget, result
     for item in result.get("items", []):
         assert all(item.get(key) for key in ("role", "title", "link")) and isinstance(item["price"], (int, float)), item
-    return result
+    sources = sorted({str(item["source"]) for item in result.get("items", []) if item.get("source")})
+    detail = "ok" if not sources else f"ok source={','.join(sources)}"
+    return {**result, "_step_detail": detail}
 
 
 def _scan(client: Any, state: dict[str, Any]) -> Any:
@@ -193,7 +197,8 @@ def _scan(client: Any, state: dict[str, Any]) -> Any:
     assert room.get("frame") is not None, room
     result = _require(client.post(f"/rooms/{room['room_id']}/optimize", json={}))
     assert result["layout"]["speakers"], result
-    return result
+    warnings = _warnings(room) + _warnings(result)
+    return {**result, "warnings": warnings}
 
 
 def _rectangle(client: Any, state: dict[str, Any]) -> Any:
