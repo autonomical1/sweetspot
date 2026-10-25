@@ -6,14 +6,14 @@
 - phase: integrate   # discover | spec | plan | build | integrate | polish | done
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
-- wave: 5
-- last_checkpoint: 2026-10-24 21:25
+- wave: 6
+- last_checkpoint: 2026-10-24 22:05
 
 ## Next action
-Task `products-options` (wave 5, gpt-6-sol medium, main Codex account) is briefed and `ready` (orchestrate/tasks/products-options/BRIEF.md; docs/API.md section 4 updated with `alternatives` and variety rules). On GATE 3 approval: PowerShell (CODEX_HOME unset) `DISPATCH run-wave -Review` in background; PASS + OK -> `DISPATCH merge -All`, ruff + pytest, push, server redeploy, check live `GET /rooms/{id}/products?budget=1500` (alternatives present, varied models), then tell the web/iOS teammates about `alternatives` and `price_delta`. ISSUES -> one retry, then ask the user. Other remaining work: web app, 3D model, real iOS scan, DEMO.md rehearsal, .tech domain, catalog title quality (non-English listings).
+iOS branch merged (Sweetspot_iOS_App/). Wave 6 running since about 22:05 (two background jobs: `start` then `review` each): `ios-real-scan` (backend roomplan converter + tests on fixtures/partial_scan_upload_test.json, Codex account 1 = CODEX_HOME unset) and `ios-ar-frame` (Swift: apply backend `frame` yaw+offset in shared-scan AR; Codex account 2 = ~/.codex-second; no compiler in sandbox). When each exits: read its result line and review; PASS + OK -> `DISPATCH merge -Id <id>` (or merge -All), ruff + pytest, push, redeploy server (only ios-real-scan changes backend). ios-ar-frame changes only Swift: the user must build it in Xcode and run the device checklist in its HANDOFF. ISSUES -> one retry (alternate accounts), then ask the user. Also queued but NOT dispatched (waiting for the user's go): `products-options` (variety + alternatives; brief ready, orchestrate/tasks/products-options).
 
 ## Waiting on user
-GATE 3: approve the products-options brief (go / change).
+1. `go` for products-options (variety + alternatives). 2. Capture a FULL room scan on the phone (the one on the server was an incomplete upload test) and upload it; photos and AR still untested on device. 3. Tell the iOS teammate: AR frame fix in ios-ar-frame (they must build it in Xcode); app has no products screen and does not send `listener`/`budget`. 4. Tell the SerpApi teammate their files moved to products/; web/3D teammates get `dimensions` and `pair_with`.
 
 ## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.
