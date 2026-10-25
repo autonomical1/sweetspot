@@ -82,6 +82,7 @@
 //    return url.lastPathComponent
 //}
 import Foundation
+import os
 
 enum AppConfig {
     // Replace this with the actual Vultr HTTPS origin when it is ready.
@@ -97,16 +98,12 @@ enum BackendError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidResponse:
-            return "The server returned an invalid response."
-        case .http(let status, let detail):
-            return "Server error (\(status)): \(detail)"
-        case .busy(let detail, _):
-            return detail
+        case .invalidResponse, .http(_, _), .busy(_, _):
+            return "Something went wrong. Please try again."
         case .invalidQR:
             return "That QR code is not a Sweetspot pairing link."
         case .expiredPairing:
-            return "That pairing code expired. Scan the new QR code on the web page."
+            return "This pairing code has expired. Scan a new QR code."
         }
     }
 }
@@ -121,6 +118,50 @@ struct BackendClient {
 
     init(baseURL: URL = AppConfig.baseURL) {
         self.baseURL = baseURL
+    }
+
+    func userMessage(for error: Error) -> String {
+        let logger = Logger(subsystem: "com.sweetspot.phone", category: "backend")
+        switch error {
+        case let backendError as BackendError:
+            switch backendError {
+            case .http(let status, let detail):
+                logger.error("Backend request failed: status=\(status, privacy: .private), detail=\(detail, privacy: .private)")
+                switch status {
+                case 404: return "That room isn't available any more. Start a new scan."
+                case 410: return "This pairing code has expired. Scan a new QR code."
+                case 413: return "That photo is too large."
+                case 400, 422: return "That didn't look right. Please try again."
+                case 429: return "We're busy right now. Trying again shortly."
+                case 500...599: return "Something went wrong. Please try again."
+                default: return "Something went wrong. Please try again."
+                }
+            case .busy(let detail, let seconds):
+                logger.error("Backend busy: retry_after_s=\(seconds, privacy: .private), detail=\(detail, privacy: .private)")
+                return "We're busy right now. Trying again shortly."
+            case .expiredPairing:
+                logger.error("Pairing code expired")
+                return "This pairing code has expired. Scan a new QR code."
+            case .invalidQR:
+                logger.error("Invalid pairing QR code")
+                return "That QR code isn't a Sweetspot pairing code."
+            case .invalidResponse:
+                logger.error("Invalid backend response")
+                return "Something went wrong. Please try again."
+            }
+        case let urlError as URLError:
+            logger.error("Network request failed: code=\(urlError.code.rawValue, privacy: .private), error=\(urlError, privacy: .private)")
+            switch urlError.code {
+            case .notConnectedToInternet, .networkConnectionLost, .cannotConnectToHost,
+                 .cannotFindHost, .dnsLookupFailed, .timedOut:
+                return "Can't reach Sweetspot. Check your connection and try again."
+            default:
+                return "Something went wrong. Please try again."
+            }
+        default:
+            logger.error("Backend request failed: error=\(String(describing: error), privacy: .private)")
+            return "Something went wrong. Please try again."
+        }
     }
 
     func request<T: Decodable>(
@@ -273,10 +314,17 @@ struct BackendClient {
         append("\r\n--\(boundary)--\r\n")
         request.httpBody = body
 
-        let (_, response) = try await URLSession.shared.data(for: request)
-
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
             throw BackendError.invalidResponse
+        }
+        guard http.statusCode == 200 else {
+            let body = try? JSONDecoder().decode(BackendErrorBody.self, from: data)
+            let detail = body?.detail ?? String(data: data, encoding: .utf8) ?? "Request failed"
+            if http.statusCode == 429 {
+                throw BackendError.busy(detail, max(1, body?.retry_after_s ?? 10))
+            }
+            throw BackendError.http(http.statusCode, detail)
         }
     }
 
