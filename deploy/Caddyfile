@@ -1,5 +1,15 @@
+{
+    log {
+        format console
+    }
+}
+
 {$SITE_ADDRESS} {
     encode gzip
+    log {
+        output stdout
+        format console
+    }
     request_body {
         max_size 25MB
     }
