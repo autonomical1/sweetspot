@@ -2,8 +2,31 @@
 
 Goal: after the backend computes a layout, the user walks around the room with the phone and sees markers where each speaker (and the screen, and treatment patches) should go. This is the riskiest and most demo-worthy feature; **time-box the alignment test to about 1 hour**, and build everything else first.
 
+## Step 0: room frame -> scan world (always, for scanned rooms)
+The backend normalizes every scan: it straightens the room so walls run along x/z and shifts it so a corner is at (0,0,0), all in **feet**. Layout positions come back in that **room frame**. The room JSON (`GET /rooms/{room_id}`) carries `frame: {yaw_deg, offset}` (offset in feet) that maps the room frame back to the scan's ARKit world:
+
+```swift
+struct RoomFrame: Decodable { let yaw_deg: Double; let offset: [Double] }   // decode from room["frame"]
+
+/// Room-frame feet -> ARKit world meters (positions).
+func worldPoint(_ p: [Double], _ f: RoomFrame) -> SIMD3<Float> {
+    let q = simd_quatf(angle: Float(f.yaw_deg * .pi / 180), axis: [0, 1, 0])
+    let rotated = q.act(SIMD3<Float>(Float(p[0]), Float(p[1]), Float(p[2])))
+    let ft = rotated + SIMD3<Float>(Float(f.offset[0]), Float(f.offset[1]), Float(f.offset[2]))
+    return ft * 0.3048
+}
+/// Room-frame direction (aim/facing) -> world direction (rotation only).
+func worldDir(_ d: [Double], _ f: RoomFrame) -> SIMD3<Float> {
+    simd_quatf(angle: Float(f.yaw_deg * .pi / 180), axis: [0, 1, 0]).act(SIMD3<Float>(Float(d[0]), Float(d[1]), Float(d[2])))
+}
+// Sizes (screen width, patch size) only scale: meters = feet * 0.3048.
+```
+Formula (identical to `docs/API.md` section 1a): `x' = cos(t)x + sin(t)z + ox`, `y' = y + oy`, `z' = -sin(t)x + cos(t)z + oz`, then x 0.3048. **Write an XCTest that reproduces every case in `sample_payloads/frame_test_vectors.json` to 1e-4 before building any AR UI**; if the quaternion version disagrees with the vectors, use the explicit formula. Debug check: convert the room's wall corners with `worldPoint` and draw them; they must sit on the real walls.
+
+If `frame` is null (demo or rectangular room) there is no scan world: use option C (manual two-corner alignment) below.
+
 ## The core problem: one shared world frame
-Layout coordinates come back in **feet** (y-up); multiply every coordinate and size by `0.3048` to get ARKit meters before placing anything: `let m = Float(0.3048)`. They are in the same frame as the RoomPlan scan **only if** the AR session that shows the markers is the same session (or relocalized into it). Three ways, best first:
+After Step 0 the positions are in the scan's world frame. That frame matches what you see **only if** the AR session that shows the markers is the same session as the scan (or relocalized into it). Three ways, best first:
 
 ### A. Reuse the scan's ARSession (preferred, zero alignment)
 **[Apple docs]** `RoomCaptureView` has `init(frame:arSession:)`, `RoomCaptureSession.arSession` exposes the session in use ("You may use this object to display your own AR experience"), and `stop(pauseARSession: Bool)` exists.

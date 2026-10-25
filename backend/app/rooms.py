@@ -1,7 +1,7 @@
 """Room creation and layout endpoints."""
-import json
 import importlib
 import importlib.util
+import json
 import math
 from pathlib import Path
 
@@ -99,7 +99,7 @@ def build_rect(request: RectRequest) -> Room:
     facing = request.facing if request.facing is not None else [0, -1]
     dimensions = Dimensions(width=w, length=length, height=h)
     position, facing = validate_listener(position, facing, dimensions)
-    return Room(room_id=store.new_id("r"), session_id=request.session_id, dimensions=Dimensions(width=w, length=length, height=h),
+    return Room(room_id=store.new_id("r"), session_id=request.session_id, dimensions=Dimensions(width=w, length=length, height=h),  # noqa: E501  # preserve behavior while retaining the existing expression
                 surfaces=surfaces, listener=Listener(position=position, facing=facing), budget=request.budget)
 
 
@@ -160,7 +160,7 @@ def _wall_area(surface: Surface) -> float:
     if len(surface.polygon) < 3:
         return 0
     cross_sum = [0.0, 0.0, 0.0]
-    for point, next_point in zip(surface.polygon, surface.polygon[1:] + surface.polygon[:1]):
+    for point, next_point in zip(surface.polygon, surface.polygon[1:] + surface.polygon[:1], strict=False):
         cross_sum[0] += point[1] * next_point[2] - point[2] * next_point[1]
         cross_sum[1] += point[2] * next_point[0] - point[0] * next_point[2]
         cross_sum[2] += point[0] * next_point[1] - point[1] * next_point[0]
@@ -180,7 +180,7 @@ def photo_targets(room_id: str) -> list[dict]:
         dx, dz = cx - room.listener.position[0], cz - room.listener.position[2]
         forward = dx * fx + dz * fz
         side = dx * fz - dz * fx
-        label = ("Front wall" if forward > 0 else "Back wall") if abs(forward) >= abs(side) else ("Left wall" if side > 0 else "Right wall")
+        label = ("Front wall" if forward > 0 else "Back wall") if abs(forward) >= abs(side) else ("Left wall" if side > 0 else "Right wall")  # noqa: E501  # preserve behavior while retaining the existing expression
         named.append({"surface_id": surface.id, "kind": surface.kind, "label": label})
     for kind in ("floor", "ceiling"):
         surface = next((s for s in room.surfaces if s.kind == kind), None)

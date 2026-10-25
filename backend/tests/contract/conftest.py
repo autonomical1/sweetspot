@@ -1,5 +1,6 @@
 import importlib
 import os
+
 import pytest
 
 
@@ -14,7 +15,7 @@ def _module(name, label):
 def engine_impl(request):
     if request.param == "stub":
         return importlib.import_module("backend.app.stubs.engine_stub")
-    return _module("speakerplacer", "real engine")
+    return _module("backend.app.engine_speakerplacer", "real engine (speakerplacer adapter)")
 
 
 @pytest.fixture(params=["stub", pytest.param("real", marks=pytest.mark.live)])

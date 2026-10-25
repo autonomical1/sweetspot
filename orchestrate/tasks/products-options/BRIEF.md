@@ -1,0 +1,29 @@
+# products-options: variety across roles + swap alternatives per item
+
+## Goal
+Two changes to `products.get_products` (docs/API.md section 4 is authoritative and already updated):
+1. **Variety.** Today all five speaker roles get the same Edifier model. Fronts (L, R, C) stay one matched model family; the surround pair (Ls, Rs) becomes a different model when a good different one exists.
+2. **Multiple options.** Every returned item carries `alternatives`: up to 3 other listings for that role that the UI can offer as swaps, each with `price_delta` against the current pick.
+
+## Read first
+docs/API.md section 4 (new "Alternatives" and "Variety" bullets and the item shape), products/recommend.py (`_candidates`, `_best`, `_choice`, the greedy upgrade loop added by products-spend, `_item`, `get_products`), products/value.py (`quality`, `value`, `PRICE_PENALTY`), backend/tests/products/ (existing tests, `small_db`, `listing`, seed-catalog tests), backend/tests/contract/checks.py (`assert_valid_products` must keep passing; unknown extra keys are allowed).
+
+## Design decisions this brief encodes (user-approved: "1a 2a"; do not change)
+- Alternatives are per item, not whole bundles. No new top-level keys except what is in API.md (`warnings` stays).
+- An alternative is a listing for the same role from the same filtered candidate set the recommender already uses (new condition, link, outlier filter, category/role mapping, price within the role's upgrade cap), a different model than the current pick (different `model_key`, see below), and the swap must keep the whole list within budget: `total - pick_price + alternative_price <= budget`. Take up to 3: the best-value candidate cheaper than the pick, the best-quality candidate pricier than the pick, and one more by value from either side; fewer if fewer exist. Sort by `price` ascending. `price_delta = alternative price - pick price`, rounded to cents. Alternatives carry the same fields as an item minus `role`/`pair_with` (title, price, currency, link, seller, thumbnail null, source, specs, dimensions, price_delta). Dimensions use the same parser/defaults as items.
+- Pairs: the first role of a pair listing (L, Ls) gets alternatives that are also pair listings covering both roles (price is the pair price, `price_delta` against the current pair price); the second role (R, Rs, price 0) gets `alternatives: []`. If the pick for a pair group is not a pair (two single listings), each role gets single-listing alternatives as for any other role.
+- `model_key(row)`: one small pure function in a new module `products/variety.py`: lowercase the title; drop pair/set words (`pair`, `pairs`, `(2)`, `set of 2`), generic words (`speaker`, `speakers`, `bookshelf`, `floorstanding`, `bluetooth`, `wireless`, `powered`, `home`, `studio`, `lifestyle`, `new`, `2.0`, `with`, `and`, `for`, `-`), punctuation and sizes in watts; keep brand (the `brand` spec when present) plus the first model-like token (contains a digit, e.g. `r1280db`, `psw505`) or else the first three remaining words. Two listings with the same `model_key` count as the same model. Document the rule in a docstring and cover it with tests (the same Edifier R1280DB under different titles/sellers shares a key; R980T differs).
+- Variety rule exactly as in API.md: C chooses the same brand and series (same brand spec and same first model-like token prefix up to the digits, e.g. `r1280` family; if that rule finds nothing use brand only; if nothing, its own best pick) as the L/R choice. Ls/Rs must pick a model whose `model_key` differs from the L/R/C key when an eligible candidate within the surround cap exists whose quality is at least 85% of the best eligible surround candidate's quality; otherwise the same model is allowed. LFE, screen, projector are independent.
+- The greedy upgrade loop (products-spend) and the `2 * share` caps stay; variety is applied when picking and when upgrading (an upgrade must not make Ls/Rs the same model as the fronts again unless the rule above allows it). Totals at 1500 and 4000 on the seed catalog must stay within the bounds products-spend set (1100..1500 and at least 2400); do not weaken those tests.
+- Do not change filters, expansion, dimensions parsing, the existing item fields, or `warnings` semantics.
+
+## Deliverables
+1. `products/variety.py` (`model_key`, family helper), changes in `products/recommend.py` (and `products/value.py` only if needed).
+2. Tests in `backend/tests/products/` (new file `test_options.py` plus edits where assertions encoded the old all-same-model result, say so in HANDOFF.md): `model_key` cases; alternatives count/order/`price_delta`; every alternative keeps `total <= budget` when swapped (check by recomputing totals); pair-group alternatives are pairs and R/Rs get `[]`; fronts share a family, surrounds differ when a different good candidate exists and are allowed to match when none does; seed catalog: demo room at 1500 has at least 3 distinct models across roles and no item without an `alternatives` key; `assert_valid_products` passes; each call under 3 s on the seed DB with no keys and no network.
+3. HANDOFF.md: demo room at 1500 USD: per role the pick and its alternatives (title, price, price_delta); anything you could not satisfy.
+
+## Done when
+`python -m ruff check . && python -m pytest -q` passes; no edits outside OWNS.txt.
+
+## Out of scope
+Teammate files (products/catalog.py, products/search.py, the db), backend/app/**, docs, deploy, web/iOS, whole-bundle tiers, thumbnails, English-title filtering. Put unsettled choices (the 85% rule, the model_key word lists, tie-breaks) under `## Design questions` in HANDOFF.md.

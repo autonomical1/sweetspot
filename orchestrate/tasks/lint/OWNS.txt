@@ -1,0 +1,7 @@
+backend/__init__.py
+backend/app/**
+backend/tests/*.py
+backend/tests/contract/**
+tools/validate_dto.py
+conftest.py
+orchestrate/tasks/lint/HANDOFF.md

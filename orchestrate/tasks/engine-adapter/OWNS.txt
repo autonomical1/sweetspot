@@ -1,0 +1,5 @@
+backend/app/engine_speakerplacer.py
+backend/app/acoustics.py
+backend/tests/test_engine_speakerplacer.py
+backend/tests/test_acoustics.py
+orchestrate/tasks/engine-adapter/HANDOFF.md

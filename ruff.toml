@@ -1,0 +1,11 @@
+target-version = "py312"
+line-length = 120
+# Teammate engine code keeps its own style; lint it only with their agreement.
+extend-exclude = ["speakerplacer", "tests/test_speakerplacer.py", "products/catalog.py", "products/search.py", ".*-run"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[lint.flake8-bugbear]
+# FastAPI parameter markers are meant to be called in defaults.
+extend-immutable-calls = ["fastapi.File", "fastapi.Form", "fastapi.Query", "fastapi.Body", "fastapi.Depends"]

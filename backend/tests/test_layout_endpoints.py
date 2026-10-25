@@ -33,12 +33,12 @@ def test_openapi_paths(data_dir):
     paths = TestClient(create_app()).get("/openapi.json").json()["paths"]
     for path in ("/health", "/sessions", "/sessions/{session_id}", "/sessions/by-code", "/rooms", "/rooms/rect",
                  "/rooms/demo", "/rooms/{room_id}", "/rooms/{room_id}/listener", "/rooms/{room_id}/photo-targets",
-                 "/rooms/{room_id}/optimize", "/rooms/{room_id}/score", "/rooms/{room_id}/layout", "/rooms/{room_id}/products"):
+                 "/rooms/{room_id}/optimize", "/rooms/{room_id}/score", "/rooms/{room_id}/layout", "/rooms/{room_id}/products"):  # noqa: E501  # preserve behavior while retaining the existing expression
         assert path in paths
 
 
 def test_materials_import_error_is_not_hidden(monkeypatch):
     monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: object())
-    monkeypatch.setattr(main.importlib, "import_module", lambda name: (_ for _ in ()).throw(ImportError("missing dependency")))
+    monkeypatch.setattr(main.importlib, "import_module", lambda name: (_ for _ in ()).throw(ImportError("missing dependency")))  # noqa: E501  # preserve behavior while retaining the existing expression
     with pytest.raises(ImportError, match="missing dependency"):
         create_app()

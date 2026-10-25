@@ -227,3 +227,18 @@ coverage/
 .cache/
 Thumbs.db
 data/
+
+# speakerplacer (teammate engine)
+.DS_Store
+output/
+.conda-env/
+.mplconfig/
+
+# web app (React + Vite)
+webapp/node_modules/
+webapp/dist/
+
+# macOS / Xcode user state
+.DS_Store
+*.xcuserstate
+xcuserdata/

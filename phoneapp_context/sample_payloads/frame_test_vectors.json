@@ -1,0 +1,161 @@
+{
+  "_note": "Room frame (feet) -> AR world. Points: world_ft = R_y(yaw)*room_ft + offset_ft; world_m = world_ft*0.3048. Directions (aim, facing) rotate only. R_y(t): x' = cos(t)x + sin(t)z, y' = y, z' = -sin(t)x + cos(t)z (right-handed, y up; +90 deg maps +x to -z). Backend and iOS unit tests must both reproduce these to 1e-4.",
+  "points": [
+    {
+      "yaw_deg": 0,
+      "offset_ft": [
+        0,
+        0,
+        0
+      ],
+      "room_ft": [
+        2,
+        3,
+        5
+      ],
+      "world_ft": [
+        2.0,
+        3,
+        5.0
+      ],
+      "world_m": [
+        0.6096,
+        0.9144,
+        1.524
+      ]
+    },
+    {
+      "yaw_deg": 30,
+      "offset_ft": [
+        10,
+        0,
+        -4
+      ],
+      "room_ft": [
+        2,
+        3,
+        5
+      ],
+      "world_ft": [
+        14.232051,
+        3,
+        -0.669873
+      ],
+      "world_m": [
+        4.337929,
+        0.9144,
+        -0.204177
+      ]
+    },
+    {
+      "yaw_deg": -90,
+      "offset_ft": [
+        1.5,
+        0,
+        2.5
+      ],
+      "room_ft": [
+        4,
+        3.6,
+        1
+      ],
+      "world_ft": [
+        0.5,
+        3.6,
+        6.5
+      ],
+      "world_m": [
+        0.1524,
+        1.09728,
+        1.9812
+      ]
+    },
+    {
+      "yaw_deg": 180,
+      "offset_ft": [
+        20,
+        0,
+        15
+      ],
+      "room_ft": [
+        6,
+        1,
+        2
+      ],
+      "world_ft": [
+        14.0,
+        1,
+        13.0
+      ],
+      "world_m": [
+        4.2672,
+        0.3048,
+        3.9624
+      ]
+    },
+    {
+      "yaw_deg": 37.5,
+      "offset_ft": [
+        -3.2,
+        0.4,
+        8.8
+      ],
+      "room_ft": [
+        11.25,
+        5,
+        0.5
+      ],
+      "world_ft": [
+        6.029606,
+        5.4,
+        2.348111
+      ],
+      "world_m": [
+        1.837824,
+        1.64592,
+        0.715704
+      ]
+    }
+  ],
+  "directions": [
+    {
+      "yaw_deg": 30,
+      "room_dir": [
+        0,
+        0,
+        -1
+      ],
+      "world_dir": [
+        -0.5,
+        0,
+        -0.866025
+      ]
+    },
+    {
+      "yaw_deg": 90,
+      "room_dir": [
+        1,
+        0,
+        0
+      ],
+      "world_dir": [
+        0.0,
+        0,
+        -1.0
+      ]
+    },
+    {
+      "yaw_deg": -45,
+      "room_dir": [
+        0,
+        0,
+        -1
+      ],
+      "world_dir": [
+        0.707107,
+        0,
+        -0.707107
+      ]
+    }
+  ]
+}

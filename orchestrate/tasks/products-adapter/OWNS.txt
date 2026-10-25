@@ -1,0 +1,8 @@
+products/__init__.py
+products/recommend.py
+products/value.py
+products/dimensions.py
+products/db.py
+products/expand.py
+backend/tests/products/**
+orchestrate/tasks/products-adapter/HANDOFF.md

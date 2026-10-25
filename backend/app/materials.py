@@ -24,7 +24,7 @@ _VALUES = {
     "unknown": (0.05, 0.06, 0.08, 0.09, 0.09, 0.09),
 }
 ABSORPTION: dict[str, dict[str, float]] = {
-    material: dict(zip(BANDS, values)) for material, values in _VALUES.items()
+    material: dict(zip(BANDS, values, strict=False)) for material, values in _VALUES.items()
 }
 
 PROMPT = (
@@ -147,7 +147,7 @@ class GeminiClassifier:
                 parts.append(types.Part.from_text(text=f"surface_id: {photo['surface_id']}"))
                 parts.append(types.Part.from_bytes(data=photo["image_bytes"], mime_type=photo["mime"]))
             response = client.models.generate_content(
-                model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+                model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
                 contents=[types.Content(role="user", parts=parts)],
                 config=types.GenerateContentConfig(response_mime_type="application/json"),
             )

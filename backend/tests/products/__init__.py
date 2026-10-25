@@ -1,0 +1,1 @@
+"""Offline product adapter tests."""

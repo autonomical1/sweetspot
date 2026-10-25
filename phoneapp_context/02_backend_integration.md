@@ -41,7 +41,7 @@ Authoritative contract: `docs/API.md`. This file lists only what the iPhone app 
  },
  "metrics": {"score":0.0,"reflections":[],"treatment_patches":[{"surface_id","center":[x,y,z],"size":[w,h]}],"warnings":[]}}
 ```
-**Positions are decimal feet**, y-up (convert x 0.3048 to meters for ARKit). For scanned rooms they are in the scan's world frame (scaled to feet, not recentered).
+**Positions are decimal feet in the room frame** (y-up). For scanned rooms convert them to ARKit world meters with the room's `frame` (`GET /rooms/{room_id}` returns it; formula and Swift code in `04_ar_overlay.md`, Step 0). Rect/demo rooms have `frame: null` and need manual alignment.
 
 ### Demo and manual rooms
 - `POST /rooms/demo` `{"session_id":"s_..."}` (optional) -> Room JSON, no scan. Needs a visible **"Use demo room"** button. Demo coordinates are in the demo room's own frame, so AR uses a manual alignment (`04_ar_overlay.md`).

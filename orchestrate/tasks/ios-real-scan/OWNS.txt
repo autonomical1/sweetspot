@@ -1,0 +1,3 @@
+backend/app/roomplan.py
+backend/tests/test_roomplan_real_scan.py
+orchestrate/tasks/ios-real-scan/HANDOFF.md

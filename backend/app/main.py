@@ -2,7 +2,7 @@
 import importlib
 import importlib.util
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -28,7 +28,7 @@ def create_app() -> FastAPI:
         item = sessions.create()
         domain = os.getenv("DOMAIN", "localhost")
         return {"session_id": item["session_id"], "code": item["code"],
-                "expires_at": datetime.fromtimestamp(item["expires_at"], timezone.utc).isoformat(),
+                "expires_at": datetime.fromtimestamp(item["expires_at"], UTC).isoformat(),
                 "pair_url": f"https://{domain}/pair/{item['session_id']}"}
 
     @application.get("/sessions/{session_id}")
