@@ -74,6 +74,33 @@ def _farthest_wall_facing(seat: list[float], walls: list[dict]) -> list[float]:
     return _toward(seat, target["transform"][12:15])
 
 
+def _floor_centre(surfaces: list[dict]) -> list[float] | None:
+    """Centroid of RoomPlan's local floor polygon, mapped into world metres."""
+    for floor in (item for item in surfaces if item["category"] == "floor"):
+        corners = floor.get("polygon_corners") or []
+        if len(corners) < 3:
+            continue
+        twice_area = cx = cy = 0.0
+        for first, second in zip(corners, corners[1:] + corners[:1], strict=False):
+            cross = first[0] * second[1] - second[0] * first[1]
+            twice_area += cross
+            cx += (first[0] + second[0]) * cross
+            cy += (first[1] + second[1]) * cross
+        if abs(twice_area) < 1e-10:
+            continue
+        local_x, local_y = cx / (3 * twice_area), cy / (3 * twice_area)
+        transform = floor["transform"]
+        return [transform[12 + axis] + transform[axis] * local_x +
+                transform[4 + axis] * local_y for axis in range(3)]
+    return None
+
+
+def _wall_box_centre(endpoints: list[list[float]], yaw: float) -> list[float]:
+    rotated = [_rotate(point, -yaw) for point in endpoints]
+    return _rotate([(min(point[axis] for point in rotated) +
+                     max(point[axis] for point in rotated)) / 2 for axis in range(3)], yaw)
+
+
 def convert_dto(
     captured_room: dict, *, room_id: str, session_id: str | None,
     budget: float | None, listener: dict | None,
@@ -92,7 +119,6 @@ def convert_dto(
     polygons = {item["id"]: _surface_polygon(item)
                 for item in captured_room["surfaces"] if item["category"] != "floor"}
     endpoints = [point for wall in walls for point in polygons[wall["id"]][:2]]
-    centroid = [sum(point[i] for point in endpoints) / len(endpoints) for i in range(3)]
     sin_sum = cos_sum = 0.0
     for wall in walls:
         transform = wall["transform"]
@@ -101,6 +127,7 @@ def convert_dto(
         sin_sum += width * math.sin(4 * phi)
         cos_sum += width * math.cos(4 * phi)
     yaw0 = -math.degrees(math.atan2(sin_sum, cos_sum)) / 4
+    centre = _floor_centre(captured_room["surfaces"]) or _wall_box_centre(endpoints, yaw0)
 
     if listener is not None:
         override = Listener.model_validate(listener)
@@ -116,12 +143,12 @@ def convert_dto(
             sofa = max(sofas, key=lambda item: item["dimensions"][0] * item["dimensions"][2])
             seat = sofa["transform"][12:15]
         else:
-            seat = centroid
+            seat = centre
             warnings.append("no sofa detected; listener at room centre")
         if televisions:
             facing = _toward(seat, televisions[0]["transform"][12:15])
         elif sofas:
-            facing = _toward(seat, centroid)
+            facing = _toward(seat, centre)
         else:
             facing = _farthest_wall_facing(seat, walls)
         if math.hypot(*facing) < 1e-10:

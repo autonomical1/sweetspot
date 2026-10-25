@@ -6,14 +6,16 @@
 - phase: integrate   # discover | spec | plan | build | integrate | polish | done
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
-- wave: 6
-- last_checkpoint: 2026-10-24 22:05
+- wave: 7
+- last_checkpoint: 2026-10-24 23:05
 
 ## Next action
-iOS branch merged (Sweetspot_iOS_App/). Wave 6 running since about 22:05 (two background jobs: `start` then `review` each): `ios-real-scan` (backend roomplan converter + tests on fixtures/partial_scan_upload_test.json, Codex account 1 = CODEX_HOME unset) and `ios-ar-frame` (Swift: apply backend `frame` yaw+offset in shared-scan AR; Codex account 2 = ~/.codex-second; no compiler in sandbox). When each exits: read its result line and review; PASS + OK -> `DISPATCH merge -Id <id>` (or merge -All), ruff + pytest, push, redeploy server (only ios-real-scan changes backend). ios-ar-frame changes only Swift: the user must build it in Xcode and run the device checklist in its HANDOFF. ISSUES -> one retry (alternate accounts), then ask the user. Also queued but NOT dispatched (waiting for the user's go): `products-options` (variety + alternatives; brief ready, orchestrate/tasks/products-options).
+Running (each a background `start` then `review` job): `ios-real-scan` is MERGED to master (demo-ok 3f1e8c1, not yet deployed to the server: deploy together with products-options), `products-options` (account 2, started about 22:40), `ios-products-ui` (Swift shop screen, account 1, started about 22:40). `ios-ar-frame` is done: its commits are on branch ios-phone_context (pushed), which was updated to master first; master got them by merging that branch.
+
+iOS RULE (user): all iOS changes are committed to branch `ios-phone_context`. Do NOT use `dispatch merge` for iOS tasks (it merges into master). Procedure for an iOS task that passed check + review: use the extra worktree ../sweetspot-ios (branch ios-phone_context): `git merge --no-ff task/<id>`, `git push origin ios-phone_context`, then in the main tree `git merge --no-ff ios-phone_context` into master (so later workers start from the latest app), set the task `done` in TASKS.md. Backend tasks (ios-real-scan, products-options) merge normally with `DISPATCH merge -Id <id>` then ruff + pytest, push, redeploy the server (`cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build`), run products/e2e checks; products-options also changes the response (alternatives): tell the web teammate; the iOS task consumes it as optional fields. A review ISSUES -> one retry (alternate accounts), then ask the user.
 
 ## Waiting on user
-1. `go` for products-options (variety + alternatives). 2. Capture a FULL room scan on the phone (the one on the server was an incomplete upload test) and upload it; photos and AR still untested on device. 3. Tell the iOS teammate: AR frame fix in ios-ar-frame (they must build it in Xcode); app has no products screen and does not send `listener`/`budget`. 4. Tell the SerpApi teammate their files moved to products/; web/3D teammates get `dimensions` and `pair_with`.
+1. Build the iOS branch in Xcode and run the device checks in orchestrate/tasks/ios-ar-frame/HANDOFF.md (needs a FULL room scan; the one on the server was an incomplete upload test). 2. Tell the iOS teammate their branch now contains master plus the AR frame fix, and another agent is adding the shop screen on the same branch. 3. Tell the SerpApi teammate their files moved to products/; the web/3D teammates get `dimensions`, `pair_with` and soon `alternatives`.
 
 ## SerpApi integration (merged on master; products-adapter merged 20:24, so the backend now loads `products` instead of the stub)
 - origin/serp merged; teammate files moved to products/catalog.py, products/search.py, products/av_prices.db (2,866 listings), only change = `from . import catalog`. products/__init__.py is a docstring until products-adapter lands (backend falls back to the stub meanwhile). requests + python-dotenv pinned. ruff excludes the two teammate files.

@@ -31,3 +31,8 @@ The Swift reads cleanly and is internally consistent (every symbol defined, opti
 
 ## Out of scope
 Backend/Python, project file, new files other than the example JSON, the "tap where you sit" listener, thumbnails (always null), photo/material flows, a purchase/checkout flow. Put unsettled choices under `## Design questions` in HANDOFF.md.
+
+## Retry 1: review findings to fix (both valid)
+- CaptureViews.swift:194 swap deltas: show each alternative's `price_delta` exactly as the backend sent it (relative to the originally RECOMMENDED pick), labelled "vs recommended", NOT recomputed against the currently selected item. The over-budget disabling must still use the real local total at selection time (current total - current item price + alternative price > budget -> disabled, with the reason).
+- SweetspotApp.swift:714 stale in-flight request: when the budget, layout or room changes while a products request is running, the old request must be discarded AND a new load must start for the new inputs. Today the replacement load is rejected as "already loading" and the stale result is dropped, leaving the Shop screen unloaded. Fix with a request token/generation counter (or cancel the old task): a load always starts for the current inputs, and only the result whose token matches the latest inputs is applied; a stale result never overwrites state and never leaves `isLoading` stuck true.
+Keep everything else unchanged. Re-run ruff/pytest; update HANDOFF.md.
