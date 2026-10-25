@@ -36,3 +36,7 @@ Status: `todo` / `running` / `done` / `n/a`. Owner: the task or person.
 2. A switch to skip plot/PNG output (about 10 s of each run) and a faster mode for interactive use.
 3. Confirm polygon-room support and modal scoring for non-rectangular rooms (needed by the paused polygon work).
 4. Confirm the channel naming (`Lss/Rss/Lrs/Rrs/Ltf/...`) is final.
+
+## Findings log
+- 2026-10-24 23:50 fast vs full (5.1, 15 x 12 x 9 ft, listener 7.5/4): `--fast` 74 s vs full 86 s; L, C, R, Lss, Rss identical (positions, yaw, compliance); only the subwoofer differs (x 10.83 ft vs 3.44 ft). DECISION: refined runs use the FULL search (`fast=False`); the runner keeps `fast=` for experiments. Profile (engine3d-core worker): placement takes about 12 s; the rest of a run is reports, compliance tables and plots, so skipping them is the real speed-up.
+- Robustness checks still to add in engine3d-wire: parity test (our runner output equals the engine CLI's own JSON), `--validate` physics run as a slow check, compliance FAIL/WARN rows kept visible in the response.
