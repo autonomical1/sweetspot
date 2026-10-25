@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { fitModel, loadModel } from './modelLoader';
 import type { Props } from './RoomCanvas';
 import { sceneMetersToFeet } from '../interaction/coordinates';
+import { formatFtIn } from '../lib/format';
 import { ftToM } from '../lib/units';
 import { useAppStore } from '../store';
 import type { Point, SceneModel } from './adapter/layoutToScene';
@@ -206,6 +207,12 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
     const light = new THREE.DirectionalLight(0xffffff, 2); light.position.set(-4, 9, 5); scene.add(light);
     const root = new THREE.Group(); scene.add(root);
     const ray = new THREE.Raycaster();
+    const tip = document.createElement('div'); tip.className = 'drag-tip'; tip.hidden = true; el.appendChild(tip);
+    const showTip = (text: string, e: PointerEvent) => {
+      const bounds = el.getBoundingClientRect();
+      tip.textContent = text; tip.hidden = false;
+      tip.style.left = `${Math.min(e.clientX - bounds.left + 14, bounds.width - 230)}px`; tip.style.top = `${Math.max(8, e.clientY - bounds.top - 34)}px`;
+    };
     let down: [number, number] | null = null;
     // Dragging a speaker slides it across the floor plane at its own height instead of orbiting the camera.
     let dragging: { role: string; height: number; pointerId: number } | null = null;
@@ -236,7 +243,13 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
       onSelectRef.current(role);
     };
     const dragMove = (e: PointerEvent) => {
-      if (!dragging || e.pointerId !== dragging.pointerId) return;
+      if (!dragging) {
+        const role = e.buttons ? null : speakerAt(e);
+        renderer.domElement.style.cursor = role ? 'grab' : '';
+        if (role) showTip(`Drag to move ${role} · slides along the floor, the score updates when you let go`, e); else tip.hidden = true;
+        return;
+      }
+      if (e.pointerId !== dragging.pointerId) return;
       const room = useAppStore.getState().room;
       if (!room) return;
       pointerAt(e);
@@ -244,11 +257,19 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
       if (!point) return;
       const [x, , z] = sceneMetersToFeet([point.x, point.y, point.z], room);
       const speaker = useAppStore.getState().layout?.speakers.find(item => item.role === dragging?.role);
-      if (speaker) useAppStore.getState().moveSpeaker(dragging.role, [x, speaker.position[1], z]);
+      if (speaker) {
+        useAppStore.getState().moveSpeaker(dragging.role, [x, speaker.position[1], z]);
+        const moved = useAppStore.getState().layout?.speakers.find(item => item.role === dragging?.role);
+        if (moved) {
+          const [lx, , lz] = room.listener.position;
+          showTip(`${dragging.role} · ${formatFtIn(moved.position[0])}, ${formatFtIn(moved.position[2])} · ${formatFtIn(Math.hypot(moved.position[0] - lx, moved.position[2] - lz))} from your seat`, e);
+        }
+        renderer.domElement.style.cursor = 'grabbing';
+      }
     };
     const dragEnd = (e: PointerEvent) => {
       if (!dragging || e.pointerId !== dragging.pointerId) return;
-      dragging = null; down = null; orbit.enabled = true;
+      dragging = null; down = null; orbit.enabled = true; tip.hidden = true; renderer.domElement.style.cursor = '';
       useAppStore.getState().finishDrag();
     };
     const pointerDown = (e: PointerEvent) => { down = [e.clientX, e.clientY]; };
@@ -267,7 +288,7 @@ export function BackendSceneCanvas({ model, selectedId, selectedName, selectedDe
     const observer = new ResizeObserver(() => { camera.aspect = el.clientWidth / Math.max(el.clientHeight, 1); camera.updateProjectionMatrix(); renderer.setSize(el.clientWidth, el.clientHeight); }); observer.observe(el);
     const s: SceneState = { scene, camera, renderer, orbit, root, ray, groups: new Map(), frame: 0, observer };
     const draw = () => { s.frame = requestAnimationFrame(draw); orbit.update(); renderer.render(scene, camera); }; draw(); state.current = s;
-    return () => { cancelAnimationFrame(s.frame); observer.disconnect(); renderer.domElement.removeEventListener('pointerdown', dragStart, true); renderer.domElement.removeEventListener('pointermove', dragMove); renderer.domElement.removeEventListener('pointercancel', dragEnd); renderer.domElement.removeEventListener('pointerup', dragEnd, true); renderer.domElement.removeEventListener('pointerdown', pointerDown); renderer.domElement.removeEventListener('pointerup', pointerUp); s.groups.forEach(({ object }) => dispose(object)); orbit.dispose(); renderer.dispose(); renderer.domElement.remove(); state.current = null; };
+    return () => { cancelAnimationFrame(s.frame); observer.disconnect(); tip.remove(); renderer.domElement.removeEventListener('pointerdown', dragStart, true); renderer.domElement.removeEventListener('pointermove', dragMove); renderer.domElement.removeEventListener('pointercancel', dragEnd); renderer.domElement.removeEventListener('pointerup', dragEnd, true); renderer.domElement.removeEventListener('pointerdown', pointerDown); renderer.domElement.removeEventListener('pointerup', pointerUp); s.groups.forEach(({ object }) => dispose(object)); orbit.dispose(); renderer.dispose(); renderer.domElement.remove(); state.current = null; };
   }, []);
   useEffect(() => {
     const s = state.current; if (!s) return;
