@@ -125,7 +125,7 @@ struct ProductsView: View {
                 }
             }
         }
-        .task { await flow.loadProducts() }
+        .task(id: flow.productsGeneration) { await flow.loadProducts() }
     }
 
     private func message(_ text: String) -> some View {
@@ -178,8 +178,8 @@ struct ProductsView: View {
     private func alternativesView(for item: ProductItem) -> some View {
         NavigationStack {
             List(item.alternatives ?? []) { alternative in
-                let delta = alternative.price - item.price
-                let allowed = chosenTotal(items: flow.productItems) + delta <= flow.budget
+                let localPriceChange = alternative.price - item.price
+                let allowed = chosenTotal(items: flow.productItems) + localPriceChange <= flow.budget
                 Button {
                     flow.choose(alternative, for: item.role)
                     selectedItem = nil
@@ -191,8 +191,10 @@ struct ProductsView: View {
                         }
                         HStack {
                             Text(alternative.price, format: .currency(code: "USD"))
-                            Text(String(format: "%+.0f", delta) + " USD")
-                                .foregroundStyle(.secondary)
+                            if let delta = alternative.price_delta {
+                                Text("\(delta >= 0 ? "+" : "-")\(abs(delta), format: .currency(code: "USD")) vs recommended")
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         if let dimensions = alternative.dimensions {
                             Text(inchesDescription(dimensions)).font(.caption).foregroundStyle(.secondary)

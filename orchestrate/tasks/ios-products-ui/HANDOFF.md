@@ -5,11 +5,14 @@
 - `BackendClient.swift`: added a 90-second products GET with a URL query item, plus optional room budget in scan and rectangle creation.
 - `SweetspotApp.swift`: added a persistent $100-step budget on Results, shop entry buttons on Results and AR, selected product state in Flow, local swaps (including paired roles), and selection reset after room, layout or budget changes.
 - `CaptureViews.swift`: added shop loading, error/Retry, empty, warning, item and swap views. Links open only when they are valid HTTPS URLs. Swap options exceeding the remaining budget are disabled.
+- Retry 1: swap labels now use the optional backend `price_delta` and say "vs recommended". The budget guard still uses the current selected price and current local total.
+- Retry 1: product loads now use a generation and request token. Budget, room and layout resets invalidate in-flight requests; the open Shop view starts a replacement load for the new inputs, and stale successes or failures cannot change its state.
 - `ARLayoutView.swift`: draws selected speaker boxes from feet-based dimensions, aimed toward each speaker aim point, and retains sphere fallback, role labels and the existing room-frame transform.
 - `Resources/products.example.json`: example response with optional fields on three items and an L/R pair.
 
 ## Verification
 - `python -m ruff check .`: passed.
+- Retry 1: `python -m ruff check .` passed; `python -m pytest -q --basetemp C:\Users\neelm\AppData\Local\Temp\ios-products-ui-pytest-retry --tb=short` finished with 276 passed, 9 deselected, 1 failed. The sole failure is `test_smoke_script_has_valid_bash_syntax`: the Windows WSL `bash.exe` launcher returns access denied.
 - `python -m pytest -q`: 233 passed, 40 errors from permission denied on the existing pytest temp directory, and one failure because the Windows WSL `bash` launcher returns access denied.
 - `python -m pytest -q --basetemp C:\Users\neelm\AppData\Local\Temp\ios-products-ui-pytest -k 'not smoke_script_has_valid_bash_syntax' --tb=short`: 273 passed, 10 deselected.
 - `git diff --check` and example JSON parse: passed.

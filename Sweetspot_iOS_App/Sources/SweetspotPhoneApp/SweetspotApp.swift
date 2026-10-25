@@ -661,9 +661,11 @@ final class Flow: ObservableObject {
     @Published var productsLoading = false
     @Published var productsError: String?
     @Published var productsLoaded = false
+    @Published private(set) var productsGeneration = 0
     @Published var budget: Double = 1500
     private var productsRoomID: String?
     private var productsBudget: Double?
+    private var productsRequestToken = 0
 
     let backend = BackendClient()
 
@@ -697,8 +699,11 @@ final class Flow: ObservableObject {
     }
 
     private func resetProducts() {
+        productsGeneration += 1
+        productsRequestToken += 1
         productItems = []
         productWarnings = []
+        productsLoading = false
         productsError = nil
         productsLoaded = false
         productsRoomID = nil
@@ -711,20 +716,28 @@ final class Flow: ObservableObject {
             return
         }
         if !force && productsLoaded && productsRoomID == roomID && productsBudget == budget { return }
-        guard !productsLoading else { return }
         let requestedBudget = budget
+        let requestedGeneration = productsGeneration
+        productsRequestToken += 1
+        let requestToken = productsRequestToken
         productsLoading = true
         productsError = nil
-        defer { productsLoading = false }
+        defer {
+            if productsRequestToken == requestToken { productsLoading = false }
+        }
         do {
             let response = try await backend.products(roomID: roomID, budget: requestedBudget)
-            guard self.roomID == roomID, budget == requestedBudget else { return }
+            guard productsRequestToken == requestToken,
+                  productsGeneration == requestedGeneration,
+                  self.roomID == roomID,
+                  budget == requestedBudget else { return }
             productItems = response.items
             productWarnings = response.warnings ?? []
             productsRoomID = roomID
             productsBudget = requestedBudget
             productsLoaded = true
         } catch {
+            guard productsRequestToken == requestToken else { return }
             productsError = error.localizedDescription
         }
     }
