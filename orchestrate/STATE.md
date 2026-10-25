@@ -7,10 +7,10 @@
 - gates: all        # all | key | minimal
 - design: high      # high | normal (high = user decides every design fork)
 - wave: 7
-- last_checkpoint: 2026-10-24 22:40
+- last_checkpoint: 2026-10-24 23:05
 
 ## Next action
-Running (each a background `start` then `review` job): `ios-real-scan` (backend, account 1; worker done + check PASS, review pending), `products-options` (account 2, started about 22:40), `ios-products-ui` (Swift shop screen, account 1, started about 22:40). `ios-ar-frame` is done: its commits are on branch ios-phone_context (pushed), which was updated to master first; master got them by merging that branch.
+Running (each a background `start` then `review` job): `ios-real-scan` is MERGED to master (demo-ok 3f1e8c1, not yet deployed to the server: deploy together with products-options), `products-options` (account 2, started about 22:40), `ios-products-ui` (Swift shop screen, account 1, started about 22:40). `ios-ar-frame` is done: its commits are on branch ios-phone_context (pushed), which was updated to master first; master got them by merging that branch.
 
 iOS RULE (user): all iOS changes are committed to branch `ios-phone_context`. Do NOT use `dispatch merge` for iOS tasks (it merges into master). Procedure for an iOS task that passed check + review: use the extra worktree ../sweetspot-ios (branch ios-phone_context): `git merge --no-ff task/<id>`, `git push origin ios-phone_context`, then in the main tree `git merge --no-ff ios-phone_context` into master (so later workers start from the latest app), set the task `done` in TASKS.md. Backend tasks (ios-real-scan, products-options) merge normally with `DISPATCH merge -Id <id>` then ruff + pytest, push, redeploy the server (`cd /srv/sweetspot && git pull && docker compose -f deploy/docker-compose.yml up -d --build`), run products/e2e checks; products-options also changes the response (alternatives): tell the web teammate; the iOS task consumes it as optional fields. A review ISSUES -> one retry (alternate accounts), then ask the user.
 
