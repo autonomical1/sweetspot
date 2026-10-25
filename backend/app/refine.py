@@ -41,7 +41,7 @@ def _fingerprint(room: dict, preset: str, standard: str) -> str:
     # The source scan and display-only metadata do not affect engine placement.
     relevant = {name: room.get(name) for name in
                 ("dimensions", "outline", "surfaces", "objects", "listener")}
-    relevant.update(preset=preset, standard=standard)
+    relevant.update(preset=preset, standard=standard, mapping=2)  # bump when the engine-to-layout mapping changes
     encoded = json.dumps(relevant, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
 

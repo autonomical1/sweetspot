@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import signal
 import subprocess
@@ -196,6 +197,48 @@ def _default_display(room: dict) -> dict:
             "projector": {"position_ft": [value / METRES_PER_FOOT for value in projector]}}
 
 
+_PAIRS = (("L", "R"), ("Ls", "Rs"), ("Lss", "Rss"), ("Lrs", "Rrs"), ("Lw", "Rw"))
+
+
+def enforce_pair_sides(speakers: list[dict], room: dict) -> list[str]:
+    """Make each left/right pair straddle the listener's axis, mirroring the weaker half if the engine did not.
+
+    On cluttered scans the engine can put both speakers of a pair on the same side (7.1 rear surrounds in one
+    corner). The speaker farther from the axis stays; its partner is its mirror image across the axis.
+    """
+    listener = room["listener"]["position"]
+    fx, fz = (float(value) for value in room["listener"]["facing"])
+    norm = math.hypot(fx, fz) or 1.0
+    left = (fz / norm, -fx / norm)
+    width, length = float(room["dimensions"]["width"]), float(room["dimensions"]["length"])
+
+    def lateral(point: list[float]) -> float:
+        return (point[0] - listener[0]) * left[0] + (point[2] - listener[2]) * left[1]
+
+    def mirrored(point: list[float]) -> list[float]:
+        shift = 2.0 * lateral(point)
+        return [min(max(point[0] - shift * left[0], 0.05), width - 0.05), point[1],
+                min(max(point[2] - shift * left[1], 0.05), length - 0.05)]
+
+    by_role = {item["role"]: item for item in speakers}
+    notes: list[str] = []
+    for left_role, right_role in _PAIRS:
+        first, second = by_role.get(left_role), by_role.get(right_role)
+        if not first or not second:
+            continue
+        if lateral(first["position"]) > 0.5 and lateral(second["position"]) < -0.5:
+            continue
+        first_wins = abs(lateral(first["position"])) >= abs(lateral(second["position"]))
+        anchor, other = (first, second) if first_wins else (second, first)
+        anchor["role"], other["role"] = ((left_role, right_role) if lateral(anchor["position"]) > 0
+                                         else (right_role, left_role))
+        other["position"] = mirrored(anchor["position"])
+        other["aim"] = mirrored(anchor["aim"])
+        other["yaw_deg"] = None
+        notes.append(f"{other['role']} mirrored across the seat axis (the engine placed the pair on one side)")
+    return notes
+
+
 def to_layout(scene: dict, room: dict) -> dict:
     """Map a schema 2 scene into the backend layout and engine metrics payload."""
     if scene.get("schema_version") != 2:
@@ -233,6 +276,7 @@ def to_layout(scene: dict, room: dict) -> dict:
                 "receiver_trim_db": source.get("receiver_trim_db"),
                 "compliance": _compliance(source.get("compliance"))}
         speakers.append(item)
+    pair_notes = enforce_pair_sides(speakers, room)
     display = scene.get("display") or (
         _default_display(room) if _preset_from_channels(scene["speakers"]) == "2.1" else {})
     screen_source = display.get("screen")
@@ -275,7 +319,7 @@ def to_layout(scene: dict, room: dict) -> dict:
               "first_reflections": scene.get("first_reflections", []),
               "crossover": scene.get("crossover", {}),
               "sub_strategy_comparison": scene.get("sub_strategy_comparison", []),
-              "warnings": scene.get("warnings", [])}
+              "warnings": [*scene.get("warnings", []), *pair_notes]}
     return {"layout": {"speakers": speakers, "screen": screen, "preset": preset,
                        "standard": scene.get("standard"), "seats": seats,
                        "projector": projector}, "engine": engine}
