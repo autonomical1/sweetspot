@@ -13,4 +13,4 @@
 - No live Gemini verification, which is out of scope for this worker task.
 
 ## Design questions
-- Prompt wording: used a concise strict JSON instruction with the enum and one result per surface; an alternative is a longer prompt with visual examples or room context. The brief did not specify exact wording.
+- Prompt wording: used a concise strict JSON instruction with the enum and one result per surface; an alternative is a longer prompt with visual examples or room context. The brief did not specify exact wording. [resolved: keep the concise strict-JSON prompt]

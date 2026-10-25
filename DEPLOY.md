@@ -110,3 +110,7 @@ From a machine with Bash, curl, Python 3 and OpenSSL (all present on the server 
 cd /srv/sweetspot
 bash deploy/smoke.sh https://144-202-27-51.sslip.io
 ```
+
+## Live domain (2026-10-25)
+
+`https://sweetspotav.tech` is live: DNS `@ A 144.202.27.51` (registrar nameservers `tech-domains.venus.orderbox-dns.com`), `/srv/sweetspot/.env` has `DOMAIN=sweetspotav.tech` and `SITE_ADDRESS="sweetspotav.tech, 144-202-27-51.sslip.io"` (the sslip.io host stays as a fallback; the previous file is `.env.bak-pre-domain`). Caddy obtained the Let's Encrypt certificate itself; the first attempt failed because Let's Encrypt's secondary check still saw the old empty DNS answer, and Caddy's automatic retry about a minute later succeeded. Do not restart Caddy repeatedly while a certificate is pending (rate limits). The API keys (`GEMINI_API_KEY`, `SERPAPI_KEY`) and `GEMINI_MODEL=gemini-3.8-flash` are set in the server `.env`, so older notes above saying the keys are empty are out of date.

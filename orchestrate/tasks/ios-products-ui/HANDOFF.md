@@ -29,4 +29,4 @@
 - Xcode compilation and physical-device checks above.
 
 ## Design questions
-- Shop presentation: used a sheet from Results and AR as the smallest reversible UI option; a pushed navigation screen is an alternative.
+- Shop presentation: used a sheet from Results and AR as the smallest reversible UI option; a pushed navigation screen is an alternative. [resolved: pushed navigation screen, not a sheet; task ios-shop-push]

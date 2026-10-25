@@ -34,7 +34,7 @@
 
 ## Design questions
 
-- Treatment patch plan-view depth: used a 0.3 ft rectangle centered on the wall; alternatives include a thinner strip or a surface-specific depth.
-- Colors: used dark teal with mint speakers, amber listener/warnings, and magenta screen; alternatives include a lighter theme or role-specific speaker colors.
-- Drag feel: used direct pointer tracking with immediate clamping to the room bounds; alternatives include an offset-preserving grab or snapping to the 1 ft grid.
-- Tooltip wording: used element name plus x, z, and height in feet and inches; alternatives include shorter x/z-only text or named coordinate axes.
+- Treatment patch plan-view depth: used a 0.3 ft rectangle centered on the wall; alternatives include a thinner strip or a surface-specific depth. [resolved: per-surface plan-view depth; task plot2d-patch-depth]
+- Colors: used dark teal with mint speakers, amber listener/warnings, and magenta screen; alternatives include a lighter theme or role-specific speaker colors. [resolved: keep the current colours]
+- Drag feel: used direct pointer tracking with immediate clamping to the room bounds; alternatives include an offset-preserving grab or snapping to the 1 ft grid. [resolved: keep direct pointer tracking]
+- Tooltip wording: used element name plus x, z, and height in feet and inches; alternatives include shorter x/z-only text or named coordinate axes. [resolved: keep the current tooltip wording]
