@@ -81,7 +81,7 @@ struct SavedScanRow: View {
             }
 
             if let upload = scan.latestUpload {
-                Label("Uploaded", systemImage: "checkmark.icloud")
+                Label("Room \(upload.roomID)", systemImage: "checkmark.icloud")
                     .font(.caption)
                     .foregroundStyle(Theme.success)
             } else {
@@ -128,6 +128,8 @@ struct SavedScanDetail: View {
 
                 Section("Upload") {
                     if let upload = scan.latestUpload {
+                        idRow("Room ID", upload.roomID)
+
                         LabeledContent(
                             "Uploaded",
                             value: upload.uploadedAt.formatted(date: .abbreviated, time: .shortened)
