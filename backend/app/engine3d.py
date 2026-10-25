@@ -14,7 +14,7 @@ from typing import Any
 
 from .engine_speakerplacer import _engine_facing
 
-PRESETS = ("5.1", "7.1", "5.1.2", "5.1.4", "7.1.2", "7.1.4")
+PRESETS = ("2.1", "5.1", "7.1", "5.1.2", "5.1.4", "7.1.2", "7.1.4")
 METRES_PER_FOOT = 0.3048
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MATERIAL_MAP = {
@@ -73,10 +73,15 @@ def build_command(
         "--height", str(dims["height"]),
         "--listener", str(position[0]), str(float(dims["length"]) - float(position[2])),
         "--ear-height", str(position[1]), "--facing", facing,
-        "--layout", preset, "--standard", standard,
+        "--layout", "custom" if preset == "2.1" else preset, "--standard", standard,
         "--materials", _materials(room), "--no-show", "--no-view3d",
         "--save-layout", str(layout_path), "--output", str(output_dir),
     ]
+    if preset == "2.1":
+        command.extend(("--speakers", "front:2", "bass:1"))
+        # The custom front pair has no center channel to clear the default
+        # solid screen keepout. Plan the display after speaker placement.
+        command.append("--no-display")
     if seats:
         command.extend(("--seats", seats))
     if fast:
@@ -148,6 +153,26 @@ def _compliance(value: dict | None) -> dict | None:
             if key in value}
 
 
+def _default_display(room: dict) -> dict:
+    """Use speakerplacer's normal display planner without its speaker keepout."""
+    from speakerplacer import make_room
+    from speakerplacer.display import DEFAULT_PROJECTOR_SPEC, DEFAULT_SCREEN_SPEC, solve_display_positions
+
+    dims = room["dimensions"]
+    facing, _ = _engine_facing(room)
+    placement = solve_display_positions(
+        make_room(float(dims["width"]), float(dims["length"])), facing,
+        DEFAULT_SCREEN_SPEC, DEFAULT_PROJECTOR_SPEC,
+        float(dims["height"]) * METRES_PER_FOOT,
+    )
+    center = placement["screen_center_m"]
+    projector = placement["projector_position_m"]
+    geometry = placement["screen_geometry"]
+    return {"screen": {"center_ft": [value / METRES_PER_FOOT for value in center],
+                       "geometry": {"width_m": geometry.width_m, "height_m": geometry.height_m}},
+            "projector": {"position_ft": [value / METRES_PER_FOOT for value in projector]}}
+
+
 def to_layout(scene: dict, room: dict) -> dict:
     """Map a schema 2 scene into the backend layout and engine metrics payload."""
     if scene.get("schema_version") != 2:
@@ -185,7 +210,8 @@ def to_layout(scene: dict, room: dict) -> dict:
                 "receiver_trim_db": source.get("receiver_trim_db"),
                 "compliance": _compliance(source.get("compliance"))}
         speakers.append(item)
-    display = scene.get("display") or {}
+    display = scene.get("display") or (
+        _default_display(room) if _preset_from_channels(scene["speakers"]) == "2.1" else {})
     screen_source = display.get("screen")
     screen = None
     if screen_source:
@@ -216,7 +242,9 @@ def to_layout(scene: dict, room: dict) -> dict:
                                        seat["ear_height_m"] / METRES_PER_FOOT], length),
               "ear_height": seat["ear_height_m"] / METRES_PER_FOOT}
              for seat in scene.get("seats", [])]
-    preset = scene.get("layout") or _preset_from_channels(scene["speakers"])
+    preset = scene.get("layout")
+    if not preset or preset == "custom":
+        preset = _preset_from_channels(scene["speakers"])
     acoustic = scene.get("room_acoustics") or {}
     engine = {"compliance": scene.get("compliance", []),
               "receiver_calibration": scene.get("receiver_calibration", {}),
@@ -232,6 +260,6 @@ def to_layout(scene: dict, room: dict) -> dict:
 
 def _preset_from_channels(speakers: list[dict]) -> str:
     channels = {speaker["channel"] for speaker in speakers}
-    base = "7.1" if "Lrs" in channels else "5.1"
+    base = "7.1" if "Lrs" in channels else "2.1" if channels == {"L", "R", "LFE"} else "5.1"
     overheads = sum(channel in channels for channel in ("Ltf", "Rtf", "Ltr", "Rtr", "Ltm", "Rtm"))
     return f"{base}.{overheads}" if overheads else base

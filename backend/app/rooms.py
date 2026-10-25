@@ -8,8 +8,9 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field, ValidationError
 
-from . import engine, products, sessions, store
+from . import engine, engine3d, products, refine, sessions, store
 from .schemas import Dimensions, Listener, Room, Surface
+from .walls import wall_groups
 
 router = APIRouter()
 ABSORPTION = {"125": 0.05, "250": 0.06, "500": 0.08, "1000": 0.09, "2000": 0.09, "4000": 0.09}
@@ -36,7 +37,13 @@ class LayoutRequest(BaseModel):
 
 
 class OptimizeRequest(BaseModel):
-    options: dict | None = None
+    options: "OptimizeOptions" = Field(default_factory=lambda: OptimizeOptions())
+
+
+class OptimizeOptions(BaseModel):
+    preset: str = "5.1"
+    standard: str = "dolby"
+    refine: bool = True
 
 
 def _room(room_id: str) -> Room:
@@ -153,6 +160,7 @@ def update_listener(room_id: str, body: ListenerRequest) -> Room:
     position, facing = validate_listener(body.position, body.facing, room.dimensions)
     room.listener = Listener(position=position, facing=facing)
     store.save_room(room)
+    refine.invalidate(room_id)
     return room
 
 
@@ -170,18 +178,12 @@ def _wall_area(surface: Surface) -> float:
 @router.get("/rooms/{room_id}/photo-targets")
 def photo_targets(room_id: str) -> list[dict]:
     room = _room(room_id)
-    fx, fz = room.listener.facing
-    walls = sorted((s for s in room.surfaces if s.kind == "wall"), key=lambda s: (-_wall_area(s), s.id))[:4]
-    named = []
-    for surface in walls:
-        points = surface.polygon
-        cx = sum(p[0] for p in points) / len(points)
-        cz = sum(p[2] for p in points) / len(points)
-        dx, dz = cx - room.listener.position[0], cz - room.listener.position[2]
-        forward = dx * fx + dz * fz
-        side = dx * fz - dz * fx
-        label = ("Front wall" if forward > 0 else "Back wall") if abs(forward) >= abs(side) else ("Left wall" if side > 0 else "Right wall")  # noqa: E501  # preserve behavior while retaining the existing expression
-        named.append({"surface_id": surface.id, "kind": surface.kind, "label": label})
+    # One photo per direction (front, left, back, right): the largest wall represents its group,
+    # and the classified material is applied to every wall of the group (see materials_router).
+    named = [
+        {"surface_id": walls[0].id, "kind": "wall", "label": label}
+        for label, walls in wall_groups(room).items()
+    ]
     for kind in ("floor", "ceiling"):
         surface = next((s for s in room.surfaces if s.kind == kind), None)
         if surface:
@@ -192,9 +194,16 @@ def photo_targets(room_id: str) -> list[dict]:
 @router.post("/rooms/{room_id}/optimize")
 def optimize(room_id: str, body: OptimizeRequest | None = None) -> dict:
     room = _room(room_id)
-    result = engine.run_optimize(room, body.options if body else None)
-    store.save_layout(room_id, result)
-    return result
+    options = (body.options if body else OptimizeOptions()).model_dump()
+    if options["preset"] not in engine3d.PRESETS or options["standard"] not in {"dolby", "itu", "thx"}:
+        raise HTTPException(422, "invalid preset or standard")
+    return refine.optimize(room, options)
+
+
+@router.get("/rooms/{room_id}/optimize/status")
+def optimize_status(room_id: str) -> dict:
+    _room(room_id)
+    return refine.status(room_id)
 
 
 @router.post("/rooms/{room_id}/score")
@@ -206,7 +215,7 @@ def score(room_id: str, body: LayoutRequest) -> dict:
 def get_layout(room_id: str) -> dict:
     _room(room_id)
     try:
-        result = store.load_layout(room_id)
+        result = refine.latest_layout(room_id)
     except Exception:
         raise HTTPException(500, "stored layout is invalid") from None
     if result is None:

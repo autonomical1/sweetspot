@@ -284,11 +284,11 @@ struct BackendClient {
         try await request("rooms/\(roomID)/materials/status")
     }
 
-    func optimize(roomID: String) async throws -> LayoutResponse {
+    func optimize(roomID: String, preset: String) async throws -> LayoutResponse {
         try await request(
             "rooms/\(roomID)/optimize",
             method: "POST",
-            body: json([:]),
+            body: json(["options": ["preset": preset]]),
             timeout: 120
         )
     }

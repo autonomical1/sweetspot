@@ -147,3 +147,17 @@ class ProductsClient:
 def test_products_step_reports_distinct_sources():
     result = e2e._products(ProductsClient(), {"room_id": "r_products"}, 1500.0)
     assert result["_step_detail"] == "ok source=stub"
+
+
+def test_optional_refined_step_accepts_714():
+    roles = ("L", "R", "C", "LFE", "Lss", "Rss", "Lrs", "Rrs", "Ltf", "Rtf", "Ltr", "Rtr")
+    refined = {"layout": {"stage": "refined", "speakers": [{"role": role} for role in roles]},
+               "metrics": {}}
+
+    class RefinedClient:
+        def get(self, path, **kwargs):
+            return FakeResponse(200, {"state": "done"} if path.endswith("/status") else refined)
+
+    state = {"room_id": "r_test"}
+    assert e2e._refined(RefinedClient(), state, 1, "7.1.4") == refined
+    assert state["layout"] == refined["layout"]

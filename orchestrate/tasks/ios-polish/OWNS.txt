@@ -1,0 +1,8 @@
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/*.swift
+Sweetspot_iOS_App/*.md
+backend/app/gemini_limits.py
+backend/app/materials_router.py
+backend/app/materials.py
+backend/tests/test_gemini_limits.py
+backend/tests/test_materials*.py
+orchestrate/tasks/ios-polish/HANDOFF.md

@@ -559,15 +559,35 @@ struct SweetspotApp: App {
     }
 }
 
+fileprivate enum FlowPhase: Equatable {
+    case home, scan, review, photos, form, processing, ar
+}
+
+enum ProcessingStage: Equatable {
+    case classifying, placing
+}
+
 @MainActor
 final class Flow: ObservableObject {
     @Published var error: String?
     @Published var showingOfflinePreview = false
     @Published var isWorking = false
+    @Published var isComputing = false
+    @Published var computeElapsedSeconds = 0
     @Published var roomID: String?
     @Published var sessionID: String?
     @Published var needsPairing = false
-    @Published var phase: AppPhase = .home
+    @Published fileprivate var phase: FlowPhase = .home
+    @Published var selectedBase = "5.1"
+    @Published var selectedHeight = "None"
+    @Published private(set) var processingStage: ProcessingStage = .placing
+    @Published var processingError: String?
+    var preset: String {
+        selectedBase == "2.1" || selectedHeight == "None"
+            ? selectedBase : selectedBase + selectedHeight
+    }
+    private var classificationTask: Task<Void, Error>?
+    private var classificationFailed = false
     @Published var materials: [MaterialResult] = []
     @Published var layout: Layout?
     @Published var roomDimensions: Dimensions?
@@ -578,7 +598,6 @@ final class Flow: ObservableObject {
     @Published private(set) var isUploadingPhoto = false
     @Published private(set) var classifyElapsedSeconds = 0
     @Published private(set) var retryCountdown: Int?
-    @Published var classificationError: String?
     @Published private(set) var materialsCaption: String?
     @Published var productItems: [ProductItem] = []
     @Published var productWarnings: [String] = []
@@ -632,6 +651,15 @@ final class Flow: ObservableObject {
         productsLoaded = false
         productsRoomID = nil
         productsBudget = nil
+    }
+
+    private func resetClassification() {
+        classificationTask?.cancel()
+        classificationTask = nil
+        classificationFailed = false
+        materials = []
+        materialsCaption = nil
+        retryCountdown = nil
     }
 
     func loadProducts(force: Bool = false) async {
@@ -787,10 +815,11 @@ final class Flow: ObservableObject {
             }
             materials = []
             layout = nil
+            resetClassification()
             resetProducts()
             photoIndex = 0
             showingOfflinePreview = false
-            phase = .results
+            phase = .form
         } catch BackendError.http(404, _) {
             error = """
             Room \(upload.roomID) is no longer on the server. \
@@ -822,6 +851,7 @@ final class Flow: ObservableObject {
         roomDimensions = response.dimensions
         materials = []
         layout = nil
+        resetClassification()
         resetProducts()
         photoIndex = 0
         showingOfflinePreview = false
@@ -855,9 +885,10 @@ final class Flow: ObservableObject {
             roomDimensions = response.dimensions
                 ?? Dimensions(width: 12, length: 15, height: 9)
             layout = nil
+            resetClassification()
             resetProducts()
             showingOfflinePreview = false
-            phase = .results
+            phase = .form
         } catch {
             self.error = """
             Backend unavailable (\(error.localizedDescription)). \
@@ -867,22 +898,72 @@ final class Flow: ObservableObject {
         }
     }
 
-    func compute() async {
-        guard let roomID else { return }
+    func compute(preset: String) async {
+        await runBuild(preset: preset)
+    }
 
+    func leavePhotos() {
+        guard !isUploadingPhoto else { return }
+        phase = .form
+        guard photoIndex > 0, roomID != "local-preview" else { return }
+        classificationTask?.cancel()
+        classificationFailed = false
+        classificationTask = Task { try await performClassification() }
+    }
+
+    func buildLayout() async {
+        await compute(preset: preset)
+    }
+
+    private func runBuild(preset: String) async {
+        guard roomID != nil, !isComputing else { return }
+        if classificationFailed {
+            classificationFailed = false
+            classificationTask = Task { try await performClassification() }
+        }
+        isComputing = true
+        processingError = nil
+        computeElapsedSeconds = 0
+        processingStage = classificationTask == nil ? .placing : .classifying
+        phase = .processing
+        let clock = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                if !Task.isCancelled { self?.computeElapsedSeconds += 1 }
+            }
+        }
+        defer {
+            clock.cancel()
+            isComputing = false
+        }
+        if let classificationTask {
+            do {
+                try await classificationTask.value
+            } catch {
+                guard !Task.isCancelled else { return }
+                processingError = error.localizedDescription
+                classificationFailed = true
+                return
+            }
+            self.classificationTask = nil
+        }
+        processingStage = .placing
         if roomID == "local-preview" {
             phase = .ar
             return
         }
-
+        guard let roomID else { return }
         do {
-            let newLayout = try await backend.optimize(roomID: roomID).layout
-            layout = newLayout
+            layout = try await backend.optimize(roomID: roomID, preset: preset).layout
             resetProducts()
             phase = .ar
         } catch {
-            self.error = error.localizedDescription
+            processingError = error.localizedDescription
         }
+    }
+
+    func retryProcessing() async {
+        await compute(preset: preset)
     }
 
     func makeRectangle(width: Double, length: Double, height: Double) async {
@@ -905,9 +986,10 @@ final class Flow: ObservableObject {
             roomDimensions = response.dimensions
                 ?? Dimensions(width: width, length: length, height: height)
             layout = nil
+            resetClassification()
             resetProducts()
             showingOfflinePreview = false
-            phase = .results
+            phase = .form
         } catch {
             self.error = """
             Backend unavailable (\(error.localizedDescription)). \
@@ -921,6 +1003,7 @@ final class Flow: ObservableObject {
         roomID = "local-preview"
         roomFrame = nil
         roomDimensions = Dimensions(width: width, length: length, height: height)
+        resetClassification()
         resetProducts()
 
         layout = Layout(
@@ -941,81 +1024,39 @@ final class Flow: ObservableObject {
         )
 
         showingOfflinePreview = true
-        phase = .results
+        phase = .form
     }
 
-    func classify() async {
-        await runClassification(checkStatus: false)
-    }
-
-    func checkMaterialsStatus() async {
-        await runClassification(checkStatus: true)
-    }
-
-    private func runClassification(checkStatus: Bool) async {
-        guard let roomID, !isClassifying, !isUploadingPhoto else { return }
+    private func performClassification() async throws {
+        guard let roomID else { return }
         isClassifying = true
         classifyElapsedSeconds = 0
         retryCountdown = nil
-        classificationError = nil
-        var elapsedTask: Task<Void, Never>?
+        let elapsedTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                if !Task.isCancelled { self?.classifyElapsedSeconds += 1 }
+            }
+        }
         defer {
-            elapsedTask?.cancel()
+            elapsedTask.cancel()
             retryCountdown = nil
             isClassifying = false
         }
-
-        if checkStatus {
-            do {
-                let status = try await backend.materialsStatus(roomID: roomID)
-                guard status.state == "running" else { return }
-                classifyElapsedSeconds = max(0, Int(status.elapsed_s ?? 0))
-            } catch {
-                if !Task.isCancelled { self.error = error.localizedDescription }
-                return
-            }
-        }
-
-        elapsedTask = Task { @MainActor in
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-                if !Task.isCancelled { classifyElapsedSeconds += 1 }
-            }
-        }
-
+        let response: MaterialsResponse
         do {
-            if checkStatus {
-                var state = "running"
-                while state == "running" {
-                    try await Task.sleep(nanoseconds: 2_000_000_000)
-                    state = try await backend.materialsStatus(roomID: roomID).state ?? "idle"
-                }
+            response = try await backend.classify(roomID: roomID)
+        } catch BackendError.busy(_, let seconds) {
+            for remaining in stride(from: seconds, through: 1, by: -1) {
+                retryCountdown = remaining
+                try await Task.sleep(nanoseconds: 1_000_000_000)
             }
-            let response: MaterialsResponse
-            do {
-                response = try await backend.classify(roomID: roomID)
-            } catch BackendError.busy(_, let seconds) {
-                for remaining in stride(from: seconds, through: 1, by: -1) {
-                    retryCountdown = remaining
-                    try await Task.sleep(nanoseconds: 1_000_000_000)
-                }
-                retryCountdown = nil
-                do {
-                    response = try await backend.classify(roomID: roomID)
-                } catch {
-                    if !Task.isCancelled { classificationError = error.localizedDescription }
-                    return
-                }
-            }
-            try Task.checkCancellation()
-            materials = response.surfaces
-            materialsCaption = response.status == "cached" ? "Used saved results" : nil
-            phase = .results
-        } catch {
-            guard !Task.isCancelled else { return }
-            self.error = error.localizedDescription
-            phase = .results
+            retryCountdown = nil
+            response = try await backend.classify(roomID: roomID)
         }
+        try Task.checkCancellation()
+        materials = response.surfaces
+        materialsCaption = response.status == "cached" ? "Used saved results" : nil
     }
 
     func uploadPhoto(surfaceID: String, image: UIImage) async {
@@ -1121,20 +1162,22 @@ struct HomeView: View {
                 )
             ) {
                 Group {
-                    switch flow.phase {
-                    case .scan:
-                        ScanScreen(flow: flow)
-                    case .review:
-                        ReviewScreen(flow: flow)
-                    case .photos:
-                        PhotosStep(flow: flow)
-                    case .results:
-                        ResultsScreen(flow: flow)
-                    case .ar:
-                        ARLayoutScreen(flow: flow)
-                    case .home:
-                        EmptyView()
-                    }
+                switch flow.phase {
+                case .scan:
+                    ScanScreen(flow: flow)
+                case .review:
+                    ReviewScreen(flow: flow)
+                case .photos:
+                    PhotosStep(flow: flow)
+                case .form:
+                    SetupFormView(flow: flow)
+                case .processing:
+                    ProcessingView(flow: flow)
+                case .ar:
+                    ARLayoutScreen(flow: flow)
+                case .home:
+                    EmptyView()
+                }
                 }
                 .safeAreaInset(edge: .top) {
                     if flow.sessionID != nil {
@@ -1288,6 +1331,8 @@ struct ScanScreen: View {
             }
         }
         .navigationTitle("Room scan")
+        .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }
 }
 
@@ -1372,82 +1417,90 @@ struct PhotosStep: View {
                 }
             }
 
-            if flow.isClassifying {
-                ProgressView()
-                Text("Waiting on Gemini to classify your photos... this can take up to 30 seconds")
-                Text("\(flow.classifyElapsedSeconds) s elapsed")
-                    .foregroundStyle(.secondary)
-                if let seconds = flow.retryCountdown {
-                    Text("Gemini is busy. Trying again in \(seconds) s")
-                }
-            }
-
-            if let error = flow.classificationError {
-                Text(error).foregroundStyle(.red)
-                Button("Retry") { Task { await flow.classify() } }
-                    .disabled(flow.isClassifying || flow.isUploadingPhoto)
-            }
-
             Button("Finish photos and classify") {
-                Task { await flow.classify() }
+                flow.leavePhotos()
             }
-            .disabled(flow.isClassifying || flow.isUploadingPhoto)
+            .disabled(flow.isUploadingPhoto)
 
             Button("Skip photos and continue") {
-                Task { await flow.classify() }
+                flow.leavePhotos()
             }
-            .disabled(flow.isClassifying || flow.isUploadingPhoto)
+            .disabled(flow.isUploadingPhoto)
         }
         .navigationTitle("Surface photos")
-        .task { await flow.checkMaterialsStatus() }
     }
 }
 
-struct ResultsScreen: View {
+struct SetupFormView: View {
     @ObservedObject var flow: Flow
     @AppStorage("sweetspot.budget") private var budget = 1500.0
-    @State private var showingShop = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Room: \(flow.roomID ?? "not uploaded")")
-
-            if flow.showingOfflinePreview {
-                Text(
-                    "Offline sample preview — positions are illustrative, " +
-                    "not calculated by the backend."
-                )
-                .font(.footnote)
-                .foregroundStyle(.orange)
+        Form {
+            Section("Budget") {
+                Stepper(value: $budget, in: 100...20000, step: 100) {
+                    Text("Budget: \(budget, format: .currency(code: "USD"))")
+                }
             }
-
-            ForEach(flow.materials) { material in
-                Text("\(material.material) · \(Int(material.confidence * 100))%")
+            Section("Speaker configuration") {
+                Picker("Base configuration", selection: $flow.selectedBase) {
+                    ForEach(["2.1", "5.1", "7.1"], id: \.self) { Text($0) }
+                }
+                Picker("Height channels", selection: $flow.selectedHeight) {
+                    ForEach(["None", ".2", ".4"], id: \.self) { Text($0) }
+                }
+                .disabled(flow.selectedBase == "2.1")
+                if flow.selectedBase == "2.1" {
+                    Text("Height channels are unavailable for 2.1.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
             }
-
-            if let caption = flow.materialsCaption {
-                Text(caption).font(.caption).foregroundStyle(.secondary)
-            }
-
-            Stepper(value: $budget, in: 100...20000, step: 100) {
-                Text("Budget: \(budget, format: .currency(code: "USD"))")
-            }
-
-            Button("Compute speaker layout") {
+            Button("Build my layout") {
                 flow.setBudget(budget)
-                Task { await flow.compute() }
+                Task { await flow.buildLayout() }
             }
             .buttonStyle(.borderedProminent)
+            .disabled(flow.isComputing)
+        }
+        .navigationTitle("Your setup")
+        .onAppear { budget = flow.budget }
+        .onChange(of: budget) { _, value in flow.setBudget(value) }
+        .onChange(of: flow.selectedBase) { _, value in
+            if value == "2.1" { flow.selectedHeight = "None" }
+        }
+    }
+}
 
-            if flow.layout != nil && flow.roomID != "local-preview" {
-                Button("Shop this setup") { showingShop = true }
+struct ProcessingView: View {
+    @ObservedObject var flow: Flow
+
+    var body: some View {
+        VStack(spacing: 20) {
+            if let error = flow.processingError {
+                Text(error).foregroundStyle(.red)
+                Button("Retry") { Task { await flow.retryProcessing() } }
+                    .buttonStyle(.borderedProminent)
+                Button("Back to form") { flow.phase = .form }
+            } else {
+                ProgressView()
+                if flow.processingStage == .classifying {
+                    Text("Classifying materials with Gemini...")
+                    if let seconds = flow.retryCountdown {
+                        Text("Waiting on Gemini. Trying again in \(seconds) s")
+                    }
+                } else {
+                    Text("Placing your speakers...")
+                }
+                Text("\(flow.computeElapsedSeconds) s elapsed")
+                    .foregroundStyle(.secondary)
+                Text("The first layout can take up to a minute.")
+                    .font(.footnote).foregroundStyle(.secondary)
             }
         }
         .padding()
-        .navigationTitle("Results")
-        .onAppear { flow.setBudget(budget) }
-        .onChange(of: budget) { _, value in flow.setBudget(value) }
-        .navigationDestination(isPresented: $showingShop) { ProductsView(flow: flow) }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .navigationTitle("Building your layout")
+        .navigationBarBackButtonHidden(flow.processingError == nil)
     }
 }
 

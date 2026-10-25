@@ -6,6 +6,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from . import gemini_limits, materials, store
+from .walls import wall_groups
 
 router = APIRouter()
 
@@ -68,8 +69,15 @@ def apply_materials(room_id: str, body: dict | None = None) -> dict:
         material = result["material"]
         applied = bool(surface and material != "unknown" and result["confidence"] >= materials.MIN_CONFIDENCE)
         if applied:
-            surface.material = material
-            surface.absorption = materials.ABSORPTION[material].copy()
+            targets = [surface]
+            if surface.kind == "wall":  # one photo stands for every wall in its direction group
+                photographed = {r["surface_id"] for r in results}
+                for group in wall_groups(room).values():
+                    if any(w.id == surface.id for w in group):
+                        targets = [w for w in group if w.id == surface.id or w.id not in photographed]
+            for target in targets:
+                target.material = material
+                target.absorption = materials.ABSORPTION[material].copy()
         response.append({**result, "applied": applied})
     if response:
         store.save_room(room)

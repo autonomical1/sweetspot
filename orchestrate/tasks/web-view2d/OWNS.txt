@@ -2,3 +2,4 @@ webapp/src/views/**
 webapp/src/lib/plan.ts
 webapp/src/lib/plan.test.ts
 orchestrate/tasks/web-view2d/HANDOFF.md
+webapp/tsconfig.app.tsbuildinfo

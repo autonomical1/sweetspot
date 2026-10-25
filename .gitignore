@@ -249,3 +249,6 @@ xcuserdata/
 /web/index.html
 /web/assets/
 /web/models/
+
+# webapp source named lib is real code
+!webapp/src/lib/

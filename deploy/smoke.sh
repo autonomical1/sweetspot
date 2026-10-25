@@ -33,10 +33,12 @@ create_demo() { curl -fsS --max-time 15 -X POST "$BASE_URL/rooms/demo" -H 'conte
 run_check 'POST /rooms/demo' create_demo
 ROOM_ID="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["room_id"])' "$TMP_DIR/room")"
 optimize() {
-    curl -fsS --max-time 60 -X POST "$BASE_URL/rooms/$ROOM_ID/optimize" -H 'content-type: application/json' -d '{}' -o "$TMP_DIR/layout"
+    curl -fsS --max-time 90 -X POST "$BASE_URL/rooms/$ROOM_ID/optimize" -H 'content-type: application/json' -d '{}' -o "$TMP_DIR/layout"
     python3 - "$TMP_DIR/layout" <<'PY'
 import json, sys
-speakers = json.load(open(sys.argv[1], encoding="utf-8"))["layout"]["speakers"]
+layout = json.load(open(sys.argv[1], encoding="utf-8"))["layout"]
+if layout.get("stage") not in ("quick", "refined"): raise SystemExit("invalid optimization stage")
+speakers = layout["speakers"]
 if len(speakers) != 6: raise SystemExit(f"expected six speakers, got {len(speakers)}")
 PY
 }
@@ -56,6 +58,28 @@ photo_targets() { curl -fsS --max-time 15 "$BASE_URL/rooms/$ROOM_ID/photo-target
 run_check "GET /rooms/$ROOM_ID/photo-targets" photo_targets
 web_app() { curl -fsS --max-time 15 "$BASE_URL/app/plot2d/" -o "$TMP_DIR/web" && grep -qi '<html' "$TMP_DIR/web"; }
 run_check 'GET /app/plot2d/ (HTML)' web_app
+vite_app() {
+    local asset_path
+    curl -fsS --max-time 15 "$BASE_URL/app/" -o "$TMP_DIR/vite-index" || return 1
+    asset_path="$(python3 - "$TMP_DIR/vite-index" <<'PY'
+import re
+import sys
+
+html = open(sys.argv[1], encoding="utf-8").read()
+if not re.search(r'<div\s+id=["\']root["\']', html, re.IGNORECASE):
+    raise SystemExit("Vite root element not found")
+match = re.search(r'<script[^>]+src=["\'](/app/assets/[^"\']+\.js)["\']', html, re.IGNORECASE)
+if match is None:
+    raise SystemExit("Vite JavaScript asset not found")
+print(match.group(1))
+PY
+)" || return 1
+    curl -fsS --max-time 15 -D "$TMP_DIR/vite-asset-headers" -o /dev/null "$BASE_URL$asset_path" \
+        && grep -qiE '^content-type:.*(application|text)/(javascript|ecmascript)' "$TMP_DIR/vite-asset-headers"
+}
+run_check 'GET /app/ (Vite HTML and JavaScript)' vite_app
+projector_model() { curl -fsS --max-time 15 "$BASE_URL/app/models/projector.glb" -o /dev/null; }
+run_check 'GET /app/models/projector.glb' projector_model
 if [[ "$BASE_URL" == https://* ]]; then
     certificate() {
         command -v openssl >/dev/null 2>&1 || return 1

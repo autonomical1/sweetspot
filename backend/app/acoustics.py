@@ -62,7 +62,7 @@ def _reflections(room: dict, layout: dict) -> list[dict]:
     planes = ((0, 0.0), (0, width), (2, 0.0), (2, length), (1, 0.0), (1, height))
     found: list[dict] = []
     for speaker in layout.get("speakers", []):
-        if speaker.get("role") == "LFE":
+        if speaker.get("role") in {"LFE", "LFE2"}:
             continue
         source = _vector(speaker["position"])
         direct = float(np.linalg.norm(listener - source))
@@ -179,7 +179,8 @@ def _angle_score(room: dict, layout: dict) -> float:
         return 0.0
     facing /= length
     left = np.asarray([facing[1], -facing[0]])
-    targets = {"L": 30.0, "R": 30.0, "C": 0.0, "Ls": 110.0, "Rs": 110.0}
+    targets = {"L": 30.0, "R": 30.0, "C": 0.0, "Ls": 110.0, "Rs": 110.0,
+               "Lss": 90.0, "Rss": 90.0, "Lrs": 140.0, "Rrs": 140.0}
     values: list[float] = []
     for speaker in layout.get("speakers", []):
         role = speaker.get("role")

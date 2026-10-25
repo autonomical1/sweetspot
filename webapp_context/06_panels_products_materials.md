@@ -14,7 +14,7 @@
 
 ## Shop tab
 - Budget input ($, default `room.budget` or 1500) + **Get products**.
-- Grouped by role (front L/R often the same product shown once with "x2"), each item: thumbnail (if any), title, price (`Intl.NumberFormat` with `currency`), source, "View" link (`target="_blank" rel="noopener"`).
+- Grouped by role (front L/R often the same product shown once with "x2"), each item: thumbnail (if any), title, price (`Intl.NumberFormat` with `currency`), source, seller, specs, dimensions in feet, and "View" link (`target="_blank" rel="noopener"`). Show `alternatives` (up to 3) as swap options with `price_delta`; for a pair listing the second role has price 0 and no alternatives, so swap through the first role. `pair_with` identifies the paired role. LIVE roles are `receiver`, `tv`, `mount`, `hdmi_cable`, and `speaker_wire`; bundled items may include `included_in`.
 - Footer: total vs budget with a bar; "Prices from Google Shopping via SerpApi" once real data is live; stub data shows a "sample data" badge (items with `source == "stub"`).
 - Errors: 404 = "Place the speakers first"; network/other = banner + retry.
 
@@ -22,6 +22,7 @@
 - Dimensions in ft-in, floor area in sq ft, volume in cu ft, source badge, room warnings.
 - Surfaces table: kind, material (with a small "from photo" marker when the material is not the default `drywall`, i.e. it was classified), absorption at 500/1000 Hz.
 - Photo targets (`GET /rooms/{id}/photo-targets`): list of labels, so judges see what the phone captured.
+- Materials classification is LIVE: show `materials/status` while running. On a fresh result, apply surfaces with confidence >= 0.5; identify cached results as cached and joined requests as shared in-flight work. On HTTP 429 show "Gemini is busy, retry in N s" using `retry_after_s` and `Retry-After`, and do not hammer the endpoint.
 
 ## Copy rules
 - Short, plain sentences; feet and inches everywhere; numbers with units.

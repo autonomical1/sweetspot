@@ -1,0 +1,7 @@
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/SweetspotApp.swift
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/BackendClient.swift
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/SetupFormView.swift
+Sweetspot_iOS_App/Sources/SweetspotPhoneApp/ProcessingView.swift
+Sweetspot_iOS_App/03_pairing_and_photos.md
+Sweetspot_iOS_App/README.md
+orchestrate/tasks/ios-flow/HANDOFF.md

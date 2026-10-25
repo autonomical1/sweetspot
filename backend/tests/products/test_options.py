@@ -8,12 +8,11 @@ import pytest
 
 from backend.app.engine import run_optimize
 from backend.app.schemas import Room
-from backend.tests.contract.checks import assert_valid_products
 from products import catalog, get_products, recommend
 from products.recommend import _upgrades, _valid_variety
 from products.variety import family_key, model_key
 
-from .test_recommend import listing
+from .test_recommend import assert_valid_products, listing
 
 
 @pytest.fixture
@@ -57,17 +56,29 @@ def test_center_validation_uses_upgrade_cap():
                               {"C": 70}, None, {})
 
 
+def test_front_validation_with_only_right_or_center():
+    front = {"title": "Acme A100 Bookshelf Speaker", "price": 100, "specs": {"brand": "Acme"}}
+    matching = {"title": "Acme A100C Bookshelf Speaker", "price": 120, "specs": {"brand": "Acme"}}
+    other = {"title": "Other B200 Bookshelf Speaker", "price": 90, "specs": {"brand": "Other"}}
+    catalog_rows = {"speaker": [front, matching, other]}
+    assert not _valid_variety({("R",): {"R": front}, ("C",): {"C": other}}, catalog_rows,
+                              {"C": 70}, None, {})
+    scores = {100: (1.0, {model_key(front), model_key(other)})}
+    assert not _valid_variety({("C",): {"C": front}, ("Ls",): {"Ls": front}}, catalog_rows,
+                              {"C": 70, "Ls": 50}, None, scores)
+
+
 def test_joint_single_front_upgrade_reselects_center(small_db):
     catalog.save_listings(small_db, "speaker upgrades", "speaker", [
         listing("Acme A100 Bookshelf Speaker 100W", 60, rating=4.0, reviews=500),
         listing("Acme B200C Bookshelf Speaker 20W", 100, rating=3.0, reviews=500),
         listing("Acme B200F Bookshelf Speaker 300W", 140, rating=5.0, reviews=500),
     ])
-    result = get_products({"speakers": [{"role": role} for role in ("L", "R", "C")]}, 450)
+    result = get_products({"speakers": [{"role": role} for role in ("L", "R", "C")]}, 600)
     by_role = {item["role"]: item for item in result["items"]}
     assert all("B200" in by_role[role]["title"] for role in ("L", "R", "C"))
     assert model_key(by_role["L"]) == model_key(by_role["R"])
-    assert result["total"] <= 450
+    assert result["total"] <= 600
 
 
 def test_alternatives_select_before_model_deduplication(monkeypatch):
@@ -86,8 +97,8 @@ def test_alternatives_select_before_model_deduplication(monkeypatch):
     monkeypatch.setattr(recommend, "value", lambda item, *_: item["v"])
     monkeypatch.setattr(recommend, "quality", lambda item, *_: item["q"])
     result = recommend._alternatives("C", pick, alternatives, 200, 100, 200, None, False)
-    assert {item["title"] for item in result} == {"Acme A200 Speaker pricey", "Acme B300 Speaker pricey"}
-    assert [item["price"] for item in result] == [120, 130]
+    assert {item["title"] for item in result} == {"Acme A200 Speaker cheap", "Acme B300 Speaker pricey"}
+    assert [item["price"] for item in result] == [80, 130]
 
 
 def test_surround_single_upgrade_changes_both_roles():
