@@ -113,10 +113,6 @@ struct SavedScanDetail: View {
                         value: scan.createdAt.formatted(date: .abbreviated, time: .shortened)
                     )
 
-                    if let summary = scan.summary {
-                        LabeledContent("Found", value: summary.text)
-                    }
-
                     if !history.fileExists(for: scan) {
                         Text("The scan file is missing on this iPhone, so it can't be uploaded or shared.")
                             .foregroundStyle(.red)

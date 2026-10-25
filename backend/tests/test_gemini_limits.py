@@ -94,7 +94,7 @@ def test_rate_limit_and_concurrency_cap():
         first.result(timeout=5)
     with pytest.raises(HTTPException) as exc:
         limits.execute("r_two", _key("r_two"), "gemini", lambda: [])
-    assert exc.value.detail == {"detail": "Gemini is busy; retry in 60 s", "retry_after_s": 60}
+    assert exc.value.detail == {"detail": "Photo analysis is busy; retry in 60 s", "retry_after_s": 60}
     assert exc.value.headers == {"Retry-After": "60"}
 
 
@@ -200,4 +200,4 @@ def test_http_rate_limit_body_and_header(data_dir, monkeypatch):
     response = client.post(url, json={})
     assert response.status_code == 429
     assert response.headers["Retry-After"] == "60"
-    assert response.json() == {"detail": "Gemini is busy; retry in 60 s", "retry_after_s": 60}
+    assert response.json() == {"detail": "Photo analysis is busy; retry in 60 s", "retry_after_s": 60}

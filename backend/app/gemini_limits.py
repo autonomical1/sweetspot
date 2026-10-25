@@ -23,7 +23,7 @@ def _busy(seconds: float) -> HTTPException:
     retry = max(1, math.ceil(seconds))
     return HTTPException(
         status_code=429,
-        detail={"detail": f"Gemini is busy; retry in {retry} s", "retry_after_s": retry},
+        detail={"detail": f"Photo analysis is busy; retry in {retry} s", "retry_after_s": retry},
         headers={"Retry-After": str(retry)},
     )
 

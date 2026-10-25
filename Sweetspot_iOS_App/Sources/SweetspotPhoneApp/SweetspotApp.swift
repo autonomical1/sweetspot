@@ -1345,10 +1345,6 @@ struct ReviewScreen: View {
             Section {
                 Text("Scan saved on this iPhone. You can find it again under Recent scans.")
 
-                if let summary = flow.currentScan?.summary {
-                    LabeledContent("Found", value: summary.text)
-                }
-
                 TextField("Name, e.g. Living room (optional)", text: $name)
                     .submitLabel(.done)
                     .onSubmit { flow.nameCurrentScan(name) }
@@ -1434,6 +1430,15 @@ struct PhotosStep: View {
 struct SetupFormView: View {
     @ObservedObject var flow: Flow
     @AppStorage("sweetspot.budget") private var budget = 1500.0
+    @State private var showsConfigurationHelp = false
+
+    private var baseDescription: String {
+        switch flow.selectedBase {
+        case "2.1": return "2 speakers (left and right) plus 1 subwoofer. Great for music and small rooms."
+        case "7.1": return "7 speakers (adds two more surrounds at the sides) plus 1 subwoofer. Bigger rooms."
+        default: return "5 speakers (left, centre, right and two surrounds) plus 1 subwoofer. The standard home theatre."
+        }
+    }
 
     var body: some View {
         Form {
@@ -1446,14 +1451,25 @@ struct SetupFormView: View {
                 Picker("Base configuration", selection: $flow.selectedBase) {
                     ForEach(["2.1", "5.1", "7.1"], id: \.self) { Text($0) }
                 }
+                Text(baseDescription).font(.footnote).foregroundStyle(.secondary)
                 Picker("Height channels", selection: $flow.selectedHeight) {
                     ForEach(["None", ".2", ".4"], id: \.self) { Text($0) }
                 }
                 .disabled(flow.selectedBase == "2.1")
+                if flow.selectedHeight != "None" {
+                    Text(flow.selectedHeight == ".4"
+                         ? "+4 adds 4 ceiling speakers. They make sound come from above, as in Dolby Atmos."
+                         : "+2 adds 2 ceiling speakers. They make sound come from above, as in Dolby Atmos.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                    Text("\(flow.selectedBase)\(flow.selectedHeight) = \(flow.selectedBase.prefix(1)) speakers at ear level, 1 subwoofer, \(flow.selectedHeight.dropFirst()) ceiling speakers.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
                 if flow.selectedBase == "2.1" {
                     Text("Height channels are unavailable for 2.1.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
+                Button("What do these numbers mean?") { showsConfigurationHelp = true }
+                    .font(.footnote)
             }
             Button("Build my layout") {
                 flow.setBudget(budget)
@@ -1467,6 +1483,16 @@ struct SetupFormView: View {
         .onChange(of: budget) { _, value in flow.setBudget(value) }
         .onChange(of: flow.selectedBase) { _, value in
             if value == "2.1" { flow.selectedHeight = "None" }
+        }
+        .sheet(isPresented: $showsConfigurationHelp) {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("What do these numbers mean?").font(.title2.bold())
+                Text("The first number is speakers around you at ear level. The second is subwoofers. The third, when shown, is ceiling speakers.")
+                Text("For example, 7.1.4 means 7 speakers at ear level, 1 subwoofer and 4 ceiling speakers.")
+                Button("Done") { showsConfigurationHelp = false }
+            }
+            .padding()
+            .presentationDetents([.medium])
         }
     }
 }
@@ -1484,9 +1510,9 @@ struct ProcessingView: View {
             } else {
                 ProgressView()
                 if flow.processingStage == .classifying {
-                    Text("Classifying materials with Gemini...")
+                    Text("Analyzing your room photos... this can take up to 30 seconds")
                     if let seconds = flow.retryCountdown {
-                        Text("Waiting on Gemini. Trying again in \(seconds) s")
+                        Text("Our photo analysis is busy. Trying again in \(seconds) s")
                     }
                 } else {
                     Text("Placing your speakers...")
@@ -1507,6 +1533,7 @@ struct ProcessingView: View {
 struct ARLayoutScreen: View {
     @ObservedObject var flow: Flow
     @State private var alignment = "Preparing AR"
+    @State private var tracking = "Tracking starting"
     @State private var showingShop = false
 
     var body: some View {
@@ -1517,17 +1544,24 @@ struct ARLayoutScreen: View {
                     layout: layout,
                     products: flow.productItems,
                     roomWidthFeet: flow.roomDimensions?.width,
+                    roomLengthFeet: flow.roomDimensions?.length,
+                    roomHeightFeet: flow.roomDimensions?.height,
                     roomFrame: flow.roomFrame,
                     sharedScanFrame: flow.scanSession != nil,
-                    alignmentState: $alignment
+                    alignmentState: $alignment,
+                    trackingState: $tracking
                 )
                 .overlay(alignment: .top) {
-                    HStack {
-                        Text(alignment)
-
-                        if flow.scanSession == nil {
-                            Button("Align again") {
-                                alignment = "Align again"
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("\(alignment) · \(tracking)")
+                        if tracking != "Tracking normal" {
+                            Text("Move the phone slowly and look at the floor and walls to re-lock.")
+                                .font(.caption)
+                        }
+                        HStack {
+                            Button("Align manually") { alignment = "Align manually" }
+                            if flow.roomFrame != nil {
+                                Button("Reset to scan alignment") { alignment = "Reset to scan alignment" }
                             }
                         }
                     }
@@ -1537,10 +1571,7 @@ struct ARLayoutScreen: View {
                     .padding()
                 }
 
-                Text(
-                    "Speaker markers are positioned from the backend layout. " +
-                    "Coordinates are converted from feet to meters."
-                )
+                Text("If the room outline misses the walls, stand in the room, point at the floor where the FRONT wall (the screen wall) meets the left corner and tap, then tap the right corner of the same wall.")
                 .font(.footnote)
                 .padding(8)
                 if flow.roomID != "local-preview" {
