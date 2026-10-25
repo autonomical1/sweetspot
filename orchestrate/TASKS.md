@@ -30,7 +30,7 @@
 | domain-rename | Replace sslip.io references with sweetspotav.tech in DEPLOY.md, .env.example, webapp_context/README.md (sslip.io stays only as the documented fallback); fix stale deploy notes | gpt-5.6-luna | medium |  | 11 | done | worker PASS + review OK; merge in progress 00:21 |
 | engine3d-wire | Staged quick/refined 3D layouts: refine job + cache + status, widened roles/schema, /score for new roles, stub preset, products loader, contract tests, e2e/smoke, parity + validate slow tests | gpt-6-sol | high | engine3d-core | 11 | ready | RESUMED 00:37 on account 2 (in progress; was PAUSED 00:36) (account limit): worker stopped mid-tests, worktree keeps 12 changed files (suite at 80%, 3 failures being fixed). RESUME: start -Id engine3d-wire on Codex account 2 |
 | docs-demo | Refresh DEMO.md (domain, warm-up, products, Gemini limits, staged 3D marked planned, drills) | gpt-5.6-luna | medium |  | 12 | ready | RESUMED 00:37 on account 2 (in progress; was PAUSED 00:36): worktree keeps DEMO.md edits (was running tests). RESUME: start -Id docs-demo on account 2 |
-| docs-webspec | Update webapp_context 01-04,06 for new roles, stage/status, size, alternatives, Gemini limits (LIVE vs PLANNED) | gpt-5.6-luna | medium |  | 12 | ready | RESUMED 00:37 on account 2 (in progress; was PAUSED 00:36): worktree keeps 5 webapp_context edits (diff clean, ruff passed). RESUME: start -Id docs-webspec on account 2 |
+| docs-webspec | Update webapp_context 01-04,06 for new roles, stage/status, size, alternatives, Gemini limits (LIVE vs PLANNED) | gpt-5.6-luna | medium |  | 12 | ready | RETRY 1 after review ISSUES (00:55), account 2 |
 
 status: todo | ready | running | review | done | blocked | cut
 
